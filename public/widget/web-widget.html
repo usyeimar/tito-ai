@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tito AI Web Widget</title>
+        <style>
+            /* Widget Base Styles */
+            #tito-ai-widget {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 350px;
+                height: 500px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                display: flex;
+                flex-direction: column;
+                z-index: 9999;
+                font-family: 'Inter', system-ui, sans-serif;
+                overflow: hidden;
+            }
+
+            /* Widget Header */
+            #tito-ai-widget-header {
+                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                color: white;
+                padding: 16px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            #tito-ai-widget-title {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 600;
+                font-size: 16px;
+            }
+
+            #tito-ai-widget-avatar {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                background: #f0f9ff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #3b82f6;
+                font-weight: bold;
+            }
+
+            #tito-ai-widget-controls {
+                display: flex;
+                gap: 8px;
+            }
+
+            #tito-ai-widget-minimize,
+            #tito-ai-widget-close {
+                background: none;
+                border: none;
+                color: white;
+                font-size: 14px;
+                cursor: pointer;
+                width: 24px;
+                height: 24px;
+                border-radius: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #tito-ai-widget-minimize:hover,
+            #tito-ai-widget-close:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+            /* Widget Conversation Area */
+            #tito-ai-widget-conversation {
+                flex: 1;
+                padding: 16px 20px;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            /* Messages */
+            .tito-ai-message {
+                max-width: 80%;
+                padding: 10px 14px;
+                border-radius: 18px;
+                word-wrap: break-word;
+                line-height: 1.4;
+                font-size: 14px;
+            }
+
+            .tito-ai-message-user {
+                align-self: flex-end;
+                background: #3b82f6;
+                color: white;
+                border-bottom-right-radius: 4px;
+            }
+
+            .tito-ai-message-bot {
+                align-self: flex-start;
+                background: #f3f4f6;
+                color: #111827;
+                border-bottom-left-radius: 4px;
+                border: 1px solid #e5e7eb;
+            }
+
+            .tito-ai-message-label {
+                font-size: 10px;
+                text-transform: uppercase;
+                opacity: 0.7;
+                margin-bottom: 2px;
+                font-weight: 500;
+            }
+
+            /* Loading State */
+            .tito-ai-loading {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: #6b7280;
+                font-style: italic;
+            }
+
+            /* Widget Input Area */
+            #tito-ai-widget-input-area {
+                padding: 16px 20px;
+                border-top: 1px solid #eee;
+                display: flex;
+                gap: 10px;
+            }
+
+            #tito-ai-widget-input {
+                flex: 1;
+                padding: 12px 16px;
+                border: 1px solid #d1d5db;
+                border-radius: 24px;
+                font-size: 14px;
+                outline: none;
+                transition: border-color 0.2s;
+            }
+
+            #tito-ai-widget-input:focus {
+                border-color: #3b82f6;
+            }
+
+            #tito-ai-widget-send-btn {
+                background: #3b82f6;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                font-size: 16px;
+                transition: background 0.2s;
+            }
+
+            #tito-ai-widget-send-btn:hover {
+                background: #2563eb;
+            }
+
+            /* Widget States */
+            #tito-ai-widget.collapsed {
+                height: 60px;
+                width: 60px;
+                border-radius: 50%;
+            }
+
+            #tito-ai-widget.collapsed #tito-ai-widget-header {
+                justify-content: center;
+            }
+
+            #tito-ai-widget.collapsed #tito-ai-widget-title {
+                display: none;
+            }
+
+            #tito-ai-widget.collapsed #tito-ai-widget-controls {
+                display: none;
+            }
+
+            #tito-ai-widget.collapsed #tito-ai-widget-conversation,
+            #tito-ai-widget.collapsed #tito-ai-widget-input-area {
+                display: none;
+            }
+
+            /* Animations */
+            @keyframes pulse {
+                0% {
+                    opacity: 0.6;
+                }
+                50% {
+                    opacity: 1;
+                }
+                100% {
+                    opacity: 0.6;
+                }
+            }
+
+            .tito-ai-pulse {
+                animation: pulse 1.5s infinite;
+            }
+
+            /* Responsive */
+            @media (max-width: 480px) {
+                #tito-ai-widget {
+                    width: 100%;
+                    height: 100%;
+                    bottom: 0;
+                    right: 0;
+                    border-radius: 0;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Tito AI Widget Container -->
+        <div id="tito-ai-widget">
+            <!-- Header -->
+            <div id="tito-ai-widget-header">
+                <div id="tito-ai-widget-title">
+                    <div id="tito-ai-widget-avatar">J</div>
+                    <div>
+                        <div id="tito-ai-widget-agent-name">Julia</div>
+                        <div
+                            id="tito-ai-widget-agent-status"
+                            class="tito-ai-loading tito-ai-pulse"
+                        >
+                            Conectando...
+                        </div>
+                    </div>
+                </div>
+                <div id="tito-ai-widget-controls">
+                    <button id="tito-ai-widget-minimize" title="Minimizar">
+                        ―
+                    </button>
+                    <button id="tito-ai-widget-close" title="Cerrar">×</button>
+                </div>
+            </div>
+
+            <!-- Conversation Area -->
+            <div id="tito-ai-widget-conversation">
+                <div class="tito-ai-message tito-ai-message-bot">
+                    <div class="tito-ai-message-label">Julia</div>
+                    <div>
+                        ¡Hola! Soy Julia, tu asistente virtual. ¿En qué puedo
+                        ayudarte hoy?
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div id="tito-ai-widget-input-area">
+                <input
+                    type="text"
+                    id="tito-ai-widget-input"
+                    placeholder="Escribe tu mensaje..."
+                    autocomplete="off"
+                />
+                <button id="tito-ai-widget-send-btn">
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        fill="currentColor"
+                        viewBox="0 0 16 16"
+                    >
+                        <path
+                            d="M15.964.686a.5.5 0 0 0-.65-.65L.767 13.767a.5.5 0 0 0 .12.428l4.356.356a.5.5 0 0 0 .428-.12l12.023-12.023a.5.5 0 0 0 .65-.65z"
+                        />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <script>
+            // Widget Configuration and State
+            const WIDGET_CONFIG = {
+                agentSlug: null, // Will be set from URL or config
+                agentId: null,
+                deploymentVersion: null,
+                isConnected: false,
+                isMinimized: false,
+                messages: [],
+                livekitRoom: null,
+                wsUrl: '',
+                token: '',
+            };
+
+            // DOM Elements
+            const widgetEl = document.getElementById('tito-ai-widget');
+            const headerEl = document.getElementById('tito-ai-widget-header');
+            const avatarEl = document.getElementById('tito-ai-widget-avatar');
+            const agentNameEl = document.getElementById(
+                'tito-ai-widget-agent-name',
+            );
+            const agentStatusEl = document.getElementById(
+                'tito-ai-widget-agent-status',
+            );
+            const conversationEl = document.getElementById(
+                'tito-ai-widget-conversation',
+            );
+            const inputEl = document.getElementById('tito-ai-widget-input');
+            const sendBtnEl = document.getElementById(
+                'tito-ai-widget-send-btn',
+            );
+            const minimizeBtnEl = document.getElementById(
+                'tito-ai-widget-minimize',
+            );
+            const closeBtnEl = document.getElementById('tito-ai-widget-close');
+
+            // Initialize Widget
+            async function initializeWidget() {
+                try {
+                    // Extract agent slug from URL or config (in real implementation)
+                    const urlParams = new URLSearchParams(
+                        window.location.search,
+                    );
+                    const agentSlug =
+                        urlParams.get('agent') || 'julia-alloy-finance'; // Default for demo
+
+                    WIDGET_CONFIG.agentSlug = agentSlug;
+
+                    // Fetch widget configuration from API
+                    await fetchWidgetConfig();
+
+                    // Set up event listeners
+                    setupEventListeners();
+
+                    // Start connection process
+                    await connectToLiveKit();
+                } catch (error) {
+                    console.error('Widget initialization error:', error);
+                    showErrorState(
+                        'Error al cargar el widget. Por favor intenta de nuevo.',
+                    );
+                }
+            }
+
+            // Fetch widget configuration from our API
+            async function fetchWidgetConfig() {
+                try {
+                    const response = await fetch(
+                        `/api/public/widget-config/web/${WIDGET_CONFIG.agentSlug}`,
+                    );
+
+                    if (!response.ok) {
+                        throw new Error(
+                            `HTTP error! status: ${response.status}`,
+                        );
+                    }
+
+                    const config = await response.json();
+
+                    // Update UI with agent info
+                    agentNameEl.textContent = config.agent.name;
+                    avatarEl.textContent = config.agent.name
+                        .charAt(0)
+                        .toUpperCase();
+
+                    // Store configuration
+                    WIDGET_CONFIG.agentId = config.agent.id;
+                    WIDGET_CONFIG.deploymentVersion = config.deployment.version;
+
+                    // Update status
+                    agentStatusEl.textContent = 'Conectando...';
+                    agentStatusEl.className = 'tito-ai-loading tito-ai-pulse';
+
+                    // Extract LiveKit configuration
+                    WIDGET_CONFIG.wsUrl =
+                        config.widget.wsUrl || 'wss://demo.livekit.io';
+                    // In a real implementation, you would fetch a token from your backend
+                    WIDGET_CONFIG.token = await fetchAccessToken(
+                        config.agent.id,
+                    );
+                } catch (error) {
+                    console.error('Error fetching widget config:', error);
+                    throw error;
+                }
+            }
+
+            // Fetch access token from backend (simplified for demo)
+            async function fetchAccessToken(agentId) {
+                try {
+                    // In a real implementation, this would call your secure token endpoint
+                    // For demo purposes, we'll simulate or use a placeholder
+                    // return await fetch(`/api/public/widget-token/generate/${WIDGET_CONFIG.agentSlug}`)
+                    //     .then(res => res.json())
+                    //     .then(data => data.token);
+
+                    // For now, return a placeholder - in production this must be secure
+                    return 'placeholder-token-for-demo';
+                } catch (error) {
+                    console.error('Error fetching access token:', error);
+                    throw error;
+                }
+            }
+
+            // Set up event listeners
+            function setupEventListeners() {
+                // Send button
+                sendBtnEl.addEventListener('click', sendMessage);
+
+                // Enter key in input
+                inputEl.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+
+                // Minimize button
+                minimizeBtnEl.addEventListener('click', toggleMinimize);
+
+                // Close button
+                closeBtnEl.addEventListener('click', () => {
+                    widgetEl.style.display = 'none';
+                });
+
+                // Click on header to toggle minimize (optional)
+                headerEl.addEventListener('click', (e) => {
+                    if (!e.target.closest('#tito-ai-widget-controls')) {
+                        toggleMinimize();
+                    }
+                });
+            }
+
+            // Toggle minimize state
+            function toggleMinimize() {
+                WIDGET_CONFIG.isMinimized = !WIDGET_CONFIG.isMinimized;
+                widgetEl.classList.toggle(
+                    'collapsed',
+                    WIDGET_CONFIG.isMinimized,
+                );
+
+                // Update button icon
+                minimizeBtnEl.textContent = WIDGET_CONFIG.isMinimized
+                    ? '+'
+                    : '―';
+                minimizeBtnEl.title = WIDGET_CONFIG.isMinimized
+                    ? 'Maximizar'
+                    : 'Minimizar';
+            }
+
+            // Send message function
+            async function sendMessage() {
+                const messageText = inputEl.value.trim();
+
+                if (!messageText || !WIDGET_CONFIG.isConnected) {
+                    return;
+                }
+
+                // Add user message to UI
+                addMessageToUI(messageText, 'user');
+
+                // Clear input
+                inputEl.value = '';
+
+                // Send via LiveKit data channel (simplified)
+                try {
+                    await sendDataViaLiveKit({
+                        type: 'user-message',
+                        text: messageText,
+                        agentId: WIDGET_CONFIG.agentId,
+                    });
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    addMessageToUI(
+                        'Error al enviar mensaje. Por favor intenta de nuevo.',
+                        'bot',
+                    );
+                }
+            }
+
+            // Add message to conversation UI
+            function addMessageToUI(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('tito-ai-message');
+
+                if (sender === 'user') {
+                    messageDiv.classList.add('tito-ai-message-user');
+                    messageDiv.innerHTML = `
+                    <div class="tito-ai-message-label">Tú</div>
+                    <div>${escapeHtml(text)}</div>
+                `;
+                } else {
+                    messageDiv.classList.add('tito-ai-message-bot');
+                    messageDiv.innerHTML = `
+                    <div class="tito-ai-message-label">Julia</div>
+                    <div>${escapeHtml(text)}</div>
+                `;
+                }
+
+                conversationEl.appendChild(messageDiv);
+                conversationEl.scrollTop = conversationEl.scrollHeight;
+            }
+
+            // Escape HTML to prevent XSS
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // Connect to LiveKit (simplified implementation)
+            async function connectToLiveKit() {
+                try {
+                    // Show connecting status
+                    agentStatusEl.textContent = 'Conectando...';
+                    agentStatusEl.className = 'tito-ai-loading tito-ai-pulse';
+
+                    // In a real implementation, you would use the LiveKit Client SDK:
+                    // import { Room } from 'livekit-client';
+                    // const room = new Room();
+                    //
+                    // room.on('participantConnected', (participant) => {
+                    //     console.log('Participant connected:', participant.identity);
+                    // });
+                    //
+                    // room.on('dataReceived', (data) => {
+                    //     const payload = new TextDecoder().decode(data);
+                    //     const message = JSON.parse(payload);
+                    //     if (message.type === 'bot-message') {
+                    //         addMessageToUI(message.text, 'bot');
+                    //     }
+                    // });
+                    //
+                    // await room.connect(WIDGET_CONFIG.wsUrl, WIDGET_CONFIG.token);
+                    // WIDGET_CONFIG.livekitRoom = room;
+                    // WIDGET_CONFIG.isConnected = true;
+
+                    // For demo purposes, simulate connection
+                    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+                    WIDGET_CONFIG.isConnected = true;
+                    agentStatusEl.textContent = 'En línea';
+                    agentStatusEl.className = '';
+
+                    // Send welcome message from bot after connection
+                    setTimeout(() => {
+                        addMessageToUI(
+                            '¡Hola! Soy Julia, tu asistente virtual. ¿En qué puedo ayudarte hoy?',
+                            'bot',
+                        );
+                    }, 500);
+                } catch (error) {
+                    console.error('LiveKit connection error:', error);
+                    showErrorState(
+                        'Error de conexión. Por favor verifica tu internet e intenta de nuevo.',
+                    );
+                }
+            }
+
+            // Show error state in widget
+            function showErrorState(message) {
+                agentStatusEl.textContent = message;
+                agentStatusEl.className = 'tito-ai-error';
+
+                // Show error in conversation
+                addMessageToUI(message, 'bot');
+            }
+
+            // Send data via LiveKit (placeholder for real implementation)
+            async function sendDataViaLiveKit(data) {
+                // In real implementation:
+                // if (WIDGET_CONFIG.livekitRoom && WIDGET_CONFIG.livekitRoom.connectionState === 'connected') {
+                //     const payload = new TextEncoder().encode(JSON.stringify(data));
+                //     await WIDGET_CONFIG.livekitRoom.localParticipant.publishData(payload, {
+                //         reliable: true,
+                //         topic: 'rtvi-ai'
+                //     });
+                // }
+
+                // For demo, simulate bot response after delay
+                setTimeout(
+                    () => {
+                        const responses = [
+                            'Entiendo tu consulta. Déjame buscar esa información para ti.',
+                            'Un momento mientras proceso tu solicitud...',
+                            'Gracias por tu pregunta. Aquí tienes lo que necesitas:',
+                            'Perfecto! Eso está dentro de mi área de conocimiento.',
+                            'Déjame verificar esa información y te respondo en un momento.',
+                        ];
+
+                        const randomResponse =
+                            responses[
+                                Math.floor(Math.random() * responses.length)
+                            ];
+                        addMessageToUI(randomResponse, 'bot');
+                    },
+                    1000 + Math.random() * 1500,
+                );
+            }
+
+            // Initialize widget when DOM is loaded
+            document.addEventListener('DOMContentLoaded', initializeWidget);
+        </script>
+    </body>
+</html>
