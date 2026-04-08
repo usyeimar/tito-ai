@@ -35,7 +35,9 @@ php artisan test
 
 ## Documentation
 
-- [SIP Trunks Architecture & Integration](docs/SIP-TRUNKS.md)
+- [Authentication Architecture](docs/architecture/authentication.md)
+- [SIP Trunks Architecture & Integration](docs/architecture/telephony-sip-trunks.md)
+- [AI Agents Architecture](docs/agents/architecture.md)
 
 ## License
 
