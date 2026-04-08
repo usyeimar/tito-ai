@@ -2,7 +2,7 @@
 
 A modern, scalable SaaS platform built with Laravel 13, React (Inertia.js v2), and advanced AI capabilities. This project features a robust multi-tenant architecture and integration with first-party Laravel AI tools.
 
-## 🚀 Key Features
+## Key Features
 
 - **Multi-tenancy**: Built with `stancl/tenancy` for full database isolation and custom domains/subdomains per tenant.
 - **AI Integration**: Powered by `laravel/ai` for agent orchestration, knowledge base management, and advanced AI workflows.
@@ -12,7 +12,7 @@ A modern, scalable SaaS platform built with Laravel 13, React (Inertia.js v2), a
 - **Real-time**: Integration with Laravel Reverb for high-performance WebSocket communication.
 - **Infrastructure**: Ready-to-use Docker environment via Laravel Sail.
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Backend**: PHP 8.4+, Laravel 13
 - **Frontend**: React 19, TypeScript, Tailwind CSS v4
@@ -21,7 +21,7 @@ A modern, scalable SaaS platform built with Laravel 13, React (Inertia.js v2), a
 - **Testing**: Pest PHP v4
 - **Formatting**: Laravel Pint (PHP), Prettier & ESLint (JS/TS)
 
-## 📦 Installation
+## Installation
 
 1. **Clone the repository**:
    ```bash
@@ -56,20 +56,20 @@ A modern, scalable SaaS platform built with Laravel 13, React (Inertia.js v2), a
    pnpm run dev
    ```
 
-## 🏗 Project Structure
+## Project Structure
 
 - `app/Models/Tenant/KnowledgeBase/`: Domain logic for the AI knowledge base.
 - `services/runners/`: Python-based runners for background tasks and AI processing.
 - `services/pipecat/`: Integration for real-time voice and multimodal AI interactions.
 - `routes/tenant/`: API and Web routes specific to isolated tenants.
 
-## 🧪 Testing
+## Testing
 
 Run the test suite using Pest:
 ```bash
 php artisan test
 ```
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
