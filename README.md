@@ -32,7 +32,7 @@ A modern, scalable SaaS platform built with Laravel 13, React (Inertia.js v2), a
 2. **Install dependencies**:
    ```bash
    composer install
-   npm install
+   pnpm install
    ```
 
 3. **Configure Environment**:
@@ -53,7 +53,7 @@ A modern, scalable SaaS platform built with Laravel 13, React (Inertia.js v2), a
 
 6. **Build Frontend**:
    ```bash
-   npm run dev
+   pnpm run dev
    ```
 
 ## 🏗 Project Structure
