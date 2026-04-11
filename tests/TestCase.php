@@ -12,11 +12,11 @@ abstract class TestCase extends BaseTestCase
 
     /**
      * The connections that should be refreshed during tests.
-     * We only transact the default connection (sqlite) which is now unified with 'central' in AppServiceProvider.
+     * We transact the default connection (pgsql) which is the central database.
      *
      * @var array<int, string>
      */
-    protected array $connectionsToTransact = ['sqlite'];
+    protected array $connectionsToTransact = ['pgsql'];
 
     /**
      * Skip the test if the given Fortify feature is disabled.

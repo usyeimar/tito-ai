@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Central\Web\Tenancy;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Central\API\Tenancy\StoreTenantRequest;
 use App\Http\Resources\Central\API\Tenancy\TenantResource;
 use App\Models\Central\Tenancy\TenantInvitation;
 use App\Services\Central\Tenancy\TenantService;
@@ -40,6 +41,43 @@ class TenantController extends Controller
                 ],
                 'expires_at' => $invitation->expires_at,
             ]),
+        ]);
+    }
+
+    public function store(StoreTenantRequest $request)
+    {
+        $this->tenantService->createForUser(
+            $request->user(),
+            $request->validated(),
+        );
+
+        return redirect()->route('workspaces');
+    }
+
+    public function enter(Request $request, \App\Models\Central\Tenancy\Tenant $tenant)
+    {
+        $user = $request->user();
+
+        if (! $user->tenants()->whereKey($tenant->getKey())->exists()) {
+            abort(403, 'You do not have access to this workspace.');
+        }
+
+        $tenantUserId = $tenant->run(fn () => \App\Models\Tenant\Auth\Authentication\User::query()
+            ->where('global_id', $user->global_id)
+            ->where('is_active', true)
+            ->value('id'));
+
+        if (! $tenantUserId) {
+            abort(403, 'Your tenant account is inactive or unavailable. Please contact your workspace administrator.');
+        }
+
+        $redirectUrl = route('tenant.dashboard', ['tenant' => $tenant->slug]);
+        
+        $token = tenancy()->impersonate($tenant, (string) $tenantUserId, $redirectUrl, 'tenant');
+
+        return redirect()->route('tenant.impersonate', [
+            'tenant' => $tenant->slug,
+            'token' => $token->token
         ]);
     }
 }

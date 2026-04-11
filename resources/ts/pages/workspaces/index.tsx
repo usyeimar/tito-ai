@@ -1,6 +1,5 @@
 import React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import TenantController from '@/actions/App/Http/Controllers/Central/API/Tenancy/TenantController';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { buttonVariants } from '@/components/ui/button';
 import { Button } from '@/components/ui/button';
@@ -81,23 +80,24 @@ export default function WorkspacesIndex({
     const [processing, setProcessing] = React.useState(false);
     const [nameError, setNameError] = React.useState('');
 
-    const handleCreate = async (e: React.FormEvent) => {
+    const handleCreate = (e: React.FormEvent) => {
         e.preventDefault();
         setNameError('');
         setProcessing(true);
-        try {
-            await router.post(TenantController.store.url(), { name });
-            setName('');
-            setOpen(false);
-            router.reload();
-        } catch (err: any) {
-            setNameError(
-                err?.response?.data?.errors?.name?.[0] ??
-                    'Something went wrong.',
-            );
-        } finally {
-            setProcessing(false);
-        }
+        router.post(
+            '/workspaces',
+            { name },
+            {
+                onSuccess: () => {
+                    setName('');
+                    setOpen(false);
+                },
+                onError: (errors) => {
+                    setNameError(errors.name ?? 'Something went wrong.');
+                },
+                onFinish: () => setProcessing(false),
+            }
+        );
     };
 
     const workspaceUrl = (slug: string) => {
@@ -230,22 +230,21 @@ export default function WorkspacesIndex({
                                                     </div>
                                                     {/* Info */}
                                                     <div className="min-w-0 flex-1">
-                                                        <p className="truncate text-sm font-semibold">
+                                                        <p className="truncate text-sm font-semibold capitalize">
                                                             {workspace.name}
-                                                        </p>
-                                                        <p className="truncate text-xs text-muted-foreground">
+                                                        </p>                                                        <p className="truncate text-xs text-muted-foreground">
                                                             {workspaceUrl(
                                                                 workspace.slug,
                                                             )}
                                                         </p>
                                                     </div>
                                                     {/* Login button */}
-                                                    <Link
-                                                        href={`/${workspace.slug}`}
+                                                    <a
+                                                        href={`/workspaces/${workspace.slug}/enter`}
                                                         className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                                                     >
                                                         <LogIn className="size-4" />
-                                                    </Link>
+                                                    </a>
                                                 </div>
                                             </li>
                                         ))}

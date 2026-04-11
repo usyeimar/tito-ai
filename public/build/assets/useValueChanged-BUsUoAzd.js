@@ -1,1 +1,0 @@
-import{f as e,u as t}from"./jsx-runtime-CTW67R-j.js";import{l as n,z as r}from"./utils-uUB_MHci.js";var i=e(t());function a(e,t){let a=i.useRef(e),o=n(t);r(()=>{a.current!==e&&o(a.current)},[e,o]),r(()=>{a.current=e},[e])}export{a as t};

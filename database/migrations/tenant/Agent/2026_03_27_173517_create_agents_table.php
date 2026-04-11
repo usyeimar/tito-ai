@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('agents', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->ulid('id')->primary();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('timezone', 50)->default('UTC');
             $table->string('currency', 3)->default('COP');
             $table->string('number_format', 20)->default('es_CO');
-            $table->foreignUuid('knowledge_base_id')->nullable()->constrained('knowledge_bases')->nullOnDelete();
+            $table->foreignUlid('knowledge_base_id')->nullable()->constrained('knowledge_bases')->nullOnDelete();
             $table->timestamps();
         });
     }

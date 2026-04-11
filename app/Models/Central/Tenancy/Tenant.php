@@ -40,6 +40,11 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         ];
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     protected static function booted(): void
     {
         static::saving(function (self $tenant): void {
@@ -48,7 +53,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             }
 
             if (! $tenant->slug) {
-                $base = data_get($tenant->data, 'name', 'tenant');
+                $base = $tenant->name ?? data_get($tenant->data, 'name', 'tenant');
                 $baseSlug = Str::slug((string) $base) ?: 'tenant';
                 $tenant->slug = static::makeUniqueSlug($baseSlug, $tenant);
 

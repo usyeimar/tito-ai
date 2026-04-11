@@ -4,10 +4,12 @@ namespace App\Providers;
 
 use App\Models\Central\Auth\Role\Role;
 use App\Models\Central\Tenancy\TenantInvitation;
+use App\Models\Tenant\Agent\Agent;
 use App\Models\Tenant\Auth\Authentication\User;
 use App\Models\Tenant\System\ColumnConfiguration\SystemColumnConfiguration;
 use App\Models\Tenant\System\ColumnConfiguration\SystemUserColumnConfiguration;
 use App\Policies\RolePolicy;
+use App\Policies\Tenant\Agent\AgentPolicy;
 use App\Policies\SystemConfigurationPolicy;
 use App\Policies\SystemUserColumnConfigurationPolicy;
 use App\Policies\TenantInvitationPolicy;
@@ -32,6 +34,7 @@ class AuthServiceProvider extends ServiceProvider
         SystemUserColumnConfiguration::class => SystemUserColumnConfigurationPolicy::class,
         Role::class => RolePolicy::class,
         TenantInvitation::class => TenantInvitationPolicy::class,
+        Agent::class => AgentPolicy::class,
     ];
 
     public function boot(): void

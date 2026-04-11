@@ -32,11 +32,9 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-            CreateFreshApiToken::class,
         ]);
 
         $middleware->prependToGroup('api', [
-            StartSession::class,
             InjectAccessTokenFromCookie::class,
             EnsureCookieAuthOrigin::class,
         ]);

@@ -38,7 +38,7 @@ class TenantService
 
         return QueryBuilder::for(Tenant::class)
             ->whereIn('id', $tenantIds)
-            ->allowedFilters(['name', 'slug'])
+            ->allowedFilters('name', 'slug')
             ->defaultSort('name')
             ->paginate();
     }
@@ -55,9 +55,14 @@ class TenantService
         $this->ensureVerifiedEmail($user, 'Email verification is required to manage workspaces.');
         $this->ensureUserHasGlobalId($user);
 
+        $tenantName = Arr::get($data, 'name');
+        
         $tenant = Tenant::create([
             'slug' => Arr::get($data, 'slug'),
-            'name' => Arr::get($data, 'name'),
+            'name' => $tenantName,
+            'data' => [
+                'name' => $tenantName,
+            ],
         ]);
 
         $user->tenants()->syncWithoutDetaching([$tenant->getKey()]);

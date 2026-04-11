@@ -4,23 +4,28 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenant\API\Agent;
 
+use App\Actions\Tenant\Agent\CreateAgent;
+use App\Actions\Tenant\Agent\DeleteAgent;
+use App\Actions\Tenant\Agent\ListAgents;
+use App\Actions\Tenant\Agent\ShowAgent;
+use App\Actions\Tenant\Agent\UpdateAgent;
 use App\Data\Tenant\Agent\CreateAgentData;
 use App\Data\Tenant\Agent\UpdateAgentData;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Tenant\API\Agent\AgentResource;
 use App\Models\Tenant\Agent\Agent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
 
 class AgentController extends Controller
 {
-    public function index(ListAgents $action, Request $request): AnonymousResourceCollection
+    public function index(ListAgents $action, Request $request): JsonResponse
     {
         Gate::authorize('viewAny', Agent::class);
 
-        return AgentResource::collection($action($request->all()));
+        return response()->json([
+            'data' => $action($request->all())->map->toArray()->values(),
+        ]);
     }
 
     public function store(CreateAgentData $data, CreateAgent $action): JsonResponse
@@ -39,10 +44,8 @@ class AgentController extends Controller
     {
         Gate::authorize('view', $agent);
 
-        $agentData = $action($agent);
-
         return response()->json([
-            'data' => $agentData->toArray(),
+            'data' => $action($agent)->toArray(),
         ]);
     }
 

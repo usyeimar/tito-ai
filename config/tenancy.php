@@ -208,7 +208,8 @@ return [
         // Bootstrappers\RedisTenancyBootstrapper::class, // Note: phpredis is needed
 
         // Adds support for the database session driver
-        Bootstrappers\DatabaseSessionBootstrapper::class,
+        // Bootstrappers\DatabaseSessionBootstrapper::class,
+        \App\Services\Central\Tenancy\Bootstrappers\PassportCookieBootstrapper::class,
 
         // Configurable bootstrappers
         Bootstrappers\TenantConfigBootstrapper::class,

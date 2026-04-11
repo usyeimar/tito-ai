@@ -6,6 +6,7 @@
 /.pint.cache
 /public/hot
 /public/storage
+/public/build
 /*.log
 /.env
 /.env.bak

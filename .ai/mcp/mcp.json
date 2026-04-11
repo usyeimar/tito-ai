@@ -7,6 +7,14 @@
         "/home/usyeimar/workspace/projects/itm/app.tito.ai/artisan",
         "boost:mcp"
       ]
+    },
+    "shadcn": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "shadcn@latest",
+        "mcp"
+      ]
     }
   }
 }

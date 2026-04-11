@@ -10,12 +10,24 @@ use Illuminate\Support\Collection;
 
 final class ListAgents
 {
-    /** @return Collection<int, AgentData> */
-    public function __invoke(): Collection
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return Collection<int, AgentData>
+     */
+    public function __invoke(array $filters = []): Collection
     {
-        return Agent::with(['settings', 'tools', 'deployments'])
-            ->orderBy('name')
-            ->get()
-            ->map(fn (Agent $agent) => AgentData::fromAgent($agent));
+        $query = Agent::with(['settings', 'tools', 'deployments'])
+            ->orderBy('name');
+
+        if (! empty($filters['search'])) {
+            $search = '%'.$filters['search'].'%';
+            $query->where(function ($q) use ($search): void {
+                $q->where('name', 'ilike', $search)
+                    ->orWhere('slug', 'ilike', $search)
+                    ->orWhere('description', 'ilike', $search);
+            });
+        }
+
+        return $query->get()->map(fn (Agent $agent) => AgentData::fromAgent($agent));
     }
 }

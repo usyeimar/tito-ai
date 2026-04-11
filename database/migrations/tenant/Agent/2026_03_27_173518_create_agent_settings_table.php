@@ -13,8 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('agent_settings', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->foreignUuid('agent_id')->unique()->constrained('agents')->cascadeOnDelete();
+            $table->ulid('id')->primary();
+            $table->foreignUlid('agent_id')->unique()->constrained('agents')->cascadeOnDelete();
 
             $table->jsonb('brain_config')->default('{}');
             $table->jsonb('runtime_config')->default('{}');

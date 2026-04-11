@@ -6,6 +6,7 @@ use App\Exceptions\Renderers\ApiErrorRenderer;
 use App\Exceptions\TenantMailNotConfiguredException;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Http\Request;
+use Stancl\Tenancy\Exceptions\TenantCouldNotBeIdentifiedByPathException;
 
 final class SystemExceptionRenderer extends ApiErrorRenderer
 {
@@ -22,6 +23,19 @@ final class SystemExceptionRenderer extends ApiErrorRenderer
                 'Tenant Mail Not Configured',
                 $e->getMessage(),
             );
+        });
+
+        $exceptions->render(function (TenantCouldNotBeIdentifiedByPathException $e, Request $request) {
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return self::singleErrorResponse(
+                    404,
+                    'TENANT_NOT_FOUND',
+                    'Tenant Not Found',
+                    'The requested workspace could not be found.',
+                );
+            }
+
+            return redirect()->route('workspaces');
         });
     }
 }

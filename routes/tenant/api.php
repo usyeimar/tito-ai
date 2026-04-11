@@ -32,8 +32,8 @@ use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
 */
 
 Route::middleware([
-    'api',
     InitializeTenancyByPath::class,
+    'api',
 ])->prefix('{tenant}')->group(function () {
     Route::post('/api/impersonate/{token}', [TenantImpersonationController::class, 'start']);
     Route::post('/api/refresh', [TenantTokenController::class, 'refresh'])->middleware('throttle:auth.refresh');
@@ -48,8 +48,8 @@ Route::middleware([
 });
 
 Route::middleware([
-    'api',
     InitializeTenancyByPath::class,
+    'api',
     AuditTenantRequest::class,
     'auth:tenant-api',
     CaptureActivityContext::class,

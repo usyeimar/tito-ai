@@ -237,6 +237,11 @@ class TenancyServiceProvider extends ServiceProvider
                     ->group(base_path('routes/tenant/api.php'));
             }
 
+            if (file_exists(base_path('routes/tenant/web.php'))) {
+                RouteFacade::namespace(static::$controllerNamespace)
+                    ->group(base_path('routes/tenant/web.php'));
+            }
+
             // $this->cloneRoutes();
         });
     }
