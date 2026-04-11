@@ -27,8 +27,6 @@ it('only runs required tenant seeders when development seeders are disabled', fu
     Bus::assertNothingDispatched();
 });
 
-
-
 it('dispatches development tenant seeders after the response for http provisioning', function (): void {
     Bus::fake();
 

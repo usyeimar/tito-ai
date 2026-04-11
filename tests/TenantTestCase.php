@@ -15,6 +15,7 @@ abstract class TenantTestCase extends TestCase
     use RefreshDatabase;
 
     protected ?Tenant $tenant = null;
+
     protected ?User $user = null;
 
     protected function setUp(): void
@@ -39,12 +40,12 @@ abstract class TenantTestCase extends TestCase
     {
         $tenant = Tenant::create([
             'name' => 'Test Tenant',
-            'slug' => 'test-' . Str::random(6),
+            'slug' => 'test-'.Str::random(6),
         ]);
 
         // Create domain for routing
         $tenant->domains()->create([
-            'domain' => $tenant->slug . '.localhost',
+            'domain' => $tenant->slug.'.localhost',
         ]);
 
         return $tenant;
@@ -70,7 +71,7 @@ abstract class TenantTestCase extends TestCase
 
     protected function ensurePassportKeys(): void
     {
-        if (!file_exists(storage_path('oauth-private.key'))) {
+        if (! file_exists(storage_path('oauth-private.key'))) {
             Artisan::call('passport:keys', ['--force' => true]);
         }
     }

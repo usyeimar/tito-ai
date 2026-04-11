@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Http\Controllers\Tenant\Web\Agent\AgentPageController;
 use App\Http\Controllers\Tenant\Web\KnowledgeBase\KnowledgeBasePageController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+use Laravel\Passport\Http\Middleware\CreateFreshApiToken;
+use Stancl\Tenancy\Features\UserImpersonation;
 use Stancl\Tenancy\Middleware\InitializeTenancyByPath;
 
 /*
@@ -22,7 +25,7 @@ Route::middleware([
     InitializeTenancyByPath::class,
 ])->prefix('{tenant}')->group(function (): void {
     Route::get('/impersonate/{token}', function (string $token) {
-        return \Stancl\Tenancy\Features\UserImpersonation::makeResponse($token);
+        return UserImpersonation::makeResponse($token);
     })->name('tenant.impersonate');
 });
 
@@ -30,10 +33,10 @@ Route::middleware([
     'web',
     InitializeTenancyByPath::class,
     'auth:tenant',
-    \Laravel\Passport\Http\Middleware\CreateFreshApiToken::using('tenant'),
+    CreateFreshApiToken::using('tenant'),
 ])->prefix('{tenant}')->group(function (): void {
     Route::get('/dashboard', function () {
-        return \Inertia\Inertia::render('dashboard');
+        return Inertia::render('dashboard');
     })->name('tenant.dashboard');
 
     Route::prefix('agents')->name('tenant.agents.')->group(function (): void {

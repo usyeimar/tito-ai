@@ -25,8 +25,8 @@ class KnowledgeBaseCategoryController extends Controller
     public function store(CreateKnowledgeBaseCategoryData $data, KnowledgeBase $knowledgeBase)
     {
         $attributes = $data->toArray();
-        $attributes['slug'] = Str::slug($data->name) . '-' . Str::random(5);
-        
+        $attributes['slug'] = Str::slug($data->name).'-'.Str::random(5);
+
         // Ensure the category is linked to the current Knowledge Base from the route
         $attributes['knowledge_base_id'] = $knowledgeBase->id;
 
@@ -40,7 +40,7 @@ class KnowledgeBaseCategoryController extends Controller
         $attributes = array_filter($data->toArray(), fn ($value) => $value !== null);
 
         if (isset($attributes['name'])) {
-            $attributes['slug'] = Str::slug($attributes['name']) . '-' . Str::random(5);
+            $attributes['slug'] = Str::slug($attributes['name']).'-'.Str::random(5);
         }
 
         $category->update($attributes);

@@ -20,7 +20,7 @@ class KnowledgeBasePageController extends Controller
                 'slug' => tenant('slug'),
             ],
             // In a real app we'd fetch categories/documents here
-            'documents' => []
+            'documents' => [],
         ]);
     }
 }

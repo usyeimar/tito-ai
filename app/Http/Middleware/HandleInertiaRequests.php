@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Central\Auth\Authentication\CentralUser;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -39,9 +40,9 @@ class HandleInertiaRequests extends Middleware
         $workspaces = [];
 
         if ($user) {
-            $centralUser = $user instanceof \App\Models\Central\Auth\Authentication\CentralUser
+            $centralUser = $user instanceof CentralUser
                 ? $user
-                : \App\Models\Central\Auth\Authentication\CentralUser::where('global_id', $user->global_id)->first();
+                : CentralUser::where('global_id', $user->global_id)->first();
 
             if ($centralUser) {
                 $workspaces = $centralUser->tenants()->select('tenants.id', 'name', 'slug')->get();

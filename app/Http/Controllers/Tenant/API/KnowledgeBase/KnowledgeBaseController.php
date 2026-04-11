@@ -17,14 +17,14 @@ class KnowledgeBaseController extends Controller
     public function index()
     {
         $knowledgeBases = KnowledgeBase::query()->paginate();
-        
+
         return KnowledgeBaseData::collection($knowledgeBases);
     }
 
     public function store(CreateKnowledgeBaseData $data)
     {
         $attributes = $data->toArray();
-        $attributes['slug'] = Str::slug($data->name) . '-' . Str::random(5);
+        $attributes['slug'] = Str::slug($data->name).'-'.Str::random(5);
 
         $knowledgeBase = KnowledgeBase::create($attributes);
 
@@ -41,7 +41,7 @@ class KnowledgeBaseController extends Controller
         $attributes = array_filter($data->toArray(), fn ($value) => $value !== null);
 
         if (isset($attributes['name'])) {
-            $attributes['slug'] = Str::slug($attributes['name']) . '-' . Str::random(5);
+            $attributes['slug'] = Str::slug($attributes['name']).'-'.Str::random(5);
         }
 
         $knowledgeBase->update($attributes);

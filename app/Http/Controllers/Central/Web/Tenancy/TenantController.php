@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Central\Web\Tenancy;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Central\API\Tenancy\StoreTenantRequest;
 use App\Http\Resources\Central\API\Tenancy\TenantResource;
+use App\Models\Central\Tenancy\Tenant;
 use App\Models\Central\Tenancy\TenantInvitation;
+use App\Models\Tenant\Auth\Authentication\User;
 use App\Services\Central\Tenancy\TenantService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -54,7 +56,7 @@ class TenantController extends Controller
         return redirect()->route('workspaces');
     }
 
-    public function enter(Request $request, \App\Models\Central\Tenancy\Tenant $tenant)
+    public function enter(Request $request, Tenant $tenant)
     {
         $user = $request->user();
 
@@ -62,7 +64,7 @@ class TenantController extends Controller
             abort(403, 'You do not have access to this workspace.');
         }
 
-        $tenantUserId = $tenant->run(fn () => \App\Models\Tenant\Auth\Authentication\User::query()
+        $tenantUserId = $tenant->run(fn () => User::query()
             ->where('global_id', $user->global_id)
             ->where('is_active', true)
             ->value('id'));
@@ -72,12 +74,12 @@ class TenantController extends Controller
         }
 
         $redirectUrl = route('tenant.dashboard', ['tenant' => $tenant->slug]);
-        
+
         $token = tenancy()->impersonate($tenant, (string) $tenantUserId, $redirectUrl, 'tenant');
 
         return redirect()->route('tenant.impersonate', [
             'tenant' => $tenant->slug,
-            'token' => $token->token
+            'token' => $token->token,
         ]);
     }
 }

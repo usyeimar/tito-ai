@@ -12,7 +12,7 @@ class ActivityEventResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => (string)$this->id,
+            'id' => (string) $this->id,
             'occurred_at' => $this->occurred_at,
             'event_type' => $this->event_type,
             'origin' => $this->origin,
@@ -23,7 +23,7 @@ class ActivityEventResource extends JsonResource
                 'label' => $this->subject_label,
             ],
             'related' => $this->whenLoaded('relations', function (): array {
-                return $this->relations->map(static fn($relation): array => [
+                return $this->relations->map(static fn ($relation): array => [
                     'type' => $relation->related_type,
                     'id' => $relation->related_id,
                     'label' => $relation->related_label,
@@ -41,7 +41,7 @@ class ActivityEventResource extends JsonResource
                 'label' => $this->workflow_actor_label,
             ],
             'workflow_run_id' => $this->workflow_run_id,
-            'is_redacted' => (bool)data_get($this->metadata, 'redaction_applied', false),
+            'is_redacted' => (bool) data_get($this->metadata, 'redaction_applied', false),
             'changes' => $this->changes ?? [],
             'metadata' => $this->metadata ?? [],
         ];

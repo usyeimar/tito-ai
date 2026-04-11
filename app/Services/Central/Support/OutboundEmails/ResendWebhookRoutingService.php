@@ -8,9 +8,6 @@ class ResendWebhookRoutingService
 {
     /**
      * Extracts tenant routing information from webhook tags.
-     *
-     * @param array $payload
-     * @return array|null
      */
     public function extractTenantRouting(array $payload): ?array
     {
@@ -34,7 +31,7 @@ class ResendWebhookRoutingService
             if (isset($tag['name']) && $tag['name'] === 'tenant_id') {
                 return ['tenant_id' => $tag['value']];
             }
-            
+
             // Handle direct key-value map
             if (isset($tag['tenant_id'])) {
                 return ['tenant_id' => $tag['tenant_id']];

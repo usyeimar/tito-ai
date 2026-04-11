@@ -15,7 +15,7 @@ class RoleResource extends JsonResource
         });
 
         return [
-            'id' => (string)$this->id,
+            'id' => (string) $this->id,
             'name' => $this->name,
             'permissions' => $permissions ?? [],
             'is_system' => in_array($this->name, RoleService::SYSTEM_ROLES, true),

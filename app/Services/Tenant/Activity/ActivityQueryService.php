@@ -11,7 +11,6 @@ use App\Models\Tenant\Commons\Emails\Email;
 use App\Models\Tenant\Commons\Files\File;
 use App\Models\Tenant\Commons\Phones\Phone;
 use App\Models\Tenant\CRM\Contacts\ContactAssignment;
-
 use App\Services\Tenant\Activity\Support\KnownMorphTypes;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -24,9 +23,9 @@ use InvalidArgumentException;
 class ActivityQueryService
 {
     public function __construct(
-//        private readonly SearchRequestNormalizer $normalizer,
-//        private readonly SortCompiler $sortCompiler,
-//        private readonly SearchContractRepository $contracts,
+        //        private readonly SearchRequestNormalizer $normalizer,
+        //        private readonly SortCompiler $sortCompiler,
+        //        private readonly SearchContractRepository $contracts,
         private readonly KnownMorphTypes $knownTypes,
     ) {}
 
@@ -37,9 +36,9 @@ class ActivityQueryService
     public function paginate(User $viewer, array $input): LengthAwarePaginator
     {
         try {
-//            $payload = $this->normalizer->normalize($input);
-//            $contract = $this->contracts->forModel(ActivityEvent::class);
-//            $sort = $this->sortCompiler->compile($payload['sort'], $contract);
+            //            $payload = $this->normalizer->normalize($input);
+            //            $contract = $this->contracts->forModel(ActivityEvent::class);
+            //            $sort = $this->sortCompiler->compile($payload['sort'], $contract);
         } catch (InvalidArgumentException $e) {
             throw ValidationException::withMessages([
                 'search' => [$e->getMessage()],
@@ -69,53 +68,53 @@ class ActivityQueryService
             $query->where('subject_type', $subjectType)->where('subject_id', $subjectId);
         }
 
-//        foreach ($payload['filters'] as $filter) {
-//            $field = (string) ($filter['field'] ?? '');
-//
-//            if (in_array($field, ['subject_type', 'subject_id', 'include_related'], true)) {
-//                continue;
-//            }
-//
-//            try {
-//                $this->applyFilter($query, $field, (string) ($filter['op'] ?? 'eq'), $filter['value'] ?? null);
-//            } catch (InvalidArgumentException $e) {
-//                throw ValidationException::withMessages([
-//                    'search' => [$e->getMessage()],
-//                ]);
-//            }
-//        }
+        //        foreach ($payload['filters'] as $filter) {
+        //            $field = (string) ($filter['field'] ?? '');
+        //
+        //            if (in_array($field, ['subject_type', 'subject_id', 'include_related'], true)) {
+        //                continue;
+        //            }
+        //
+        //            try {
+        //                $this->applyFilter($query, $field, (string) ($filter['op'] ?? 'eq'), $filter['value'] ?? null);
+        //            } catch (InvalidArgumentException $e) {
+        //                throw ValidationException::withMessages([
+        //                    'search' => [$e->getMessage()],
+        //                ]);
+        //            }
+        //        }
 
-//        $q = trim($payload['q']);
-//        if ($q !== '') {
-//            $needle = '%'.strtolower($q).'%';
-//
-//            $query->where(static function (Builder $inner) use ($needle): void {
-//                $inner->whereRaw('LOWER(event_type) LIKE ?', [$needle])
-//                    ->orWhereRaw('LOWER(subject_label) LIKE ?', [$needle])
-//                    ->orWhereRaw('LOWER(actor_label) LIKE ?', [$needle])
-//                    ->orWhereHas('relations', static function (Builder $related) use ($needle): void {
-//                        $related->whereRaw('LOWER(related_label) LIKE ?', [$needle]);
-//                    });
-//            });
-//        }
-//
-//        if ($sort === []) {
-//            $sort = ['-occurred_at', '-id'];
-//        }
+        //        $q = trim($payload['q']);
+        //        if ($q !== '') {
+        //            $needle = '%'.strtolower($q).'%';
+        //
+        //            $query->where(static function (Builder $inner) use ($needle): void {
+        //                $inner->whereRaw('LOWER(event_type) LIKE ?', [$needle])
+        //                    ->orWhereRaw('LOWER(subject_label) LIKE ?', [$needle])
+        //                    ->orWhereRaw('LOWER(actor_label) LIKE ?', [$needle])
+        //                    ->orWhereHas('relations', static function (Builder $related) use ($needle): void {
+        //                        $related->whereRaw('LOWER(related_label) LIKE ?', [$needle]);
+        //                    });
+        //            });
+        //        }
+        //
+        //        if ($sort === []) {
+        //            $sort = ['-occurred_at', '-id'];
+        //        }
 
-//        foreach ($sort as $token) {
-//            $direction = str_starts_with($token, '-') ? 'desc' : 'asc';
-//            $field = ltrim($token, '+-');
-//
-//            $query->orderBy($field, $direction);
-//        }
-//
-//        return $query->paginate(
-//            perPage: $payload['per_page'],
-//            columns: ['*'],
-//            pageName: 'page',
-//            page: $payload['page'],
-//        );
+        //        foreach ($sort as $token) {
+        //            $direction = str_starts_with($token, '-') ? 'desc' : 'asc';
+        //            $field = ltrim($token, '+-');
+        //
+        //            $query->orderBy($field, $direction);
+        //        }
+        //
+        //        return $query->paginate(
+        //            perPage: $payload['per_page'],
+        //            columns: ['*'],
+        //            pageName: 'page',
+        //            page: $payload['page'],
+        //        );
     }
 
     /**

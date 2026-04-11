@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Central\Tenancy\ImpersonationToken;
 use App\Models\Central\Tenancy\Tenant;
+use App\Services\Central\Tenancy\Bootstrappers\PassportCookieBootstrapper;
 use Stancl\Tenancy\Bootstrappers;
 use Stancl\Tenancy\Concerns\UsableWithEarlyIdentification;
 use Stancl\Tenancy\Database\Models\Domain;
@@ -209,7 +210,7 @@ return [
 
         // Adds support for the database session driver
         // Bootstrappers\DatabaseSessionBootstrapper::class,
-        \App\Services\Central\Tenancy\Bootstrappers\PassportCookieBootstrapper::class,
+        PassportCookieBootstrapper::class,
 
         // Configurable bootstrappers
         Bootstrappers\TenantConfigBootstrapper::class,

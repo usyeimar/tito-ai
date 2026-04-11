@@ -56,7 +56,7 @@ class TenantService
         $this->ensureUserHasGlobalId($user);
 
         $tenantName = Arr::get($data, 'name');
-        
+
         $tenant = Tenant::create([
             'slug' => Arr::get($data, 'slug'),
             'name' => $tenantName,

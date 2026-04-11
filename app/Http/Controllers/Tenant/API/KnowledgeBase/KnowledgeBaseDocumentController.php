@@ -31,7 +31,7 @@ class KnowledgeBaseDocumentController extends Controller
         abort_unless($categoryExists, 422, 'The category does not belong to the selected knowledge base.');
 
         $authorId = request()->user()->id;
-        $slug = Str::slug($data->title) . '-' . Str::random(5);
+        $slug = Str::slug($data->title).'-'.Str::random(5);
 
         $document = DB::transaction(function () use ($data, $authorId, $slug) {
             $doc = KnowledgeBaseDocument::create([
@@ -70,7 +70,7 @@ class KnowledgeBaseDocumentController extends Controller
 
             if ($data->title !== null) {
                 $updateAttributes['title'] = $data->title;
-                $updateAttributes['slug'] = Str::slug($data->title) . '-' . Str::random(5);
+                $updateAttributes['slug'] = Str::slug($data->title).'-'.Str::random(5);
             }
 
             if ($data->status !== null) {
@@ -80,14 +80,14 @@ class KnowledgeBaseDocumentController extends Controller
                 }
             }
 
-            if (!empty($updateAttributes)) {
+            if (! empty($updateAttributes)) {
                 $document->update($updateAttributes);
             }
 
             // Create a new version if content is provided
             if ($data->content !== null) {
                 $latestVersion = $document->versions()->max('version_number') ?? 0;
-                
+
                 $document->versions()->create([
                     'version_number' => $latestVersion + 1,
                     'content' => $data->content,

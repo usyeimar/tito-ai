@@ -7,6 +7,7 @@ use App\Models\Central\System\SystemProfilePicture as CentralSystemProfilePictur
 use App\Models\Tenant\Agent\AgentSession;
 use App\Models\Tenant\Auth\Authentication\User as TenantUser;
 use App\Models\Tenant\System\SystemProfilePicture as TenantSystemProfilePicture;
+use App\Models\User;
 use FilesystemIterator;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
@@ -216,7 +217,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Relation::enforceMorphMap([
-            'user' => \App\Models\User::class,
+            'user' => User::class,
             'central_user' => CentralUser::class,
             'tenant_user' => TenantUser::class,
             'central_system_profile_picture' => CentralSystemProfilePicture::class,

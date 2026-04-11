@@ -43,7 +43,7 @@ Route::middleware([
     Route::match(['get', 'post'], '/api/broadcasting/auth', [BroadcastController::class, 'authenticate'])
         ->middleware('auth:tenant-api');
 
-    require __DIR__ . '/api/ai/public-agents-config.php';
+    require __DIR__.'/api/ai/public-agents-config.php';
 
 });
 
@@ -84,13 +84,13 @@ Route::middleware([
 
         // System
         Route::prefix('system')->group(function () {
-            require __DIR__ . '/api/system/column-configurations.php';
-            require __DIR__ . '/api/system/user-column-configurations.php';
+            require __DIR__.'/api/system/column-configurations.php';
+            require __DIR__.'/api/system/user-column-configurations.php';
         });
 
         // Agents
         Route::prefix('ai')->group(function () {
-            require __DIR__ . '/api/ai/agents.php';
+            require __DIR__.'/api/ai/agents.php';
             // Knowledge Base
             // require __DIR__.'/api/ai/knowledge-base.php';
         });
