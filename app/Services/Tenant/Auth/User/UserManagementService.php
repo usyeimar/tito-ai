@@ -31,8 +31,8 @@ class UserManagementService
         $this->ensureCanViewUsers($actor);
 
         return QueryBuilder::for(User::class)
-            ->allowedFilters(['name', 'email'])
-            ->allowedIncludes(['roles', 'profilePicture'])
+            ->allowedFilters('name', 'email')
+            ->allowedIncludes('roles', 'profilePicture')
             ->defaultSort('name')
             ->paginate();
     }

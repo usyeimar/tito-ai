@@ -27,6 +27,7 @@ dependencies = [
     "arq>=0.26.1",
     "redis>=5.0.0",
     "prometheus-client>=0.21.1",
+    "celery>=5.4.0",
 ]
 
 [project.optional-dependencies]

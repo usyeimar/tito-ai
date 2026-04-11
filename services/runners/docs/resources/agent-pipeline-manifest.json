@@ -6,7 +6,7 @@
     "metadata": {
         "name": "Julia - Asistente Financiero Alloy",
         "slug": "julia-alloy-fintech",
-        "description": "Asistente de voz financiera para Alloy Finance. Gestiona consultas de saldo, transferencias y soporte al cliente en español colombiano.",
+        "description": "Asistente de voz financiera para Bancolombia. Gestiona consultas de saldo, transferencias y soporte al cliente en español colombiano.",
         "tags": [
             "fintech",
             "banking",

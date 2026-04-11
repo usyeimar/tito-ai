@@ -15,7 +15,8 @@ COPY pyproject.toml README.md ./
 
 # Instalar dependencias de Python
 RUN pip install --no-cache-dir pip setuptools uv && \
-    uv pip install --system -e .
+    uv pip install --system -e . && \
+    pip install prometheus-client>=0.21.1
 
 # Crear usuario sin privilegios
 RUN useradd -m -u 1000 runneruser && \
