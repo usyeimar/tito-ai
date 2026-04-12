@@ -2,13 +2,18 @@
     "agents": [
         "opencode",
         "gemini",
-        "cursor"
+        "cursor",
+        "claude_code"
     ],
     "guidelines": true,
-    "herd_mcp": false,
     "mcp": true,
     "nightwatch_mcp": false,
-    "sail": false,
+    "packages": [
+        "spatie/laravel-pdf",
+        "spatie/laravel-permission",
+        "spatie/laravel-query-builder"
+    ],
+    "sail": true,
     "skills": [
         "ai-sdk-development",
         "fortify-development",
@@ -19,6 +24,9 @@
         "wayfinder-development",
         "pest-testing",
         "inertia-react-development",
-        "tailwindcss-development"
+        "tailwindcss-development",
+        "laravel-pdf",
+        "laravel-permission-development",
+        "laravel-query-builder"
     ]
 }

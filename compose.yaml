@@ -26,8 +26,6 @@ services:
             - pgsql
             - redis
 
-
-
     reverb:
         image: 'sail-8.5/app'
         command: php artisan reverb:start --host=${REVERB_SERVER_HOST:-0.0.0.0} --port=${REVERB_SERVER_PORT:-8080}
@@ -109,7 +107,6 @@ services:
             - app.tito.ai
             - redis
 
-
     pgsql:
         image: 'pgvector/pgvector:pg17'
         ports:
@@ -123,7 +120,7 @@ services:
         networks:
             - sail
         healthcheck:
-            test: [ 'CMD-SHELL', 'pg_isready -U ${DB_USERNAME:-postgres}' ]
+            test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME:-postgres}']
             interval: 5s
             timeout: 5s
             retries: 5
@@ -141,17 +138,16 @@ services:
             - sail
         healthcheck:
             test:
-              [
-                  'CMD',
-                  'redis-cli',
-                  '-a',
-                  '${REDIS_PASSWORD:-redissecret}',
-                  'ping',
-              ]
+                [
+                    'CMD',
+                    'redis-cli',
+                    '-a',
+                    '${REDIS_PASSWORD:-redissecret}',
+                    'ping',
+                ]
             interval: 5s
             timeout: 5s
             retries: 5
-
 
     typesense:
         image: 'typesense/typesense:28.0'
@@ -165,7 +161,7 @@ services:
         networks:
             - sail
         healthcheck:
-            test: [ 'CMD', 'curl', '-f', 'http://127.0.0.1:8108/health' ]
+            test: ['CMD', 'curl', '-f', 'http://127.0.0.1:8108/health']
             interval: 10s
             timeout: 5s
             retries: 3
@@ -217,7 +213,6 @@ services:
         networks:
             - sail
 
-
     cloudflared:
         image: 'cloudflare/cloudflared:latest'
         ports:
@@ -249,6 +244,17 @@ services:
             ANTHROPIC_API_KEY: '${ANTHROPIC_API_KEY:-}'
             DEEPGRAM_API_KEY: '${DEEPGRAM_API_KEY:-}'
             CARTESIA_API_KEY: '${CARTESIA_API_KEY:-}'
+            SIP_ENABLED: 'true'
+            SIP_TRANSPORT: '${SIP_TRANSPORT:-audiosocket}'
+            ASTERISK_AMI_HOST: 'asterisk'
+            ASTERISK_AMI_PORT: '5038'
+            ASTERISK_AMI_USER: 'tito'
+            ASTERISK_AMI_SECRET: 'tito'
+            ASTERISK_ARI_HOST: 'asterisk'
+            ASTERISK_ARI_PORT: '8088'
+            ASTERISK_ARI_USER: '${ASTERISK_ARI_USER:-tito-ai}'
+            ASTERISK_ARI_PASSWORD: '${ASTERISK_ARI_PASSWORD:-tito-ari-secret}'
+            ASTERISK_ARI_APP: '${ASTERISK_ARI_APP:-tito-ai}'
         volumes:
             - './services/runners/app:/app/app'
         env_file:
@@ -258,6 +264,33 @@ services:
         depends_on:
             redis:
                 condition: service_healthy
+
+    asterisk:
+        image: andrius/asterisk:latest
+        container_name: apptitoai-asterisk
+        ports:
+            - '5060:5060/udp'
+            - '5060:5060/tcp'
+            - '8088:8088'
+            - '10000-10100:10000-10100/udp'
+        volumes:
+            - ./services/runners/config/asterisk:/etc/asterisk:ro
+            - asterisk-data:/var/lib/asterisk
+            - asterisk-log:/var/log/asterisk
+        environment:
+            - ASTERISK_UID=1000
+            - ASTERISK_GID=1000
+        networks:
+            - sail
+        depends_on:
+            pipecat-runners-api:
+                condition: service_started
+        restart: unless-stopped
+        healthcheck:
+            test: ['CMD', 'asterisk', '-rx', 'core show version']
+            interval: 30s
+            timeout: 10s
+            retries: 3
 
 networks:
     sail:
@@ -277,4 +310,8 @@ volumes:
     sail-langfuse:
         driver: local
     sail-pipecat:
+        driver: local
+    asterisk-data:
+        driver: local
+    asterisk-log:
         driver: local

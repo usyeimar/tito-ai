@@ -22,6 +22,7 @@ Sample rates:
 import asyncio
 import logging
 import struct
+import uuid as uuid_mod
 from dataclasses import dataclass, field
 from typing import Callable, Awaitable, Optional, Dict
 
@@ -71,9 +72,9 @@ class AudioSocketConnection:
         if not self.connected:
             return False
         try:
-            frame = (
-                struct.pack("!BH", AUDIOSOCKET_TYPE_AUDIO, len(audio_data)) + audio_data
-            )
+            # Use the same audio type that Asterisk sent to us
+            audio_type = getattr(self, "_audio_type", AUDIOSOCKET_TYPE_AUDIO)
+            frame = struct.pack("!BH", audio_type, len(audio_data)) + audio_data
             self.writer.write(frame)
             await self.writer.drain()
             return True
@@ -81,6 +82,30 @@ class AudioSocketConnection:
             logger.warning(f"[{self.channel_uuid}] Send error: {e}")
             self.connected = False
             self._disconnect_event.set()
+            return False
+
+    async def send_silence(
+        self, audio_type: int = AUDIOSOCKET_TYPE_AUDIO, duration_ms: int = 20
+    ) -> bool:
+        """Send a silence frame to keep the AudioSocket alive.
+
+        This prevents app_audiosocket from timing out (2s inactivity)
+        while the pipeline initializes.
+        """
+        if not self.connected:
+            return False
+        try:
+            rate_info = AUDIO_SAMPLE_RATES.get(audio_type)
+            sample_rate = rate_info[0] if rate_info else 8000
+            # 16-bit PCM silence: 2 bytes per sample
+            num_samples = int(sample_rate * duration_ms / 1000)
+            silence = b"\x00" * (num_samples * 2)
+            frame = struct.pack("!BH", audio_type, len(silence)) + silence
+            self.writer.write(frame)
+            await self.writer.drain()
+            return True
+        except (ConnectionError, OSError) as e:
+            logger.warning(f"[{self.channel_uuid}] Silence send error: {e}")
             return False
 
     async def send_hangup(self):
@@ -203,6 +228,10 @@ class AudioSocketServer:
             self._connections[channel_uuid] = conn
             logger.info(f"[{channel_uuid}] AudioSocket established from {peer_str}")
 
+            # Send immediate silence to prevent app_audiosocket 2s inactivity timeout.
+            # The pipeline takes ~3s to initialize; without this, Asterisk hangs up.
+            await conn.send_silence()
+
             if self._on_connection:
                 await self._on_connection(conn)
 
@@ -224,6 +253,9 @@ class AudioSocketServer:
             return None
 
         payload = await reader.readexactly(length)
+        if length == 16:
+            # Asterisk sends UUID as 16 raw binary bytes
+            return str(uuid_mod.UUID(bytes=payload))
         return payload.decode("utf-8").strip()
 
 

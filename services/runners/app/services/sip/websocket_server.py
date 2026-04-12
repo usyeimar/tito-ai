@@ -244,13 +244,16 @@ class WebSocketServer:
     def connections(self) -> Dict[str, WebSocketConnection]:
         return self._connections
 
+    def set_connection_handler(self, handler: OnConnectionCallback):
+        """Set the connection handler after initialization."""
+        self._on_connection = handler
+
     async def start(self):
         """Start the WebSocket server."""
         self._server = await websockets.serve(
             self._handle_client,
             self._host,
             self._port,
-            process_request=self._process_media_request,
         )
         addr = self._server.sockets[0].getsockname()
         logger.info(f"WebSocket server listening on ws://{addr[0]}:{addr[1]}")
@@ -266,23 +269,22 @@ class WebSocketServer:
             await self._server.wait_closed()
             logger.info("WebSocket server stopped")
 
-    async def _process_media_request(self, path: str) -> bool:
-        """Handle incoming WebSocket upgrade request.
+    async def _handle_client(self, websocket):
+        """Handle a new WebSocket connection from Asterisk.
 
-        Asterisk connects to /media/<connection_id> for incoming
-        or waits for the app to connect for outgoing.
+        In websockets 14.x, this receives only the connection object.
+        Path is available via websocket.request.path
         """
-        return path.startswith("/media/")
+        # Validate path - only accept /media/ connections
+        path = websocket.request.path if hasattr(websocket, "request") else "/"
+        if not path.startswith("/media/"):
+            logger.warning(f"Rejected WebSocket connection to {path}")
+            await websocket.close(1008, "Invalid path")
+            return
 
-    async def _handle_client(
-        self,
-        websocket: websockets.WebSocketServerProtocol,
-        path: str,
-    ):
-        """Handle a new WebSocket connection from Asterisk."""
-        peer = websocket.remote_role
+        peer = websocket.remote_address
         peer_str = f"{peer[0]}:{peer[1]}" if peer else "unknown"
-        logger.info(f"WebSocket connection from {peer_str}")
+        logger.info(f"WebSocket connection from {peer_str} on {path}")
 
         conn = None
         try:

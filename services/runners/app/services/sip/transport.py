@@ -17,9 +17,12 @@ Based on the same patterns as WebsocketServerTransport.
 """
 
 import asyncio
+import audioop
 import time
 import logging
 from typing import Optional
+
+import websockets
 
 from pipecat.frames.frames import (
     CancelFrame,
@@ -39,8 +42,10 @@ from app.services.sip.audiosocket_server import (
     AudioSocketConnection,
     read_audiosocket_frames,
     AUDIOSOCKET_TYPE_AUDIO,
+    AUDIOSOCKET_TYPE_AUDIO_BASE,
     AUDIOSOCKET_TYPE_HANGUP,
     AUDIO_SAMPLE_RATE,
+    AUDIO_SAMPLE_RATES,
 )
 
 logger = logging.getLogger(__name__)
@@ -49,8 +54,8 @@ logger = logging.getLogger(__name__)
 class SIPAudioSocketParams(TransportParams):
     """Parameters for the SIP AudioSocket transport."""
 
-    audio_in_sample_rate: Optional[int] = AUDIO_SAMPLE_RATE
-    audio_out_sample_rate: Optional[int] = AUDIO_SAMPLE_RATE
+    audio_in_sample_rate: Optional[int] = 16000  # Pipeline rate (Deepgram/Cartesia)
+    audio_out_sample_rate: Optional[int] = 16000  # Pipeline rate (Deepgram/Cartesia)
     audio_in_channels: int = 1
     audio_out_channels: int = 1
     audio_in_enabled: bool = True
@@ -71,28 +76,62 @@ class SIPAudioSocketInputTransport(BaseInputTransport):
         self._params = params
         self._read_task: Optional[asyncio.Task] = None
         self._initialized = False
+        self._pending_conn: Optional[AudioSocketConnection] = None
+
+    def set_connection(self, conn: AudioSocketConnection):
+        """Store connection to start reading when pipeline is ready."""
+        self._pending_conn = conn
 
     async def start(self, frame: StartFrame):
         await super().start(frame)
         if self._initialized:
             return
         self._initialized = True
+        # Start reading now that TaskManager is initialized
+        if self._pending_conn:
+            self._start_reading(self._pending_conn)
         await self.set_transport_ready(frame)
 
     def start_reading(self, conn: AudioSocketConnection):
         """Start reading audio from the AudioSocket connection."""
+        if self._initialized:
+            self._start_reading(conn)
+        else:
+            # Defer until start() is called by PipelineRunner
+            self._pending_conn = conn
+
+    def _start_reading(self, conn: AudioSocketConnection):
         if self._read_task and not self._read_task.done():
             self._read_task.cancel()
         self._read_task = self.create_task(self._read_audio_loop(conn))
 
     async def _read_audio_loop(self, conn: AudioSocketConnection):
         """Read audio frames from AudioSocket and push them into the pipeline."""
+        pipeline_rate = self._params.audio_in_sample_rate or 16000
+        resample_state = None
         try:
             async for frame_type, payload in read_audiosocket_frames(conn):
-                if frame_type == AUDIOSOCKET_TYPE_AUDIO and payload:
+                # Accept any audio type (0x10-0x18 = different sample rates)
+                if AUDIOSOCKET_TYPE_AUDIO_BASE <= frame_type <= 0x18 and payload:
+                    rate_info = AUDIO_SAMPLE_RATES.get(frame_type)
+                    ast_rate = rate_info[0] if rate_info else 8000
+                    # Store the actual audio type for output matching
+                    if not hasattr(conn, "_audio_type"):
+                        conn._audio_type = frame_type
+                        conn._audio_rate = ast_rate
+                        logger.info(
+                            f"[{conn.channel_uuid}] AudioSocket audio: type=0x{frame_type:02x} "
+                            f"asterisk={ast_rate}Hz pipeline={pipeline_rate}Hz"
+                        )
+                    # Resample if Asterisk rate differs from pipeline rate
+                    audio_data = payload
+                    if ast_rate != pipeline_rate:
+                        audio_data, resample_state = audioop.ratecv(
+                            payload, 2, 1, ast_rate, pipeline_rate, resample_state
+                        )
                     audio_frame = InputAudioRawFrame(
-                        audio=payload,
-                        sample_rate=AUDIO_SAMPLE_RATE,
+                        audio=audio_data,
+                        sample_rate=pipeline_rate,
                         num_channels=1,
                     )
                     await self.push_audio_frame(audio_frame)
@@ -140,6 +179,7 @@ class SIPAudioSocketOutputTransport(BaseOutputTransport):
         self._send_interval = 0
         self._next_send_time = 0
         self._initialized = False
+        self._resample_state = None
 
     def set_connection(self, conn: AudioSocketConnection):
         self._conn = conn
@@ -168,13 +208,23 @@ class SIPAudioSocketOutputTransport(BaseOutputTransport):
         await super().process_frame(frame, direction)
         if isinstance(frame, InterruptionFrame):
             self._next_send_time = 0
+            self._resample_state = None
 
     async def write_audio_frame(self, frame: OutputAudioRawFrame) -> bool:
         """Write TTS audio back to Asterisk via AudioSocket."""
         if not self._conn or not self._conn.connected:
             return False
 
-        success = await self._conn.send_audio(frame.audio)
+        audio_data = frame.audio
+        pipeline_rate = self._params.audio_out_sample_rate or 16000
+        ast_rate = getattr(self._conn, "_audio_rate", 8000)
+
+        if pipeline_rate != ast_rate:
+            audio_data, self._resample_state = audioop.ratecv(
+                audio_data, 2, 1, pipeline_rate, ast_rate, self._resample_state
+            )
+
+        success = await self._conn.send_audio(audio_data)
 
         # Throttle to simulate audio device timing
         current_time = time.monotonic()
@@ -351,7 +401,11 @@ class SIPWebSocketInputTransport(BaseInputTransport):
         await self.set_transport_ready(frame)
 
     def start_reading(self, conn: WSConnection):
-        """Start reading audio from the WebSocket connection."""
+        """Start reading audio from the WebSocket connection.
+
+        Note: This should only be called after the pipeline is initialized
+        (i.e., from SIPWebSocketTransport.start(), not directly).
+        """
         if self._read_task and not self._read_task.done():
             self._read_task.cancel()
         self._read_task = self.create_task(self._read_websocket_audio(conn))
@@ -359,10 +413,29 @@ class SIPWebSocketInputTransport(BaseInputTransport):
     async def _read_websocket_audio(self, conn: WSConnection):
         """Read audio frames from WebSocket and push into pipeline."""
         try:
-            # Audio comes as binary frames - handled in main loop
-            pass
+            # Read binary audio frames from WebSocket
+            # conn.websocket is the underlying websockets connection
+            websocket = conn.websocket
+
+            async for message in websocket:
+                if isinstance(message, bytes):
+                    # Binary frame = audio data (slin16 format from Asterisk)
+                    # Create InputAudioRawFrame and push to pipeline
+                    frame = InputAudioRawFrame(
+                        audio=message,
+                        sample_rate=16000,  # slin16 = 16kHz
+                        num_channels=1,
+                    )
+                    await self.push_frame(frame)
+                elif isinstance(message, str):
+                    # Text frame = control event (DTMF, etc.)
+                    # Handle if needed
+                    pass
+
         except asyncio.CancelledError:
             raise
+        except websockets.exceptions.ConnectionClosed:
+            logger.info("WebSocket connection closed")
         except Exception as e:
             logger.error(f"WebSocket read error: {e}")
 
@@ -468,6 +541,8 @@ class SIPWebSocketTransport(BaseTransport):
         self._input: Optional[SIPWebSocketInputTransport] = None
         self._output: Optional[SIPWebSocketOutputTransport] = None
         self._disconnect_event = asyncio.Event()
+        self._initialized = False
+        self._pending_conn: Optional[WSConnection] = None
 
         self._register_event_handler("on_sip_connected")
         self._register_event_handler("on_sip_disconnected")
@@ -497,9 +572,20 @@ class SIPWebSocketTransport(BaseTransport):
         return self._output
 
     async def start(self):
-        """Start the transport and begin reading audio."""
+        """Start the transport and begin reading audio.
+
+        This is called by PipelineRunner after the TaskManager is initialized.
+        """
+        if self._initialized:
+            return
+        self._initialized = True
+
+        # Start reading now that TaskManager is initialized
         if self._input:
-            self._input.start_reading(self._conn)
+            if self._pending_conn:
+                self._input.start_reading(self._pending_conn)
+            else:
+                self._input.start_reading(self._conn)
 
         self._monitor_task = asyncio.create_task(self._monitor_connection())
 

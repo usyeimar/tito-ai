@@ -99,13 +99,36 @@ class CentralUser extends Authenticatable implements MustVerifyEmail, OAuthentic
     public function resendEmailVerificationNotification(string $reason = 'signup'): bool
     {
         if ($this->hasVerifiedEmail()) {
+            Log::info('Cannot resend verification email - already verified', [
+                'user_id' => $this->id,
+                'email' => $this->email,
+            ]);
+
             return false;
         }
 
-        $this->sendVerificationNotification($reason);
-        $this->markEmailVerificationSent();
+        try {
+            $this->sendVerificationNotification($reason);
+            $this->markEmailVerificationSent();
 
-        return true;
+            Log::info('Verification email notification sent', [
+                'user_id' => $this->id,
+                'email' => $this->email,
+                'reason' => $reason,
+            ]);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Failed to send verification email notification', [
+                'user_id' => $this->id,
+                'email' => $this->email,
+                'reason' => $reason,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return false;
+        }
     }
 
     public function markEmailAsVerified(): bool

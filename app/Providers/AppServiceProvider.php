@@ -108,7 +108,8 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('auth.email_verification', function (Request $request): Limit {
-            $email = Str::lower((string) $request->input('email', ''));
+            // Use authenticated user's email if available, fallback to input email
+            $email = Str::lower((string) ($request->user()?->email ?? $request->input('email', 'guest')));
 
             return Limit::perMinute(3)->by($email.'|'.$request->ip());
         });

@@ -6,15 +6,19 @@ namespace App\Actions\Tenant\Agent;
 
 use App\Data\Tenant\Agent\AgentData;
 use App\Data\Tenant\Agent\UpdateAgentData;
+use App\Jobs\Tenant\Agent\SyncAgentToRedisJob;
 use App\Models\Tenant\Agent\Agent;
 use App\Models\Tenant\Agent\AgentSetting;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 final class UpdateAgent
 {
     public function __invoke(Agent $agent, UpdateAgentData $data): AgentData
     {
         return DB::transaction(function () use ($agent, $data): AgentData {
+            $originalSlug = $agent->slug;
+
             $agent->fill(array_filter([
                 'name' => $data->name,
                 'slug' => $data->slug,
@@ -44,7 +48,29 @@ final class UpdateAgent
                 );
             }
 
-            return AgentData::fromAgent($agent->fresh(['settings']));
+            $agent->load(['settings']);
+
+            // Sync agent to Redis when configuration changes
+            $this->syncToRedis($agent);
+
+            return AgentData::fromAgent($agent);
         });
+    }
+
+    /**
+     * Dispatch job to sync agent configuration to Redis.
+     * This allows the SIP bridge to resolve agent configs when calls arrive from Asterisk.
+     */
+    private function syncToRedis(Agent $agent): void
+    {
+        try {
+            SyncAgentToRedisJob::dispatch((string) $agent->id);
+        } catch (\Throwable $e) {
+            // Don't fail agent update if sync fails, just log it
+            Log::warning('Failed to dispatch agent sync job', [
+                'agent_id' => $agent->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }

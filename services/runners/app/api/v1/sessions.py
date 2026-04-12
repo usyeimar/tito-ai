@@ -224,9 +224,11 @@ async def _run_session(
         await engine.run()
     except asyncio.CancelledError:
         logger.info(f"session_cancelled | session_id: {session_id}")
+        await session_manager.update_session_status(session_id, "cancelled")
         raise
     except Exception as e:
         logger.error(f"session_error | session_id: {session_id} | error: {e}")
+        await session_manager.update_session_status(session_id, "error")
         # En el futuro usar emit_event_async
         try:
             await WebhookService.emit_event(
@@ -241,6 +243,7 @@ async def _run_session(
             pass
     finally:
         await task_manager.remove(session_id)
+        await session_manager.update_session_status(session_id, "completed")
         await session_manager.delete_session(session_id)
         logger.info(f"session_cleanup_complete | session_id: {session_id}")
 
@@ -546,7 +549,9 @@ async def session_audio_websocket(session_id: str, ws: WebSocket):
         stt = ServiceFactory.create_stt_service(config)
         llm = ServiceFactory.create_llm_service(config)
         tts = ServiceFactory.create_tts_service(config)
-        _llm_context, context_aggregator = setup_context(session_id, config, vad_analyzer)
+        _llm_context, context_aggregator = setup_context(
+            session_id, config, vad_analyzer
+        )
 
         from app.services.agents.pipelines.pipeline_builder import build_pipeline
 

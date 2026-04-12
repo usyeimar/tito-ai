@@ -9,6 +9,7 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class EmailVerificationController extends Controller
@@ -18,13 +19,37 @@ class EmailVerificationController extends Controller
         $reason = $request->validated('reason') ?? 'signup';
         $user = $request->user();
 
-        if ($user instanceof CentralUser && $user->hasVerifiedEmail()) {
+        if (! $user instanceof CentralUser) {
+            throw ValidationException::withMessages([
+                'email' => ['User not found.'],
+            ])->status(422);
+        }
+
+        if ($user->hasVerifiedEmail()) {
             throw ValidationException::withMessages([
                 'email' => ['This email address has already been verified.'],
             ])->status(422);
         }
 
-        $user->resendEmailVerificationNotification($reason);
+        $sent = $user->resendEmailVerificationNotification($reason);
+
+        if (! $sent) {
+            Log::warning('Failed to resend verification email', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'reason' => $reason,
+            ]);
+
+            throw ValidationException::withMessages([
+                'email' => ['Unable to send verification email. Please try again later.'],
+            ])->status(500);
+        }
+
+        Log::info('Verification email resent', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'reason' => $reason,
+        ]);
 
         return response()->json([
             'message' => 'A new verification link has been sent to your email address.',

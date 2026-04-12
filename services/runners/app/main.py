@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import sys
 import warnings
@@ -35,22 +36,34 @@ async def lifespan(app: FastAPI):
     sip_handler = None
     audiosocket_server = None
     ami_controller = None
+    ari_client = None
+    ari_handler = None
 
     if _settings.SIP_ENABLED:
+        transport_mode = _settings.SIP_TRANSPORT.lower()
         logger.info(
-            "SIP Bridge enabled — starting AudioSocket server and AMI controller"
+            f"SIP Bridge enabled — transport={transport_mode}, "
+            f"starting AudioSocket + WebSocket servers"
         )
         from app.services.sip.audiosocket_server import AudioSocketServer
+        from app.services.sip.websocket_server import WebSocketServer
         from app.services.sip.ami_controller import AMIController
         from app.services.sip.call_handler import SIPCallHandler
 
-        # AudioSocket TCP server
+        # AudioSocket TCP server (always started — used by all transport modes)
         audiosocket_server = AudioSocketServer(
             host=_settings.SIP_AUDIOSOCKET_HOST,
             port=_settings.SIP_AUDIOSOCKET_PORT,
         )
 
-        # AMI controller (optional — can work without it)
+        # WebSocket server for chan_websocket (always started)
+        websocket_server = WebSocketServer(
+            host="0.0.0.0",
+            port=9093,
+            on_connection=None,
+        )
+
+        # AMI controller (optional — used for call metadata and outbound)
         ami_controller = None
         if _settings.ASTERISK_AMI_SECRET:
             ami_controller = AMIController(
@@ -74,17 +87,88 @@ async def lifespan(app: FastAPI):
 
             _trunk_service.set_ami_controller(ami_controller)
 
-        # Wire up the call handler
+        # Wire up the WebSocket call handler
+        from app.api.v1.sip import handle_asterisk_connection
+
+        websocket_server.set_connection_handler(handle_asterisk_connection)
+
+        # AudioSocket call handler (always created — processes incoming TCP connections)
         sip_handler = SIPCallHandler(audiosocket_server, ami=ami_controller)
+
+        # ARI client + handler (started when transport=ari, or always for future use)
+        if transport_mode == "ari" or _settings.ASTERISK_ARI_PASSWORD:
+            from app.services.sip.ari_client import ARIClient
+            from app.api.v1.sip import ARIExternalMediaHandler, external_media_handler
+
+            ari_client = ARIClient(
+                host=_settings.ASTERISK_ARI_HOST,
+                port=_settings.ASTERISK_ARI_PORT,
+                username=_settings.ASTERISK_ARI_USER,
+                password=_settings.ASTERISK_ARI_PASSWORD,
+                app_name=_settings.ASTERISK_ARI_APP,
+            )
+            try:
+                await ari_client.connect()
+
+                # Create ExternalMedia handler (ARI + UDP audio)
+                ari_handler = ARIExternalMediaHandler(ari_client)
+                await ari_handler.start()
+
+                # Register handlers for ARI events
+                ari_client.on_event("StasisStart", ari_handler.handle_stasis_start)
+                ari_client.on_event("StasisEnd", ari_handler.handle_stasis_end)
+                ari_client.on_event(
+                    "ChannelHangupRequest", ari_handler.handle_channel_hangup
+                )
+
+                # Start ARI event listener as a background task
+                asyncio.create_task(ari_client.start_listening())
+
+                # Store in global for health check
+                import app.api.v1.sip as sip_module
+
+                sip_module.external_media_handler = ari_handler
+
+                logger.info(
+                    f"ARI ExternalMedia handler connected to {_settings.ASTERISK_ARI_HOST}:{_settings.ASTERISK_ARI_PORT}"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"ARI connection failed (AudioSocket/WebSocket still work): {e}"
+                )
+                import traceback
+
+                logger.error(traceback.format_exc())
+                ari_client = None
+                ari_handler = None
+
+        # Start servers
         await audiosocket_server.start()
+        await websocket_server.start()
         logger.info(
-            f"SIP Bridge ready — AudioSocket on {_settings.SIP_AUDIOSOCKET_HOST}:{_settings.SIP_AUDIOSOCKET_PORT}"
+            f"SIP Bridge ready — transport={transport_mode} | "
+            f"AudioSocket on {_settings.SIP_AUDIOSOCKET_HOST}:{_settings.SIP_AUDIOSOCKET_PORT}, "
+            f"WebSocket on 0.0.0.0:9093"
+            + (
+                f", ARI on {_settings.ASTERISK_ARI_HOST}:{_settings.ASTERISK_ARI_PORT}"
+                if ari_client
+                else ""
+            )
         )
+
+    else:
+        audiosocket_server = None
+        websocket_server = None
+        ami_controller = None
+        sip_handler = None
 
     # Expose SIP state for health check
     app.state.sip_enabled = _settings.SIP_ENABLED
+    app.state.sip_transport = getattr(_settings, "SIP_TRANSPORT", "audiosocket")
     app.state.audiosocket_server = audiosocket_server
+    app.state.websocket_server = locals().get("websocket_server")
     app.state.ami_controller = ami_controller
+    app.state.ari_client = ari_client if _settings.SIP_ENABLED else None
 
     yield
 
@@ -108,6 +192,15 @@ async def lifespan(app: FastAPI):
     if audiosocket_server:
         await audiosocket_server.stop()
         logger.info("AudioSocket server stopped")
+    if websocket_server:
+        await websocket_server.stop()
+        logger.info("WebSocket server stopped")
+    if ari_handler and hasattr(ari_handler, "stop"):
+        await ari_handler.stop()
+        logger.info("ARI ExternalMedia handler stopped")
+    if ari_client:
+        await ari_client.disconnect()
+        logger.info("ARI client disconnected")
     if ami_controller:
         await ami_controller.disconnect()
         logger.info("AMI controller disconnected")
@@ -291,8 +384,10 @@ async def health():
     if sip_enabled:
         audiosocket = getattr(app.state, "audiosocket_server", None)
         ami = getattr(app.state, "ami_controller", None)
+        ari = getattr(app.state, "ari_client", None)
         result["sip"] = {
             "enabled": True,
+            "transport": getattr(app.state, "sip_transport", "audiosocket"),
             "audiosocket": {
                 "listening": audiosocket is not None
                 and audiosocket._server is not None,
@@ -302,6 +397,9 @@ async def health():
             },
             "ami": {
                 "connected": ami.connected if ami else False,
+            },
+            "ari": {
+                "connected": ari.is_connected if ari else False,
             },
         }
 

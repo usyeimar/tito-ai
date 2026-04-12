@@ -23,6 +23,7 @@ from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.frames.frames import EndFrame, LLMRunFrame, TTSSpeakFrame
 
 from app.schemas.agent import AgentConfig
+from app.services.agent_resolution_service import agent_resolution_service
 from app.services.sip.audiosocket_server import AudioSocketConnection, AudioSocketServer
 from app.services.sip.transport import SIPAudioSocketTransport, SIPAudioSocketParams
 from app.services.sip.ami_controller import AMIController
@@ -175,13 +176,10 @@ class SIPCallHandler:
     ) -> Optional[Dict[str, Any]]:
         """Resolve which trunk and agent should handle this call."""
 
-        # Try inbound resolution if we have an extension
+        all_trunk_keys = await trunk_service._redis.keys("trunk:index:*")
+
+        # Try exact extension match first
         if called_extension:
-            # Search all workspaces (in production, the workspace would be
-            # determined from the SIP domain or trunk credentials)
-            # For now, try all trunks
-            # TODO: Optimize with a reverse lookup index
-            all_trunk_keys = await trunk_service._redis.keys("trunk:index:*")
             for key in all_trunk_keys:
                 workspace = key.split(":")[-1]
                 result = await trunk_service.resolve_inbound_call(
@@ -190,9 +188,13 @@ class SIPCallHandler:
                 if result:
                     return result
 
-        # Try register resolution (the trunk_id might be embedded in the channel)
-        # Asterisk can set channel variables that map to trunk_id
-        # For now, this is a placeholder for when AMI provides trunk context
+        # Fallback: try wildcard "*" route (catch-all)
+        for key in all_trunk_keys:
+            workspace = key.split(":")[-1]
+            result = await trunk_service.resolve_inbound_call(workspace, "*")
+            if result:
+                logger.info(f"Resolved call via wildcard route | workspace={workspace}")
+                return result
 
         return None
 
@@ -201,24 +203,26 @@ class SIPCallHandler:
     ) -> Optional[AgentConfig]:
         """Fetch AgentConfig for the agent.
 
-        TODO: In production, this should:
-        1. Check Redis cache: "agent_config:{agent_id}"
-        2. If not cached, call backend API: GET /api/agents/{agent_id}/config
+        Resolution strategy:
+        1. Check Redis cache via agent_resolution_service
+        2. If not cached, call backend API
         3. Cache the result with TTL
-
-        For now, returns None — the caller must provide config or this
-        must be implemented with the backend integration.
+        4. Return None if agent not found
         """
-        # Check if there's a cached config
-        raw = await trunk_service._redis.get(f"agent_config:{agent_id}")
-        if raw:
-            import json
+        tenant_id = trunk_data.get("tenant_id")
 
-            try:
-                return AgentConfig(**json.loads(raw))
-            except Exception as e:
-                logger.warning(f"Failed to parse cached AgentConfig: {e}")
+        # Use the resolution service for cache + API fallback
+        agent_config = await agent_resolution_service.resolve_agent(
+            agent_id=agent_id,
+            tenant_id=tenant_id,
+        )
 
+        if agent_config:
+            return agent_config
+
+        logger.error(
+            f"AgentConfig not found for agent_id={agent_id} (checked cache and API)"
+        )
         return None
 
     async def _run_pipeline(
@@ -231,6 +235,18 @@ class SIPCallHandler:
         """Build and run the Pipecat pipeline for a SIP call."""
         start_time = time.monotonic()
         termination_reason = "completed"
+
+        # Start a keepalive task that sends silence every 500ms to prevent
+        # app_audiosocket's 2-second inactivity timeout while the pipeline
+        # is being constructed (~3s for VAD+STT+LLM+TTS init).
+        keepalive_running = True
+
+        async def _keepalive():
+            while keepalive_running and conn.connected:
+                await conn.send_silence()
+                await asyncio.sleep(0.5)
+
+        keepalive_task = asyncio.create_task(_keepalive())
 
         try:
             # 1. Create SIP transport
@@ -271,7 +287,7 @@ class SIPCallHandler:
             tts = ServiceFactory.create_tts_service(config)
 
             # 3. Setup context
-            context_aggregator = setup_context(
+            context, context_aggregator = setup_context(
                 session_id, config, SileroVADAnalyzer(params=vad_params)
             )
 
@@ -357,7 +373,15 @@ class SIPCallHandler:
                     },
                 )
 
-            # 7. Start transport and run pipeline
+            # 7. Stop keepalive — pipeline is built, transport will handle audio now
+            keepalive_running = False
+            keepalive_task.cancel()
+            try:
+                await keepalive_task
+            except asyncio.CancelledError:
+                pass
+
+            # 8. Start transport and run pipeline
             await transport.start()
 
             runner = PipelineRunner()
@@ -371,6 +395,10 @@ class SIPCallHandler:
             logger.exception(f"[{session_id}] Pipeline error: {e}")
             raise
         finally:
+            # Ensure keepalive is stopped in all cases
+            keepalive_running = False
+            if not keepalive_task.done():
+                keepalive_task.cancel()
             duration = time.monotonic() - start_time
             session_duration_seconds.observe(duration)
 
@@ -379,11 +407,7 @@ class SIPCallHandler:
 
             # Send session.ended webhook
             try:
-                messages = (
-                    list(context_aggregator.context.messages)
-                    if context_aggregator
-                    else []
-                )
+                messages = list(context.messages) if context else []
                 await WebhookService.emit_event(
                     config.tenant_id,
                     config.agent_id,

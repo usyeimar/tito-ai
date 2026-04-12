@@ -80,6 +80,18 @@ class SessionManager:
         result = await self._redis.delete(f"session:{session_id}")
         return result > 0
 
+    async def update_session_status(self, session_id: str, status: str) -> bool:
+        """Actualiza el estado de la sesión en Redis."""
+        key = f"session:{session_id}"
+        data = await self._redis.get(key)
+        if data:
+            session = json.loads(data)
+            session["status"] = status
+            session["updated_at"] = time.time()
+            await self._redis.setex(key, MAX_SESSION_DURATION, json.dumps(session))
+            return True
+        return False
+
     # ── Transcript Management ────────────────────────────────────────────
 
     async def broadcast_transcript(
