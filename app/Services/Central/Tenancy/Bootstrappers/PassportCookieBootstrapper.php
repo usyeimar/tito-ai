@@ -12,11 +12,11 @@ class PassportCookieBootstrapper implements TenancyBootstrapper
 {
     public function bootstrap(Tenant $tenant): void
     {
-        Passport::cookie('tenant_token');
+        Passport::cookie(config('passport_tokens.access_cookie.tenant_name', 'tenant_access_token'));
     }
 
     public function revert(): void
     {
-        Passport::cookie('laravel_token');
+        Passport::cookie(config('passport_tokens.access_cookie.central_name', 'central_access_token'));
     }
 }

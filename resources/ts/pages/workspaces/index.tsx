@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AppLogoIcon from '@/components/app-logo-icon';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { buttonVariants } from '@/components/ui/button';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,11 +14,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppearanceToggleTab from '@/components/appearance-tabs';
-import { useAppearance } from '@/hooks/use-appearance';
 import { logout } from '@/routes';
 import { cn } from '@/lib/utils';
-import { LogIn, Monitor, Moon, Plus, Sun } from 'lucide-react';
+import { LogIn, LogOut, Plus, User } from 'lucide-react';
 
 type Workspace = {
     id: string;
@@ -40,34 +39,6 @@ type Props = {
 };
 
 type Tab = 'workspaces' | 'invitations';
-
-function ThemeToggle() {
-    const { appearance, updateAppearance } = useAppearance();
-    return (
-        <div className="flex items-center gap-0.5 rounded-lg bg-muted p-0.5">
-            {(
-                [
-                    ['light', Sun],
-                    ['dark', Moon],
-                    ['system', Monitor],
-                ] as const
-            ).map(([value, Icon]) => (
-                <button
-                    key={value}
-                    onClick={() => updateAppearance(value)}
-                    className={cn(
-                        'flex size-7 items-center justify-center rounded-md transition-colors',
-                        appearance === value
-                            ? 'bg-background text-foreground shadow-sm'
-                            : 'text-muted-foreground hover:text-foreground',
-                    )}
-                >
-                    <Icon className="size-3.5" />
-                </button>
-            ))}
-        </div>
-    );
-}
 
 export default function WorkspacesIndex({
     workspaces,
@@ -96,7 +67,7 @@ export default function WorkspacesIndex({
                     setNameError(errors.name ?? 'Something went wrong.');
                 },
                 onFinish: () => setProcessing(false),
-            }
+            },
         );
     };
 
@@ -111,16 +82,18 @@ export default function WorkspacesIndex({
             <div className="relative flex min-h-svh flex-col bg-background">
                 <header className="absolute top-0 right-0 flex items-center gap-4 px-6 py-4 text-sm text-muted-foreground">
                     <Link
-                        href="/settings/profile"
-                        className="transition-colors hover:text-foreground"
+                        href="/me/profile"
+                        className="flex items-center gap-1.5 transition-colors hover:text-foreground"
                     >
+                        <User className="size-4" />
                         My account
                     </Link>
                     <button
                         onClick={() => router.post(logout())}
-                        className="flex items-center gap-1.5 transition-colors hover:text-foreground"
+                        className="flex items-center gap-1.5 transition-colors hover:text-destructive"
                     >
-                        ↪ Log out
+                        <LogOut className="size-4" />
+                        Sign out
                     </button>
                 </header>
 
@@ -232,7 +205,8 @@ export default function WorkspacesIndex({
                                                     <div className="min-w-0 flex-1">
                                                         <p className="truncate text-sm font-semibold capitalize">
                                                             {workspace.name}
-                                                        </p>                                                        <p className="truncate text-xs text-muted-foreground">
+                                                        </p>{' '}
+                                                        <p className="truncate text-xs text-muted-foreground">
                                                             {workspaceUrl(
                                                                 workspace.slug,
                                                             )}

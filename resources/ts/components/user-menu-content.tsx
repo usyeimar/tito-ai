@@ -1,5 +1,12 @@
 import { Link } from '@inertiajs/react';
-import { BadgeCheck, Bell, CreditCard, LogOut, Sparkles } from 'lucide-react';
+import {
+    Bell,
+    CreditCard,
+    LogOut,
+    Settings,
+    Sparkles,
+    User,
+} from 'lucide-react';
 import {
     DropdownMenuGroup,
     DropdownMenuItem,
@@ -9,10 +16,10 @@ import {
 import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { logout } from '@/routes';
-import type { User } from '@/types';
+import type { User as UserType } from '@/types';
 
 interface UserMenuContentProps {
-    user: User;
+    user:   UserType;
 }
 
 export function UserMenuContent({ user }: UserMenuContentProps) {
@@ -55,8 +62,8 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                             href="#"
                             as="button"
                         >
-                            <BadgeCheck className="mr-2 size-4" />
-                            Account
+                            <User className="mr-2 size-4 text-muted-foreground" />
+                            My Account
                         </Link>
                     }
                 />
@@ -67,7 +74,19 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                             href="#"
                             as="button"
                         >
-                            <CreditCard className="mr-2 size-4" />
+                            <Settings className="mr-2 size-4 text-muted-foreground" />
+                            Settings
+                        </Link>
+                    }
+                />
+                <DropdownMenuItem
+                    render={
+                        <Link
+                            className="block w-full cursor-pointer"
+                            href="#"
+                            as="button"
+                        >
+                            <CreditCard className="mr-2 size-4 text-muted-foreground" />
                             Billing
                         </Link>
                     }
@@ -79,7 +98,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                             href="#"
                             as="button"
                         >
-                            <Bell className="mr-2 size-4" />
+                            <Bell className="mr-2 size-4 text-muted-foreground" />
                             Notifications
                         </Link>
                     }
@@ -87,6 +106,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem
+                className="text-destructive focus:bg-destructive/10 focus:text-destructive"
                 render={
                     <Link
                         className="block w-full cursor-pointer"
@@ -99,7 +119,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 }
             >
                 <LogOut className="mr-2 size-4" />
-                Log out
+                Sign out
             </DropdownMenuItem>
         </>
     );

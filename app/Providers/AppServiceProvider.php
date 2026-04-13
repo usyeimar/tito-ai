@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Laravel\Passport\Passport;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SocialiteProviders\Manager\SocialiteWasCalled;
@@ -310,6 +311,9 @@ class AppServiceProvider extends ServiceProvider
     private function configureTenancy(): void
     {
         UserImpersonation::$ttl = (int) config('tenancy.impersonation_ttl', 60);
+
+        // Configure Passport cookie name for central context
+        Passport::cookie(config('passport_tokens.access_cookie.central_name', 'central_access_token'));
     }
 
     /**

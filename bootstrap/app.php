@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureCookieAuthOrigin;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\InjectAccessTokenFromCookie;
+use App\Http\Middleware\ShareWorkspacesWithInertia;
 use App\Http\Middleware\WrapApiResponses;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -30,9 +31,12 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            InjectAccessTokenFromCookie::class,
+            ShareWorkspacesWithInertia::class,
         ]);
 
         $middleware->prependToGroup('api', [
+            // StartSession::class,
             InjectAccessTokenFromCookie::class,
             EnsureCookieAuthOrigin::class,
         ]);

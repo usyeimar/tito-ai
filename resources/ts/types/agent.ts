@@ -2,15 +2,57 @@ export type AgentBrainConfig = {
     provider?: string;
     model?: string;
     temperature?: number;
+    max_tokens?: number;
     system_prompt?: string;
+    welcome_message?: string;
     [key: string]: unknown;
 };
 
 export type AgentRuntimeConfig = {
-    voice?: string;
+    // STT
     stt_provider?: string;
+    stt_model?: string;
+    stt_language?: string;
+    stt_keywords?: string;
+    // TTS
     tts_provider?: string;
+    tts_model?: string;
+    tts_voice?: string;
+    tts_voice_id?: string;
+    tts_speed?: number;
+    tts_buffer_size?: number;
+    // Engine / Behavior
+    interruptibility?: boolean;
+    initial_action?: string;
+    streaming?: boolean;
+    inactivity_timeout_enabled?: boolean;
+    inactivity_timeout_seconds?: number;
+    inactivity_messages?: string[];
+    inactivity_final_message?: string;
+    max_duration_seconds?: number;
+    // Call / Telephony
+    telephony_provider?: string;
+    ambient_noise?: string;
+    noise_cancellation?: boolean;
+    voicemail_detection?: boolean;
+    keypad_input_dtmf?: boolean;
+    auto_reschedule?: boolean;
+    outbound_timing_restrictions?: boolean;
+    final_call_message?: string;
+    hangup_on_silence_enabled?: boolean;
+    hangup_on_silence_seconds?: number;
+    total_call_timeout?: number;
+    // Post Call
+    webhook_url?: string;
+    summarization?: boolean;
     [key: string]: unknown;
+};
+
+export type AgentTool = {
+    name: string;
+    description: string;
+    parameters?: Record<string, unknown>;
+    disabled?: boolean;
 };
 
 export type Agent = {

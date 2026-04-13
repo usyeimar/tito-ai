@@ -18,3 +18,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 require __DIR__.'/web/settings.php';
+require __DIR__.'/web/me.php';

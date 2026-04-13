@@ -20,24 +20,25 @@ class AgentPageController extends Controller
     {
         Gate::authorize('viewAny', Agent::class);
 
-        return Inertia::render('tenant/agents/index', [
+        return Inertia::render('tenant/agents/show', [
             'tenant' => $this->tenantPayload(),
-            'filters' => [
-                'search' => (string) $request->query('search', ''),
-            ],
+            'agent' => null,
             'agents' => $action(['search' => $request->query('search')])
                 ->map->toArray()
                 ->values(),
         ]);
     }
 
-    public function show(Agent $agent, ShowAgent $action): Response
+    public function show(Request $request, Agent $agent, ShowAgent $action, ListAgents $listAction): Response
     {
         Gate::authorize('view', $agent);
 
         return Inertia::render('tenant/agents/show', [
             'tenant' => $this->tenantPayload(),
             'agent' => $action($agent)->toArray(),
+            'agents' => $listAction(['search' => $request->query('search')])
+                ->map->toArray()
+                ->values(),
         ]);
     }
 
