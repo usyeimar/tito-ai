@@ -18,8 +18,8 @@ services:
             - ASTERISK_AMI_SECRET=${ASTERISK_AMI_SECRET:-changeme}
             - SIP_AUDIOSOCKET_HOST=0.0.0.0
             - SIP_AUDIOSOCKET_PORT=9092
-            - SIP_ENABLED=${SIP_ENABLED:-false}
-            - SIP_TRANSPORT=${SIP_TRANSPORT:-audiosocket}
+            - SIP_ENABLED=${SIP_ENABLED:-true}
+            - SIP_TRANSPORT=${SIP_TRANSPORT:-ari_websocket}
             - ASTERISK_ARI_HOST=asterisk
             - ASTERISK_ARI_PORT=8088
             - ASTERISK_ARI_USER=${ASTERISK_ARI_USER:-tito-ai}
@@ -32,7 +32,7 @@ services:
         restart: unless-stopped
 
     asterisk:
-        image: andrius/asterisk:alpine-20
+        image: andrius/asterisk:23-rc
         ports:
             - '5060:5060/udp' # SIP signaling
             - '5060:5060/tcp'
@@ -47,6 +47,7 @@ services:
             - ./config/asterisk/ari.conf:/etc/asterisk/ari.conf:ro
             - ./config/asterisk/http.conf:/etc/asterisk/http.conf:ro
             - ./config/asterisk/rtp.conf:/etc/asterisk/rtp.conf:ro
+            - ./config/asterisk/websocket_client.conf:/etc/asterisk/websocket_client.conf:ro
         environment:
             - ASTERISK_AMI_USER=tito
             - ASTERISK_AMI_SECRET=${ASTERISK_AMI_SECRET:-changeme}

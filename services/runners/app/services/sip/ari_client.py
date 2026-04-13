@@ -266,7 +266,7 @@ class ARIClient:
         format: str = "slin16",
         direction: str = "both",
     ) -> Optional[Dict[str, Any]]:
-        """Create an ExternalMedia channel for RTP/WebSocket audio streaming."""
+        """Create an ExternalMedia channel for RTP audio streaming."""
         resp = await self.send_command(
             "POST",
             "channels/externalMedia",
@@ -284,6 +284,51 @@ class ARIClient:
             )
             return resp
         logger.error(f"ARI: Failed to create ExternalMedia: {resp}")
+        return None
+
+    async def create_external_media_websocket(
+        self,
+        profile: str = "tito-ari",
+        ws_uri: str = "",
+        format: str = "slin",
+        direction: str = "both",
+    ) -> Optional[Dict[str, Any]]:
+        """Create an ExternalMedia channel for WebSocket audio streaming.
+
+        Uses a websocket_client profile defined in websocket_client.conf.
+        The 'data' field can override the profile's base URI per-call.
+
+        Args:
+            profile: websocket_client profile name from websocket_client.conf
+            ws_uri: Optional URI override (passed via data field)
+            format: Audio format ("slin" for 8kHz 16-bit signed linear)
+            direction: Audio direction ("both", "in", "out")
+
+        Returns:
+            Dict with channel info including "id" if successful, None otherwise
+        """
+        payload = {
+            "app": self.app_name,
+            "external_host": profile,
+            "format": format,
+            "direction": direction,
+            "transport": "websocket",
+        }
+        if ws_uri:
+            payload["data"] = f"uri={ws_uri}"
+
+        resp = await self.send_command(
+            "POST",
+            "channels/externalMedia",
+            data=payload,
+        )
+        if resp.get("id"):
+            logger.info(
+                f"ARI: ExternalMedia WebSocket channel created {resp['id']} "
+                f"via profile={profile}"
+            )
+            return resp
+        logger.error(f"ARI: Failed to create ExternalMedia WebSocket: {resp}")
         return None
 
     # ── Originate ─────────────────────────────────────────────────────────────

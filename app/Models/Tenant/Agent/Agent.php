@@ -60,6 +60,11 @@ class Agent extends Model
         return $this->hasMany(AgentDeployment::class);
     }
 
+    public function trunks(): HasMany
+    {
+        return $this->hasMany(Trunk::class);
+    }
+
     public function knowledgeBase(): BelongsTo
     {
         return $this->belongsTo(KnowledgeBase::class);

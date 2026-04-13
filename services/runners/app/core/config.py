@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 
     # Runner Identification & Scaling
     HOST_ID: str = os.getenv("POD_NAME", f"runner-{uuid.uuid4().hex[:8]}")
+    RUNNER_ADVERTISE_URL: str = os.getenv("RUNNER_ADVERTISE_URL", "")
     MAX_CONCURRENT_SESSIONS: int = int(os.getenv("MAX_CONCURRENT_SESSIONS", "10"))
 
     # SIP Bridge — Asterisk AMI

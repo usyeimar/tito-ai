@@ -91,6 +91,7 @@ Route::middleware([
         // Agents
         Route::prefix('ai')->group(function () {
             require __DIR__.'/api/ai/agents.php';
+            require __DIR__.'/api/ai/trunks.php';
             // Knowledge Base
             // require __DIR__.'/api/ai/knowledge-base.php';
         });

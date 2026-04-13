@@ -1,29 +1,46 @@
-# TODO: SIP Integration (Asterisk + Pipecat AudioSocket)
+# TODO: SIP Integration (Asterisk + Pipecat ARI + WebSocket)
 
 ## Estado actual
 
-Flujo: Teléfono → Asterisk (SIP/RTP) → AudioSocket TCP (9092) → Pipecat Transport → STT → LLM → TTS → AudioSocket → Asterisk → Teléfono
+**NUEVO**: Flujo con ARI + WebSocket (reemplaza AudioSocket)
+Flujo: Teléfono → Asterisk (SIP/RTP) → Stasis → ARI Manager → ExternalMedia WebSocket → Pipecat Pipeline → STT → LLM → TTS → Asterisk → Teléfono
 
-## Completado
+## Completado ✅
 
-- [x] **AudioSocket Server** (`app/services/sip/audiosocket_server.py`)
-    - Servidor TCP en puerto 9092
-    - Parseo de frames AudioSocket (type + 2-byte length + payload)
-    - Soporte para UUID binario de 16 bytes (Asterisk no envía texto, envía bytes)
-    - Soporte para múltiples sample rates (0x10=8kHz ... 0x18=192kHz)
+### ARI + WebSocket Implementation (NEW)
 
-- [x] **SIP Transport** (`app/services/sip/transport.py`)
-    - `SIPAudioSocketInputTransport`: lee audio de AudioSocket, resampling 8kHz→16kHz con `audioop.ratecv()`
-    - `SIPAudioSocketOutputTransport`: escribe audio TTS, resampling 16kHz→8kHz con `audioop.ratecv()`
-    - Patrón deferred connection (`_pending_conn`) para evitar error de TaskManager no inicializado
-    - Reset de resample state en interrupciones
+- [x] **ARI Manager** (`app/services/sip/tito_ari_manager.py`)
+    - Adaptado de Dograh ARI implementation
+    - Conexión WebSocket a Asterisk ARI
+    - Manejo de eventos StasisStart/StasisEnd
+    - Reconexión automática con exponential backoff
+    - Soporte multi-trunk
 
-- [x] **Call Handler** (`app/services/sip/call_handler.py`)
-    - Resolución de trunk/agent desde Redis con soporte wildcard `*`
-    - Ciclo de vida completo: resolve trunk → fetch AgentConfig → create transport → build pipeline → run
-    - Webhooks session.started / session.ended
-    - Eventos DTMF via AMI
-    - Cleanup de sesión (Redis, trunk active_calls, task_manager)
+- [x] **ExternalMedia WebSocket** (`app/services/sip/ari_client.py`)
+    - `create_external_media_websocket()`: Crea canal WebSocket hacia API
+    - Reemplaza AudioSocket TCP
+    - Audio 8kHz slin (signed linear)
+
+- [x] **WebSocket Endpoint** (`app/api/v1/sip.py`)
+    - `/api/v1/sip/ari/audio`: Endpoint WebSocket para llamadas ARI
+    - Resolución de agente via `agent_resolution_service`
+    - Pipeline Pipecat completo (STT → LLM → TTS)
+    - Serializer para slin (signed linear 16-bit PCM)
+
+- [x] **Documentación**
+    - `docs/ARI_WEBSOCKET_INTEGRATION.md`: Guía completa de migración
+    - `config/asterisk/ari-websocket.conf`: Configuración de Asterisk
+    - `docs/example_lifespan.py`: Ejemplo de integración en main.py
+
+### AudioSocket (DEPRECATED - kept for reference)
+
+- [x] ~~AudioSocket Server~~ (`app/services/sip/audiosocket_server.py`)
+    - ~~Servidor TCP en puerto 9092~~
+    - **DEPRECATED**: Reemplazado por ARI + WebSocket
+
+- [x] ~~SIP Transport~~ (`app/services/sip/transport.py`)
+    - ~~`SIPAudioSocketInputTransport` / `SIPAudioSocketOutputTransport`~~
+    - **DEPRECATED**: Usar ARI WebSocket en su lugar
 
 - [x] **AMI Controller** (`app/services/sip/ami_controller.py`)
     - Conexión a Asterisk Manager Interface via panoramisk
@@ -31,14 +48,10 @@ Flujo: Teléfono → Asterisk (SIP/RTP) → AudioSocket TCP (9092) → Pipecat T
     - GetVar para metadata de canal
 
 - [x] **Configuración Asterisk** (`config/asterisk/`)
-    - `extensions.conf`: UUID via `/proc/sys/kernel/random/uuid`, Dial(AudioSocket/...)
-    - `pjsip.conf`: direct_media=no, transports UDP/TCP, endpoint tito-inbound con auth
-    - `rtp.conf`, `modules.conf`, `manager.conf`, etc.
-
-- [x] **Datos de prueba en Redis**
-    - Trunk: `trk_default_test` con ruta wildcard `*` → `agent-tito-test`
-    - Agent: `agent-tito-test` (Deepgram nova-2, OpenAI gpt-4o, Cartesia sonic-2)
-    - Comando de seed: ver memoria en `.claude/projects/.../memory/reference_redis_seed.md`
+    - ~~`extensions.conf`: Dial(AudioSocket/...)~~ **DEPRECATED**
+    - `ari-websocket.conf`: Nueva config ARI + WebSocket
+    - `pjsip.conf`: endpoints SIP
+    - `manager.conf`: AMI access
 
 ## Pendiente de verificar
 

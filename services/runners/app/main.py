@@ -30,6 +30,17 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Application starting up...")
 
+    # ── Runner Registry (for multi-instance load balancing) ──────────────────
+    from app.services.runner_registry import runner_registry_service
+
+    if settings.RUNNER_ADVERTISE_URL:
+        try:
+            await runner_registry_service.start()
+            app.state.runner_registry = runner_registry_service
+            logger.info(f"Runner registry started | host_id={settings.HOST_ID}")
+        except Exception as e:
+            logger.warning(f"Failed to start runner registry: {e}")
+
     # ── SIP Bridge (optional) ────────────────────────────────────────────────
     from app.core.config import settings as _settings
 
@@ -38,6 +49,8 @@ async def lifespan(app: FastAPI):
     ami_controller = None
     ari_client = None
     ari_handler = None
+    tito_ari_manager = None
+    websocket_server = None
 
     if _settings.SIP_ENABLED:
         transport_mode = _settings.SIP_TRANSPORT.lower()
@@ -95,8 +108,31 @@ async def lifespan(app: FastAPI):
         # AudioSocket call handler (always created — processes incoming TCP connections)
         sip_handler = SIPCallHandler(audiosocket_server, ami=ami_controller)
 
-        # ARI client + handler (started when transport=ari, or always for future use)
-        if transport_mode == "ari" or _settings.ASTERISK_ARI_PASSWORD:
+        # ARI client + handler
+        # Option 1: New TitoARIManager with WebSocket (recommended)
+        # Option 2: Old ARIExternalMediaHandler with UDP (legacy)
+        tito_ari_manager = None
+
+        if transport_mode == "ari_websocket" or transport_mode == "ari":
+            logger.info("Starting TitoARIManager with WebSocket support...")
+            from app.services.sip.tito_ari_manager import TitoARIManager
+
+            tito_ari_manager = TitoARIManager()
+            try:
+                asyncio.create_task(tito_ari_manager.start())
+                logger.info(
+                    f"✓ TitoARIManager task created - listening for ARI events from Asterisk"
+                )
+            except Exception as e:
+                logger.error(f"Failed to start TitoARIManager: {e}")
+                import traceback
+
+                logger.error(traceback.format_exc())
+                tito_ari_manager = None
+
+        # Legacy ARI support (UDP-based, deprecated)
+        elif transport_mode == "ari_udp":
+            logger.warning("Using legacy ARI UDP mode (deprecated, use ari_websocket)")
             from app.services.sip.ari_client import ARIClient
             from app.api.v1.sip import ARIExternalMediaHandler, external_media_handler
 
@@ -169,11 +205,21 @@ async def lifespan(app: FastAPI):
     app.state.websocket_server = locals().get("websocket_server")
     app.state.ami_controller = ami_controller
     app.state.ari_client = ari_client if _settings.SIP_ENABLED else None
+    app.state.tito_ari_manager = tito_ari_manager if _settings.SIP_ENABLED else None
 
     yield
 
     # Shutdown — uvicorn triggers this on SIGINT/SIGTERM
     logger.info("Application shutting down gracefully...")
+
+    # ── Runner Registry shutdown ──────────────────────────────────────────────
+    runner_registry = getattr(app.state, "runner_registry", None)
+    if runner_registry:
+        try:
+            await runner_registry.stop()
+            logger.info("Runner registry stopped")
+        except Exception as e:
+            logger.warning(f"Runner registry stop error: {e}")
 
     # 0.3 Graceful Shutdown: notify and stop all sessions
     from app.services.session_manager import session_manager
@@ -195,6 +241,13 @@ async def lifespan(app: FastAPI):
     if websocket_server:
         await websocket_server.stop()
         logger.info("WebSocket server stopped")
+
+    # Stop new TitoARIManager (WebSocket-based)
+    if tito_ari_manager:
+        await tito_ari_manager.stop()
+        logger.info("TitoARIManager stopped")
+
+    # Stop legacy ARI (UDP-based)
     if ari_handler and hasattr(ari_handler, "stop"):
         await ari_handler.stop()
         logger.info("ARI ExternalMedia handler stopped")
@@ -385,6 +438,8 @@ async def health():
         audiosocket = getattr(app.state, "audiosocket_server", None)
         ami = getattr(app.state, "ami_controller", None)
         ari = getattr(app.state, "ari_client", None)
+        tito_ari = getattr(app.state, "tito_ari_manager", None)
+
         result["sip"] = {
             "enabled": True,
             "transport": getattr(app.state, "sip_transport", "audiosocket"),
@@ -400,6 +455,11 @@ async def health():
             },
             "ari": {
                 "connected": ari.is_connected if ari else False,
+                "mode": "legacy_udp" if ari else None,
+            },
+            "ari_websocket": {
+                "running": tito_ari._running if tito_ari else False,
+                "active_connections": len(tito_ari._connections) if tito_ari else 0,
             },
         }
 

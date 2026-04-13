@@ -24,6 +24,21 @@ return [
     'timeout' => (int) env('TITO_RUNNERS_TIMEOUT', 15),
 
     /*
+    |--------------------------------------------------------------------------
+    | Runner Registry (Load Balancing)
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, Laravel will use Redis to discover available runners and
+    | balance new sessions across them based on current load (active_sessions).
+    |
+    | Requirements:
+    | - RUNNER_ADVERTISE_URL must be set on each runner instance
+    | - Redis must be accessible to both Laravel and runners
+    |
+    */
+    'use_registry' => (bool) env('TITO_RUNNERS_USE_REGISTRY', false),
+
+    /*
     | Default transport when an agent does not specify one. Both `livekit`
     | and `daily` are supported by the browser UI; the runner picks the
     | matching room provider per session.
