@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\API\Auth\Role\IndexRoleRequest;
 use App\Http\Requests\Tenant\API\Auth\Role\StoreRoleRequest;
 use App\Http\Requests\Tenant\API\Auth\Role\UpdateRoleRequest;
-use App\Http\Resources\Tenant\Auth\Role\RoleResource;
+use App\Http\Resources\Tenant\API\Auth\Role\RoleResource;
 use App\Models\Central\Auth\Role\Role;
 use App\Services\Tenant\Auth\Role\RoleService;
 use Illuminate\Http\JsonResponse;

@@ -8,6 +8,7 @@ use App\Models\Tenant\Auth\Authentication\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
+use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class RoleService
@@ -21,8 +22,8 @@ class RoleService
     {
         return QueryBuilder::for(Role::class)
             ->where('guard_name', 'tenant')
-            ->allowedFilters(['name'])
-            ->allowedIncludes(['permissions'])
+            ->allowedFilters(AllowedFilter::partial('name'))
+            ->allowedIncludes('permissions')
             ->defaultSort('name')
             ->paginate();
     }
