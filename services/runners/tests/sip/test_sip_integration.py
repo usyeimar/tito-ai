@@ -7,8 +7,7 @@ from unittest.mock import MagicMock, patch
 class TestSIPIntegration:
     """Tests de integración SIP."""
 
-    @patch("app.api.v1.sip.WebSocketServer")
-    def test_sip_router_imports(self, mock_ws):
+    def test_sip_router_imports(self):
         """Verifica que el router SIP importa."""
         from app.api.v1.sip import router
 
@@ -45,12 +44,3 @@ class TestTransportAliases:
 
         assert SIPTransport is not None
 
-    def test_sipwebsocket_transport_classes_exist(self):
-        """Verifica clases de WebSocket transport."""
-        from app.services.sip.transport import (
-            SIPWebSocketTransport,
-            SIPWebSocketParams,
-        )
-
-        assert SIPWebSocketTransport is not None
-        assert SIPWebSocketParams is not None

@@ -44,40 +44,37 @@ async def lifespan(app: FastAPI):
     # ── SIP Bridge (optional) ────────────────────────────────────────────────
     from app.core.config import settings as _settings
 
-    sip_handler = None
+    # SIP Bridge state
+    #   SIP_TRANSPORT values:
+    #     - "audiosocket": TCP AudioSocket on :9092 (simple, no call control)
+    #     - "ari":         ARI REST + ExternalMedia WebSocket (full call control)
     audiosocket_server = None
     ami_controller = None
-    ari_client = None
-    ari_handler = None
+    sip_handler = None
     tito_ari_manager = None
-    websocket_server = None
 
     if _settings.SIP_ENABLED:
         transport_mode = _settings.SIP_TRANSPORT.lower()
-        logger.info(
-            f"SIP Bridge enabled — transport={transport_mode}, "
-            f"starting AudioSocket + WebSocket servers"
-        )
+        if transport_mode not in ("audiosocket", "ari"):
+            logger.warning(
+                f"Unknown SIP_TRANSPORT={transport_mode!r}, falling back to 'audiosocket'"
+            )
+            transport_mode = "audiosocket"
+
+        logger.info(f"SIP Bridge enabled — transport={transport_mode}")
+
         from app.services.sip.audiosocket_server import AudioSocketServer
-        from app.services.sip.websocket_server import WebSocketServer
         from app.services.sip.ami_controller import AMIController
         from app.services.sip.call_handler import SIPCallHandler
 
-        # AudioSocket TCP server (always started — used by all transport modes)
+        # AudioSocket TCP server (always started: used by audiosocket transport
+        # and available as a fallback even when ari is the primary transport).
         audiosocket_server = AudioSocketServer(
             host=_settings.SIP_AUDIOSOCKET_HOST,
             port=_settings.SIP_AUDIOSOCKET_PORT,
         )
 
-        # WebSocket server for chan_websocket (always started)
-        websocket_server = WebSocketServer(
-            host="0.0.0.0",
-            port=9093,
-            on_connection=None,
-        )
-
-        # AMI controller (optional — used for call metadata and outbound)
-        ami_controller = None
+        # AMI controller (optional — used for outbound call origination)
         if _settings.ASTERISK_AMI_SECRET:
             ami_controller = AMIController(
                 host=_settings.ASTERISK_AMI_HOST,
@@ -89,123 +86,41 @@ async def lifespan(app: FastAPI):
                 await ami_controller.connect()
                 logger.info("AMI controller connected")
             except Exception as e:
-                logger.warning(
-                    f"AMI connection failed (calls will still work via AudioSocket): {e}"
-                )
+                logger.warning(f"AMI connection failed: {e}")
                 ami_controller = None
 
-        # Inject AMI into trunk_service for outbound origination
         if ami_controller:
             from app.services.trunk_service import trunk_service as _trunk_service
-
             _trunk_service.set_ami_controller(ami_controller)
 
-        # Wire up the WebSocket call handler
-        from app.api.v1.sip import handle_asterisk_connection
-
-        websocket_server.set_connection_handler(handle_asterisk_connection)
-
-        # AudioSocket call handler (always created — processes incoming TCP connections)
+        # AudioSocket call handler (processes incoming TCP connections)
         sip_handler = SIPCallHandler(audiosocket_server, ami=ami_controller)
 
-        # ARI client + handler
-        # Option 1: New TitoARIManager with WebSocket (recommended)
-        # Option 2: Old ARIExternalMediaHandler with UDP (legacy)
-        tito_ari_manager = None
-
-        if transport_mode == "ari_websocket" or transport_mode == "ari":
-            logger.info("Starting TitoARIManager with WebSocket support...")
+        # ARI manager — only started when transport=ari
+        if transport_mode == "ari":
+            logger.info("Starting TitoARIManager (ARI + ExternalMedia WebSocket)...")
             from app.services.sip.tito_ari_manager import TitoARIManager
 
             tito_ari_manager = TitoARIManager()
-            try:
-                asyncio.create_task(tito_ari_manager.start())
-                logger.info(
-                    f"✓ TitoARIManager task created - listening for ARI events from Asterisk"
-                )
-            except Exception as e:
-                logger.error(f"Failed to start TitoARIManager: {e}")
-                import traceback
+            asyncio.create_task(tito_ari_manager.start())
+            logger.info("✓ TitoARIManager listening for ARI events")
 
-                logger.error(traceback.format_exc())
-                tito_ari_manager = None
-
-        # Legacy ARI support (UDP-based, deprecated)
-        elif transport_mode == "ari_udp":
-            logger.warning("Using legacy ARI UDP mode (deprecated, use ari_websocket)")
-            from app.services.sip.ari_client import ARIClient
-            from app.api.v1.sip import ARIExternalMediaHandler, external_media_handler
-
-            ari_client = ARIClient(
-                host=_settings.ASTERISK_ARI_HOST,
-                port=_settings.ASTERISK_ARI_PORT,
-                username=_settings.ASTERISK_ARI_USER,
-                password=_settings.ASTERISK_ARI_PASSWORD,
-                app_name=_settings.ASTERISK_ARI_APP,
-            )
-            try:
-                await ari_client.connect()
-
-                # Create ExternalMedia handler (ARI + UDP audio)
-                ari_handler = ARIExternalMediaHandler(ari_client)
-                await ari_handler.start()
-
-                # Register handlers for ARI events
-                ari_client.on_event("StasisStart", ari_handler.handle_stasis_start)
-                ari_client.on_event("StasisEnd", ari_handler.handle_stasis_end)
-                ari_client.on_event(
-                    "ChannelHangupRequest", ari_handler.handle_channel_hangup
-                )
-
-                # Start ARI event listener as a background task
-                asyncio.create_task(ari_client.start_listening())
-
-                # Store in global for health check
-                import app.api.v1.sip as sip_module
-
-                sip_module.external_media_handler = ari_handler
-
-                logger.info(
-                    f"ARI ExternalMedia handler connected to {_settings.ASTERISK_ARI_HOST}:{_settings.ASTERISK_ARI_PORT}"
-                )
-            except Exception as e:
-                logger.warning(
-                    f"ARI connection failed (AudioSocket/WebSocket still work): {e}"
-                )
-                import traceback
-
-                logger.error(traceback.format_exc())
-                ari_client = None
-                ari_handler = None
-
-        # Start servers
         await audiosocket_server.start()
-        await websocket_server.start()
         logger.info(
             f"SIP Bridge ready — transport={transport_mode} | "
-            f"AudioSocket on {_settings.SIP_AUDIOSOCKET_HOST}:{_settings.SIP_AUDIOSOCKET_PORT}, "
-            f"WebSocket on 0.0.0.0:9093"
+            f"AudioSocket on {_settings.SIP_AUDIOSOCKET_HOST}:{_settings.SIP_AUDIOSOCKET_PORT}"
             + (
-                f", ARI on {_settings.ASTERISK_ARI_HOST}:{_settings.ASTERISK_ARI_PORT}"
-                if ari_client
-                else ""
+                f" | ARI → {_settings.ASTERISK_ARI_HOST}:{_settings.ASTERISK_ARI_PORT}"
+                if tito_ari_manager else ""
             )
         )
-
-    else:
-        audiosocket_server = None
-        websocket_server = None
-        ami_controller = None
-        sip_handler = None
 
     # Expose SIP state for health check
     app.state.sip_enabled = _settings.SIP_ENABLED
     app.state.sip_transport = getattr(_settings, "SIP_TRANSPORT", "audiosocket")
     app.state.audiosocket_server = audiosocket_server
-    app.state.websocket_server = locals().get("websocket_server")
     app.state.ami_controller = ami_controller
-    app.state.ari_client = ari_client if _settings.SIP_ENABLED else None
-    app.state.tito_ari_manager = tito_ari_manager if _settings.SIP_ENABLED else None
+    app.state.tito_ari_manager = tito_ari_manager
 
     yield
 
@@ -238,22 +153,9 @@ async def lifespan(app: FastAPI):
     if audiosocket_server:
         await audiosocket_server.stop()
         logger.info("AudioSocket server stopped")
-    if websocket_server:
-        await websocket_server.stop()
-        logger.info("WebSocket server stopped")
-
-    # Stop new TitoARIManager (WebSocket-based)
     if tito_ari_manager:
         await tito_ari_manager.stop()
         logger.info("TitoARIManager stopped")
-
-    # Stop legacy ARI (UDP-based)
-    if ari_handler and hasattr(ari_handler, "stop"):
-        await ari_handler.stop()
-        logger.info("ARI ExternalMedia handler stopped")
-    if ari_client:
-        await ari_client.disconnect()
-        logger.info("ARI client disconnected")
     if ami_controller:
         await ami_controller.disconnect()
         logger.info("AMI controller disconnected")
@@ -437,7 +339,6 @@ async def health():
     if sip_enabled:
         audiosocket = getattr(app.state, "audiosocket_server", None)
         ami = getattr(app.state, "ami_controller", None)
-        ari = getattr(app.state, "ari_client", None)
         tito_ari = getattr(app.state, "tito_ari_manager", None)
 
         result["sip"] = {
@@ -454,12 +355,8 @@ async def health():
                 "connected": ami.connected if ami else False,
             },
             "ari": {
-                "connected": ari.is_connected if ari else False,
-                "mode": "legacy_udp" if ari else None,
-            },
-            "ari_websocket": {
                 "running": tito_ari._running if tito_ari else False,
-                "active_connections": len(tito_ari._connections) if tito_ari else 0,
+                "active_trunks": len(tito_ari._connections) if tito_ari else 0,
             },
         }
 

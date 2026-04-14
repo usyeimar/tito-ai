@@ -2,9 +2,8 @@ services:
     api:
         build: .
         ports:
-            - '8000:8000'
+            - '8000:8000' # HTTP + ARI ExternalMedia WebSocket (/api/v1/sip/ari/audio)
             - '9092:9092' # AudioSocket TCP server
-            - '9093:9093' # WebSocket server (chan_websocket)
         volumes:
             - ./app:/app/app
             - ./resources:/app/resources
@@ -19,7 +18,7 @@ services:
             - SIP_AUDIOSOCKET_HOST=0.0.0.0
             - SIP_AUDIOSOCKET_PORT=9092
             - SIP_ENABLED=${SIP_ENABLED:-true}
-            - SIP_TRANSPORT=${SIP_TRANSPORT:-ari_websocket}
+            - SIP_TRANSPORT=${SIP_TRANSPORT:-ari}
             - ASTERISK_ARI_HOST=asterisk
             - ASTERISK_ARI_PORT=8088
             - ASTERISK_ARI_USER=${ASTERISK_ARI_USER:-tito-ai}

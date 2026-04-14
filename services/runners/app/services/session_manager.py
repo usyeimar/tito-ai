@@ -15,14 +15,18 @@ logger = logging.getLogger(__name__)
 RUNNER_FRAME_QUEUE_MAXSIZE = 150
 MAX_SESSION_DURATION = 3600  # 1 hora máxima
 
+SESSION_INDEX_GLOBAL = "session:index:global"
+SESSION_INDEX_HOST_PREFIX = "session:index:host:"
+BROADCAST_CHANNEL = "session:broadcast:global"
+
 
 class SessionManager:
     def __init__(self, redis_url: str):
         self._redis = aioredis.from_url(redis_url, decode_responses=True)
-        # Sockets locales de esta instancia
         self._sockets: Dict[str, List[WebSocket]] = {}
-        # Sockets de transcripciones
         self._transcript_sockets: Dict[str, List[WebSocket]] = {}
+        self._global_listener_task: Optional[asyncio.Task] = None
+        self._global_pubsub = None
 
     async def save_session(
         self,
@@ -54,30 +58,69 @@ class SessionManager:
 
         await self._redis.setex(key, MAX_SESSION_DURATION, json.dumps(value))
 
+        # Add to global and host-specific indexes
+        await self._redis.sadd(SESSION_INDEX_GLOBAL, session_id)
+        await self._redis.sadd(
+            f"{SESSION_INDEX_HOST_PREFIX}{settings.HOST_ID}", session_id
+        )
+
     async def get_session(self, session_id: str) -> Optional[Dict[str, Any]]:
         """Recupera metadatos de Redis."""
         data = await self._redis.get(f"session:{session_id}")
         return json.loads(data) if data else None
 
-    async def list_sessions(self) -> List[Dict[str, Any]]:
-        """Lista todas las sesiones activas en Redis."""
-        keys = await self._redis.keys("session:*")
+    async def list_sessions(
+        self, host_id: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Lista todas las sesiones activas en Redis.
+
+        Args:
+            host_id: Optional filter by specific host instance.
+                     If None, returns all sessions from global index.
+        """
+        # Get session IDs from index
+        if host_id:
+            session_ids = await self._redis.smembers(
+                f"{SESSION_INDEX_HOST_PREFIX}{host_id}"
+            )
+        else:
+            session_ids = await self._redis.smembers(SESSION_INDEX_GLOBAL)
+
         sessions = []
-        for key in keys:
-            # Skip control or event keys if any
-            if ":control" in key or ":events" in key:
-                continue
+        stale_ids = []
+
+        for session_id in session_ids:
+            key = f"session:{session_id}"
             data = await self._redis.get(key)
             if data:
                 try:
                     sessions.append(json.loads(data))
                 except Exception:
                     continue
+            else:
+                # Session expired, mark for cleanup
+                stale_ids.append(session_id)
+
+        # Lazy cleanup of stale entries from index
+        if stale_ids:
+            for sid in stale_ids:
+                await self._redis.srem(SESSION_INDEX_GLOBAL, sid)
+                await self._redis.srem(
+                    f"{SESSION_INDEX_HOST_PREFIX}{host_id or settings.HOST_ID}", sid
+                )
+
         return sessions
 
     async def delete_session(self, session_id: str) -> bool:
         """Elimina metadatos de Redis."""
         result = await self._redis.delete(f"session:{session_id}")
+
+        # Remove from indexes
+        await self._redis.srem(SESSION_INDEX_GLOBAL, session_id)
+        await self._redis.srem(
+            f"{SESSION_INDEX_HOST_PREFIX}{settings.HOST_ID}", session_id
+        )
+
         return result > 0
 
     async def update_session_status(self, session_id: str, status: str) -> bool:
@@ -206,14 +249,60 @@ class SessionManager:
         """Publica un evento en Redis Pub/Sub para que todas las instancias lo reciban."""
         await self._redis.publish(f"session:{session_id}:events", json.dumps(event))
 
+    async def start_global_listener(self) -> None:
+        """Start listening to global broadcast channel on this instance."""
+        if self._global_listener_task is not None:
+            return
+
+        self._global_pubsub = self._redis.pubsub()
+        await self._global_pubsub.subscribe(BROADCAST_CHANNEL)
+        self._global_listener_task = asyncio.create_task(self._listen_broadcast())
+        logger.info("Global broadcast listener started")
+
+    async def stop_global_listener(self) -> None:
+        """Stop the global broadcast listener."""
+        if self._global_listener_task:
+            self._global_listener_task.cancel()
+            try:
+                await self._global_listener_task
+            except asyncio.CancelledError:
+                pass
+            self._global_listener_task = None
+
+        if self._global_pubsub:
+            await self._global_pubsub.unsubscribe(BROADCAST_CHANNEL)
+            await self._global_pubsub.close()
+            self._global_pubsub = None
+
+        logger.info("Global broadcast listener stopped")
+
+    async def _listen_broadcast(self) -> None:
+        """Listen for global broadcast events and forward to all local sockets."""
+        try:
+            async for message in self._global_pubsub.listen():
+                if message["type"] == "message":
+                    event_data = message["data"]
+                    # Forward to all sessions' sockets
+                    for session_id, sockets in list(self._sockets.items()):
+                        for ws in list(sockets):
+                            try:
+                                await asyncio.wait_for(
+                                    ws.send_text(event_data), timeout=0.050
+                                )
+                            except Exception:
+                                self.disconnect_ws(session_id, ws)
+        except asyncio.CancelledError:
+            pass
+        except Exception as e:
+            logger.error(f"Global broadcast listener error: {e}")
+
     async def broadcast(self, event: Dict[str, Any]) -> None:
-        """Envía un evento a TODAS las sesiones activas vía Redis."""
-        # En una arquitectura real escalable, podríamos tener un canal global o iterar sobre llaves
-        # Por ahora, enviamos a un canal especial o simplemente no lo soportamos escalablemente
-        # El plan v1/v2 no detalla broadcast global multi-pod pero sigamos el patrón.
-        # Por simplicidad, este broadcast solo llegará a las sesiones registradas en Redis.
-        # Pero iterar puede ser costoso. Para shutdown, es aceptable.
-        pass
+        """Publish an event to the global broadcast channel.
+
+        This reaches all runners via Redis pub/sub, regardless of which
+        runner the session is on. Each runner forwards to its local sockets.
+        """
+        await self._redis.publish(BROADCAST_CHANNEL, json.dumps(event))
 
 
 session_manager = SessionManager(settings.REDIS_URL)

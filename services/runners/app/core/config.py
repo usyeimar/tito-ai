@@ -38,11 +38,10 @@ class Settings(BaseSettings):
     # SIP Bridge — enable/disable
     SIP_ENABLED: bool = False
 
-    # SIP Transport mode: "audiosocket", "websocket", or "ari"
-    # - audiosocket: Direct TCP via app_audiosocket (simplest, default)
-    # - websocket: Asterisk chan_websocket (Asterisk 20.18+)
-    # - ari: Full call control via ARI + Stasis (most flexible)
-    # All three servers start regardless; this controls the Asterisk dialplan context.
+    # SIP Transport mode:
+    # - "audiosocket": Direct TCP via app_audiosocket (simple, no call control)
+    # - "ari":         ARI REST + ExternalMedia WebSocket (full call control)
+    # The Asterisk dialplan context picks which is used (see extensions.conf).
     SIP_TRANSPORT: str = "audiosocket"
 
     # SIP Bridge — ARI (Asterisk REST Interface)

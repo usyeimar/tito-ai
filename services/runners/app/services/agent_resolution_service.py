@@ -10,8 +10,9 @@ import os
 from typing import Optional
 
 import httpx
+import redis.asyncio as aioredis
+from app.core.config import settings
 from app.schemas.agent import AgentConfig
-from app.services.session_manager import session_manager
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ class AgentResolutionService:
     DEFAULT_TTL_SECONDS = 86400  # 24 hours
 
     def __init__(self):
-        self._redis = session_manager._redis
+        self._redis = aioredis.from_url(settings.REDIS_URL, decode_responses=True)
         self._backend_url = os.getenv("BACKEND_URL", "http://localhost:8000")
         self._api_key = os.getenv("BACKEND_API_KEY")
 
