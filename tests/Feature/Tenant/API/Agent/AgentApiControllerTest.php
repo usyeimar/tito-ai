@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Central\Auth\Role\Role;
 use App\Models\Tenant\Agent\Agent;
+use App\Models\Tenant\Auth\Authentication\User;
 
-// ── AUTHORIZATION ───────────────────────────────────────────────────────────
+// ── AUTHORIZATION ────────────────────────────────────────────────────────────
 
 it('requires authentication to list agents', function () {
     $response = $this->getJson($this->tenantApiUrl('ai/agents'));
@@ -10,9 +12,15 @@ it('requires authentication to list agents', function () {
 });
 
 it('requires verified email to create an agent', function () {
-    $unverifiedUser = $this->createTenantUser([
+    $role = Role::firstOrCreate([
+        'name' => 'super_admin',
+        'guard_name' => 'tenant',
+    ]);
+
+    $unverifiedUser = User::factory()->create([
         'email_verified_at' => null,
-    ], ['super_admin']);
+    ]);
+    $unverifiedUser->assignRole($role);
 
     $response = $this->actingAs($unverifiedUser, 'tenant-api')
         ->postJson($this->tenantApiUrl('ai/agents'), [
