@@ -12,7 +12,7 @@ class VerifyUpdatedEmail extends VerifyEmail
         $url = $this->verificationUrl($notifiable);
 
         return (new MailMessage)
-            ->subject('Confirm your updated email address - Workupcloud')
+            ->subject('Confirm your updated email address - Tito')
             ->view('emails.verify-email-update', [
                 'url' => $url,
                 'notifiable' => $notifiable,
