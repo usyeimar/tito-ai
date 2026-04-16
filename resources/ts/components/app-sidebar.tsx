@@ -9,7 +9,7 @@ import {
     SidebarFooter,
     SidebarHeader,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
+// import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 import type { TenantSummary } from '@/types/agent';
 
@@ -19,24 +19,24 @@ export function AppSidebar() {
 
     const mainNavItems: NavItem[] = tenant
         ? [
-              {
-                  title: 'Asistentes',
-                  href: `/${tenant.slug}/agents`,
-                  icon: Sparkles,
-              },
-              {
-                  title: 'Knowledge',
-                  href: `/${tenant.slug}/knowledge`,
-                  icon: BookOpen,
-              },
-          ]
+            {
+                title: 'Asistentes',
+                href: `/${tenant.slug}/agents`,
+                icon: Sparkles,
+            },
+            {
+                title: 'Knowledge',
+                href: `/${tenant.slug}/knowledge`,
+                icon: BookOpen,
+            },
+        ]
         : [
-              {
-                  title: 'Dashboard',
-                  href: dashboard(),
-                  icon: LayoutGrid,
-              },
-          ];
+            {
+                title: 'Dashboard',
+                href: '#',
+                icon: LayoutGrid,
+            },
+        ];
 
     return (
         <Sidebar collapsible="icon" variant="inset">

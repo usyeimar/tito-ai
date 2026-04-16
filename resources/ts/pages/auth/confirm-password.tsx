@@ -26,6 +26,7 @@ export default function ConfirmPassword() {
                                 placeholder="Password"
                                 autoComplete="current-password"
                                 autoFocus
+                                required
                             />
 
                             <InputError message={errors.password} />
