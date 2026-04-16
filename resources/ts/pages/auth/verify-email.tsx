@@ -5,36 +5,41 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/auth-layout';
 import { logout } from '@/routes';
-import { centralApi, CentralApiError } from '@/lib/central-api';
 
 export default function VerifyEmail({ status }: { status?: string }) {
     const [processing, setProcessing] = useState(false);
-    const [successMessage, setSuccessMessage] = useState<string | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [message, setMessage] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleResendVerification = async () => {
+    const handleResend = async () => {
         setProcessing(true);
-        setSuccessMessage(null);
-        setErrorMessage(null);
+        setMessage(null);
+        setError(null);
 
         try {
-            await centralApi<{ message: string }>(
-                '/auth/email/verification-notification',
-                {
-                    method: 'POST',
+            const response = await fetch('/email/verification-notification', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'X-CSRF-TOKEN':
+                        document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute('content') || '',
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
-            );
-            setSuccessMessage(
-                'A new verification link has been sent to your email address.',
-            );
-        } catch (error) {
-            if (error instanceof CentralApiError) {
-                setErrorMessage(error.message);
-            } else {
-                setErrorMessage(
-                    'Unable to send verification email. Please try again later.',
+            });
+
+            if (response.ok) {
+                setMessage(
+                    'A new verification link has been sent to your email address.',
                 );
+            } else {
+                const data = await response.json();
+                setError(data.message || 'Failed to send verification email.');
             }
+        } catch (err) {
+            setError('An error occurred. Please try again.');
         } finally {
             setProcessing(false);
         }
@@ -48,29 +53,29 @@ export default function VerifyEmail({ status }: { status?: string }) {
             <Head title="Email verification" />
 
             {status === 'verification-link-sent' && (
-                <div className="mb-4 rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
-                    A new verification link has been sent to your email address.
+                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                    A new verification link has been sent to the email address
+                    you provided during registration.
+                </div>
+            )}
+
+            {message && (
+                <div className="mb-4 text-center text-sm font-medium text-green-600">
+                    {message}
+                </div>
+            )}
+
+            {error && (
+                <div className="mb-4 text-center text-sm font-medium text-red-600">
+                    {error}
                 </div>
             )}
 
             <div className="space-y-6 text-center">
-                {successMessage && (
-                    <div className="rounded-lg bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
-                        {successMessage}
-                    </div>
-                )}
-
-                {errorMessage && (
-                    <div className="rounded-lg bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
-                        {errorMessage}
-                    </div>
-                )}
-
                 <Button
-                    onClick={handleResendVerification}
+                    onClick={handleResend}
                     disabled={processing}
                     variant="secondary"
-                    className="w-full"
                 >
                     {processing && <Spinner />}
                     Resend verification email
