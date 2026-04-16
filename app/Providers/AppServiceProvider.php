@@ -233,28 +233,7 @@ class AppServiceProvider extends ServiceProvider
      */
     private function configureAuthNotifications(): void
     {
-        // Verify Email Configuration
-        VerifyEmail::createUrlUsing(function (object $notifiable): string {
-            $signedUrl = URL::temporarySignedRoute(
-                'verification.verify',
-                now()->addMinutes(config('auth.verification.expire', 60)),
-                [
-                    'id' => $notifiable->getKey(),
-                    'hash' => sha1($notifiable->getEmailForVerification()),
-                ]
-            );
 
-            $query = parse_url($signedUrl, PHP_URL_QUERY) ?? '';
-            $params = [];
-            parse_str($query, $params);
-
-            $params['id'] = (string) $notifiable->getKey();
-            $params['hash'] = sha1($notifiable->getEmailForVerification());
-
-            $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
-
-            return Str::finish($frontendUrl, '/').'verify-email?'.http_build_query($params);
-        });
 
         VerifyEmail::toMailUsing(function (object $notifiable, string $url): MailMessage {
             return (new MailMessage)
