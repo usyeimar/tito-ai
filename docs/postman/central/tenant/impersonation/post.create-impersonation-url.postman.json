@@ -1,0 +1,258 @@
+{
+  "item": {
+    "name": "Create Impersonation URL",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"tenant\": \"{{tenant_slug}}\",\n  \"redirect_url\": \"/dashboard\"\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/api/auth/impersonate",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "api",
+          "auth",
+          "impersonate"
+        ]
+      },
+      "description": "Create a tenant impersonation URL for a workspace the authenticated central user can access.\n\n**Auth:** requires authenticated central session/token (`auth:central-api`).\n\n**Query params:** none\n\n**Request body validation:**\n- `tenant`: required|string|max:255 (tenant slug)\n- `redirect_url`: sometimes|string|max:2048|starts_with:/\n\n**Behavior:**\n- Requires either direct tenant membership or `support`/`super_admin` role\n- Requires mapped active tenant account for the central user\n- Returns a tenant API impersonation URL and token"
+    },
+    "response": [
+      {
+        "name": "200 URL Issued",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/impersonate",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "impersonate"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"url\": \"{{base_url}}/{{tenant_slug}}/api/impersonate/impersonation_token\",\n    \"token\": \"impersonation_token\"\n  }\n}"
+      },
+      {
+        "name": "401 Unauthenticated",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/impersonate",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "impersonate"
+            ]
+          }
+        },
+        "status": "Unauthorized",
+        "code": 401,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 401,\n      \"code\": \"UNAUTHENTICATED\",\n      \"title\": \"Unauthenticated\",\n      \"detail\": \"Unauthenticated.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "403 Forbidden",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/impersonate",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "impersonate"
+            ]
+          }
+        },
+        "status": "Forbidden",
+        "code": 403,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 403,\n      \"code\": \"FORBIDDEN\",\n      \"title\": \"Forbidden\",\n      \"detail\": \"This action is unauthorized.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "403 Tenant Impersonation Unavailable",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/impersonate",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "impersonate"
+            ]
+          }
+        },
+        "status": "Forbidden",
+        "code": 403,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 403,\n      \"code\": \"TENANT_IMPERSONATION_UNAVAILABLE\",\n      \"title\": \"Tenant Impersonation Unavailable\",\n      \"detail\": \"Your tenant account is inactive or unavailable. Please contact your workspace administrator.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "404 Workspace Not Found",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/impersonate",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "impersonate"
+            ]
+          }
+        },
+        "status": "Not Found",
+        "code": 404,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 404,\n      \"code\": \"NOT_FOUND\",\n      \"title\": \"Not Found\",\n      \"detail\": \"Workspace not found.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Validation Error",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/impersonate",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "impersonate"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"The tenant field is required.\",\n      \"source\": {\n        \"pointer\": \"tenant\"\n      }\n    },\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"The redirect url field must start with one of the following: /.\",\n      \"source\": {\n        \"pointer\": \"redirect_url\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "413 Payload Too Large",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/impersonate",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "impersonate"
+            ]
+          }
+        },
+        "status": "Payload Too Large",
+        "code": 413,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 413,\n      \"code\": \"PAYLOAD_TOO_LARGE\",\n      \"title\": \"Payload Too Large\",\n      \"detail\": \"Uploaded file is too large. Maximum allowed size is 10MB.\"\n    }\n  ]\n}"
+      }
+    ],
+    "event": [
+      {
+        "listen": "test",
+        "script": {
+          "exec": [
+            "const payload = pm.response.json();",
+            "if (payload && payload.data && payload.data.token) {",
+            "pm.environment.set('impersonation_token', payload.data.token);",
+            "pm.collectionVariables.set('impersonation_token', payload.data.token);",
+            "}"
+          ],
+          "type": "text/javascript",
+          "packages": {},
+          "requests": {}
+        }
+      }
+    ]
+  },
+  "order": 10
+}

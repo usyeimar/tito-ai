@@ -1,0 +1,37 @@
+{
+  "item": {
+    "name": "Assign User Roles",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"roles\": [\"admin\"]\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/users/{{tenant_user_id}}/roles",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "users",
+          "{{tenant_user_id}}",
+          "roles"
+        ]
+      }
+    }
+  },
+  "order": 90
+}

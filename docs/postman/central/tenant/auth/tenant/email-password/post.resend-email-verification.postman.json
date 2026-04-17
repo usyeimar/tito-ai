@@ -1,0 +1,219 @@
+{
+  "item": {
+    "name": "Resend Email Verification",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"reason\": \"signup\"\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/api/auth/email/verification-notification",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "api",
+          "auth",
+          "email",
+          "verification-notification"
+        ]
+      },
+      "description": "Resend a verification email for the authenticated central user.\n\n**Auth:** requires authenticated central session/token (`auth:central-api`).\n\n**Query params:** none\n\n**Request body validation:**\n- `reason`: sometimes|string|in:signup,update\n  - defaults to `signup` when omitted\n\n**Behavior:**\n- If user is already verified, returns `422 VALIDATION_ERROR`\n- Otherwise sends a new verification link and returns a success message\n- Endpoint is rate-limited (`throttle:auth.email_verification`)"
+    },
+    "response": [
+      {
+        "name": "200 Notification Sent",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/email/verification-notification",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "email",
+              "verification-notification"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"message\": \"A new verification link has been sent to your email address.\"\n  }\n}"
+      },
+      {
+        "name": "401 Unauthenticated",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/email/verification-notification",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "email",
+              "verification-notification"
+            ]
+          }
+        },
+        "status": "Unauthorized",
+        "code": 401,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 401,\n      \"code\": \"UNAUTHENTICATED\",\n      \"title\": \"Unauthenticated\",\n      \"detail\": \"Unauthenticated.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Already Verified",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/email/verification-notification",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "email",
+              "verification-notification"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"This email address has already been verified.\",\n      \"source\": {\n        \"pointer\": \"email\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Invalid Reason",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/email/verification-notification",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "email",
+              "verification-notification"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"The selected reason is invalid.\",\n      \"source\": {\n        \"pointer\": \"reason\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "429 Too Many Requests",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/email/verification-notification",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "email",
+              "verification-notification"
+            ]
+          }
+        },
+        "status": "Too Many Requests",
+        "code": 429,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 429,\n      \"code\": \"TOO_MANY_REQUESTS\",\n      \"title\": \"Too Many Requests\",\n      \"detail\": \"Too Many Attempts.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "413 Payload Too Large",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/email/verification-notification",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "email",
+              "verification-notification"
+            ]
+          }
+        },
+        "status": "Payload Too Large",
+        "code": 413,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 413,\n      \"code\": \"PAYLOAD_TOO_LARGE\",\n      \"title\": \"Payload Too Large\",\n      \"detail\": \"Uploaded file is too large. Maximum allowed size is 10MB.\"\n    }\n  ]\n}"
+      }
+    ]
+  },
+  "order": 40
+}

@@ -1,0 +1,36 @@
+{
+  "item": {
+    "name": "Update Profile",
+    "request": {
+      "method": "PATCH",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"name\": \"Updated User\",\n  \"email\": \"updated@example.com\"\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/api/auth/me",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "api",
+          "auth",
+          "me"
+        ]
+      },
+      "description": "Changing email requires recent password confirmation via /api/auth/confirm-password."
+    }
+  },
+  "order": 50
+}

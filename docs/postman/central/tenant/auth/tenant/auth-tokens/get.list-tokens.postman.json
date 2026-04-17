@@ -1,0 +1,84 @@
+{
+  "item": {
+    "name": "List Tokens",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/api/tokens",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "api",
+          "tokens"
+        ],
+        "query": [
+          {
+            "key": "filter[search]",
+            "value": "",
+            "disabled": true
+          },
+          {
+            "key": "sort",
+            "value": "",
+            "disabled": true
+          },
+          {
+            "key": "include",
+            "value": "",
+            "disabled": true
+          },
+          {
+            "key": "page[number]",
+            "value": "",
+            "disabled": true
+          },
+          {
+            "key": "page[size]",
+            "value": "",
+            "disabled": true
+          }
+        ]
+      },
+      "description": "This endpoint does not expose filter parameters. It always returns the current user's active personal access tokens."
+    },
+    "response": [
+      {
+        "name": "200 Tokens",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/tokens",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "tokens"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"tokens\": [\n      {\n        \"id\": 1,\n        \"name\": \"Laptop\",\n        \"created_at\": \"2025-01-01T00:00:00.000000Z\",\n        \"expires_at\": null,\n        \"revoked\": false\n      }\n    ]\n  }\n}"
+      }
+    ]
+  },
+  "order": 30
+}

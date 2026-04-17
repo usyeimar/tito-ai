@@ -1,0 +1,35 @@
+{
+  "item": {
+    "name": "Create Invitation (Single)",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"email\": \"invitee@example.com\"\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/invitations",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "invitations"
+        ]
+      }
+    }
+  },
+  "order": 40
+}

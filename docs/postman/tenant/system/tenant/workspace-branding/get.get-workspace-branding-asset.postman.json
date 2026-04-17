@@ -1,0 +1,28 @@
+{
+  "item": {
+    "name": "Get Workspace Branding Asset",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "image/webp"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/workspace-branding/logotype",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "workspace-branding",
+          "logotype"
+        ]
+      },
+      "description": "Fetch a workspace branding asset from tenant context.\n\n**Auth:** requires authenticated tenant session/token (`auth:tenant-api`).\n\n**Path params:**\n- `asset`: `logotype` or `logomark`"
+    }
+  },
+  "order": 10
+}

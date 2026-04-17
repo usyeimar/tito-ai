@@ -1,0 +1,35 @@
+{
+  "item": {
+    "name": "Create Role",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"name\": \"Support\",\n  \"permissions\": [\"user.view\", \"contact.view\"]\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/roles",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "roles"
+        ]
+      }
+    }
+  },
+  "order": 60
+}

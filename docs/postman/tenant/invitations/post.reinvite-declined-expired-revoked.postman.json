@@ -1,0 +1,28 @@
+{
+  "item": {
+    "name": "Reinvite (Declined/Expired/Revoked)",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/invitations/{{invitation_id}}/reinvite",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "invitations",
+          "{{invitation_id}}",
+          "reinvite"
+        ]
+      }
+    }
+  },
+  "order": 50
+}

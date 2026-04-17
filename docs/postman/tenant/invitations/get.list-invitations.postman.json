@@ -1,0 +1,118 @@
+{
+  "item": {
+    "name": "List Invitations",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/invitations",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "invitations"
+        ],
+        "query": [
+          {
+            "key": "filter[search]",
+            "value": "",
+            "disabled": true
+          },
+          {
+            "key": "sort",
+            "value": "",
+            "disabled": true
+          },
+          {
+            "key": "include",
+            "value": "",
+            "disabled": true
+          },
+          {
+            "key": "page[number]",
+            "value": "",
+            "disabled": true
+          },
+          {
+            "key": "page[size]",
+            "value": "",
+            "disabled": true
+          }
+        ]
+      },
+      "description": "Strict query DSL only. Legacy params `q`, `filters[]`, `sort[]`, `include[]`, top-level `page`, and `per_page` are not supported.\n\nAvailable filters:\n- `filter[search]`\n\nThis endpoint does not support `sort`, `include`, or `page[number]`/`page[size]`.\nExample: `?filter[search]=pending`"
+    },
+    "response": [
+      {
+        "name": "409 Pending invitation conflict",
+        "originalRequest": {
+          "method": "GET",
+          "header": [
+            {
+              "key": "Accept",
+              "value": "application/json"
+            }
+          ],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/invitations",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "invitations"
+            ],
+            "query": [
+              {
+                "key": "filter[search]",
+                "value": "",
+                "disabled": true
+              },
+              {
+                "key": "sort",
+                "value": "",
+                "disabled": true
+              },
+              {
+                "key": "include",
+                "value": "",
+                "disabled": true
+              },
+              {
+                "key": "page[number]",
+                "value": "",
+                "disabled": true
+              },
+              {
+                "key": "page[size]",
+                "value": "",
+                "disabled": true
+              }
+            ]
+          },
+          "description": "Strict query DSL only. Legacy params `q`, `filters[]`, `sort[]`, `include[]`, top-level `page`, and `per_page` are not supported.\n\nAvailable filters:\n- `filter[search]`\n\nThis endpoint does not support `sort`, `include`, or `page[number]`/`page[size]`.\nExample: `?filter[search]=pending`"
+        },
+        "status": "Conflict",
+        "code": 409,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 409,\n      \"code\": \"INVITATION_PENDING_CONFLICT\",\n      \"title\": \"Invitation Conflict\",\n      \"detail\": \"A pending invitation already exists for this email in this workspace.\"\n    }\n  ]\n}"
+      }
+    ]
+  },
+  "order": 20
+}

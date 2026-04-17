@@ -1,0 +1,74 @@
+{
+  "item": {
+    "name": "End Impersonation",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        },
+        {
+          "key": "X-Auth-Mode",
+          "value": "{{auth_mode}}"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/impersonate/end",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "impersonate",
+          "end"
+        ]
+      },
+      "description": "Ends the current tenant impersonation. Cookie mode clears tenant auth cookies."
+    },
+    "response": [
+      {
+        "name": "200 Ended",
+        "originalRequest": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Accept",
+              "value": "application/json"
+            },
+            {
+              "key": "X-Auth-Mode",
+              "value": "{{auth_mode}}"
+            }
+          ],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/impersonate/end",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "impersonate",
+              "end"
+            ]
+          },
+          "description": "Ends the current tenant impersonation. Cookie mode clears tenant auth cookies."
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"message\": \"Impersonation ended.\"\n  }\n}"
+      }
+    ]
+  },
+  "order": 10
+}

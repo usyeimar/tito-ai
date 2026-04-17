@@ -1,0 +1,303 @@
+{
+  "item": {
+    "name": "Microsoft Login",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        },
+        {
+          "key": "X-Auth-Mode",
+          "value": "{{auth_mode}}"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"access_token\": \"{{microsoft_access_token}}\",\n  \"device_name\": \"{{device_name}}\"\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/api/auth/microsoft",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "api",
+          "auth",
+          "microsoft"
+        ]
+      },
+      "description": "Authenticate using a Microsoft OAuth access token.\n\n**Auth:** not required.\n\n**Query params:** none\n\n**Request body validation:**\n- `access_token`: required|string\n- `device_name`: sometimes|nullable|string|max:255\n\n**Authentication mode:**\nUses `X-Auth-Mode` (`token`|`cookie`).\n- **Token mode:** returns access/refresh tokens in JSON\n- **Cookie mode:** sets HttpOnly central auth cookies and omits token fields from JSON\n\n**Behavior:**\n- Verifies Microsoft access token with Socialite\n- Creates or links a local account by provider+subject/email\n- Returns `tfa_required` flow when user has two-factor enabled"
+    },
+    "response": [
+      {
+        "name": "200 Authenticated (Token Mode)",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/microsoft",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "microsoft"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"user_id\",\n      \"name\": \"Microsoft User\",\n      \"email\": \"user@example.com\",\n      \"profile_picture_url\": null,\n      \"two_factor_enabled\": false,\n      \"permissions\": {}\n    },\n    \"tenants\": [\n      {\n        \"id\": \"1\",\n        \"slug\": \"demo\",\n        \"name\": \"Demo Tenant\",\n        \"created_at\": \"2025-01-01T00:00:00.000000Z\",\n        \"updated_at\": \"2025-01-01T00:00:00.000000Z\"\n      }\n    ],\n    \"email_verification_required\": false,\n    \"tfa_required\": false,\n    \"access_token\": \"token\",\n    \"refresh_token\": \"refresh_token\",\n    \"expires_in\": 3600,\n    \"token_type\": \"Bearer\"\n  }\n}"
+      },
+      {
+        "name": "200 Authenticated (Cookie Mode)",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/microsoft",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "microsoft"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"user_id\",\n      \"name\": \"Microsoft User\",\n      \"email\": \"user@example.com\",\n      \"profile_picture_url\": null,\n      \"two_factor_enabled\": false,\n      \"permissions\": {}\n    },\n    \"tenants\": [\n      {\n        \"id\": \"1\",\n        \"slug\": \"demo\",\n        \"name\": \"Demo Tenant\",\n        \"created_at\": \"2025-01-01T00:00:00.000000Z\",\n        \"updated_at\": \"2025-01-01T00:00:00.000000Z\"\n      }\n    ],\n    \"email_verification_required\": false,\n    \"tfa_required\": false,\n    \"expires_in\": 3600\n  }\n}"
+      },
+      {
+        "name": "200 TFA Required",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/microsoft",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "microsoft"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"user_id\",\n      \"name\": \"Microsoft User\",\n      \"email\": \"user@example.com\",\n      \"profile_picture_url\": null,\n      \"two_factor_enabled\": true,\n      \"permissions\": {}\n    },\n    \"tenants\": [\n      {\n        \"id\": \"1\",\n        \"slug\": \"demo\",\n        \"name\": \"Demo Tenant\",\n        \"created_at\": \"2025-01-01T00:00:00.000000Z\",\n        \"updated_at\": \"2025-01-01T00:00:00.000000Z\"\n      }\n    ],\n    \"email_verification_required\": false,\n    \"tfa_required\": true,\n    \"tfa_token\": \"tfa_token\"\n  }\n}"
+      },
+      {
+        "name": "422 Validation Error",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/microsoft",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "microsoft"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"The access token field is required.\",\n      \"source\": {\n        \"pointer\": \"access_token\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Invalid Access Token",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/microsoft",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "microsoft"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"Invalid access token.\",\n      \"source\": {\n        \"pointer\": \"access_token\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Social Email Required",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/microsoft",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "microsoft"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"Social account email is required.\",\n      \"source\": {\n        \"pointer\": \"access_token\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 OAuth Client Not Configured",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/microsoft",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "microsoft"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"OAuth client is not configured.\",\n      \"source\": {\n        \"pointer\": \"access_token\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "429 Too Many Requests",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/microsoft",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "microsoft"
+            ]
+          }
+        },
+        "status": "Too Many Requests",
+        "code": 429,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 429,\n      \"code\": \"TOO_MANY_REQUESTS\",\n      \"title\": \"Too Many Requests\",\n      \"detail\": \"Too Many Attempts.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "413 Payload Too Large",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/microsoft",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "microsoft"
+            ]
+          }
+        },
+        "status": "Payload Too Large",
+        "code": 413,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 413,\n      \"code\": \"PAYLOAD_TOO_LARGE\",\n      \"title\": \"Payload Too Large\",\n      \"detail\": \"Uploaded file is too large. Maximum allowed size is 10MB.\"\n    }\n  ]\n}"
+      }
+    ]
+  },
+  "order": 20
+}

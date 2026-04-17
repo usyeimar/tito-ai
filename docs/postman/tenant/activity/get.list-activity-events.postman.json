@@ -1,0 +1,294 @@
+{
+  "item": {
+    "name": "List Activity Events",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/activity",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "activity"
+        ],
+        "query": [
+          {
+            "key": "filter[subject_type]",
+            "value": "{{subject_type}}",
+            "description": "Required. Entity type key. Allowed: lead, contact, company, property, vendor_company, project, tenant_user, email, phone, address, assignment, contact_assignment, file, file_folder, email_template, document_template",
+            "disabled": true
+          },
+          {
+            "key": "filter[subject_id]",
+            "value": "{{subject_id}}",
+            "description": "Required. Entity primary key (ULID, max 64 chars)",
+            "disabled": true
+          },
+          {
+            "key": "filter[include_related]",
+            "value": "true",
+            "description": "Boolean. When true (default), includes events where entity appears as a related entity, not just as the subject",
+            "disabled": true
+          },
+          {
+            "key": "filter[event_type]",
+            "value": "",
+            "description": "Filter by event type. Operators: eq (default), ne, in, not_in, contains, starts_with, ends_with, does_not_contain. Example: property.updated",
+            "disabled": true
+          },
+          {
+            "key": "filter[actor_id]",
+            "value": "",
+            "description": "Filter by actor ID (ULID). Operators: eq (default), ne, in, not_in, contains, starts_with, ends_with, does_not_contain",
+            "disabled": true
+          },
+          {
+            "key": "filter[origin]",
+            "value": "",
+            "description": "Filter by origin. Values: api, system, job. Operators: eq (default), ne, in, not_in, contains, starts_with, ends_with, does_not_contain",
+            "disabled": true
+          },
+          {
+            "key": "filter[request_id]",
+            "value": "",
+            "description": "Filter by request correlation ID (e.g., req_01jm...). Operators: eq (default), ne, in, not_in, contains, starts_with, ends_with, does_not_contain",
+            "disabled": true
+          },
+          {
+            "key": "filter[workflow_run_id]",
+            "value": "",
+            "description": "Filter by workflow run ID (ULID). Operators: eq (default), ne, in, not_in, contains, starts_with, ends_with, does_not_contain",
+            "disabled": true
+          },
+          {
+            "key": "filter[occurred_at]",
+            "value": "",
+            "description": "Date filter. Operators: eq, ne, gt, gte, lt, lte, between (expects array of two ISO dates). Example: gte:2026-03-01T00:00:00Z",
+            "disabled": true
+          },
+          {
+            "key": "q",
+            "value": "",
+            "description": "Free-text search across: event_type, subject_label, actor_label, related_label",
+            "disabled": true
+          },
+          {
+            "key": "sort",
+            "value": "",
+            "description": "Comma-separated signed fields (+ asc, - desc). Default: -occurred_at,-id",
+            "disabled": true
+          },
+          {
+            "key": "page",
+            "value": "1",
+            "description": "Page number (default: 1)",
+            "disabled": true
+          },
+          {
+            "key": "per_page",
+            "value": "15",
+            "description": "Items per page (default: 15, max: 200)",
+            "disabled": true
+          }
+        ]
+      },
+      "description": "List activity events for a specific entity, with optional filtering, search, and pagination.\n\n**Auth:** requires authenticated tenant session/token (`auth:tenant-api`) and `activity` module view permission. Additionally, the viewer must have `view` permission on the subject entity.\n\n**Required query params:**\n- `filter[subject_type]`: one of the configured entity type keys\n- `filter[subject_id]`: ULID of the target record\n\n**Optional query params:**\n- `filter[include_related]`: boolean (default true) \u2014 include events where entity is a related entity\n- `filter[event_type]`, `filter[actor_id]`, `filter[origin]`, `filter[request_id]`, `filter[workflow_run_id]`: string filters\n- `filter[occurred_at]`: date filter with operators\n- `q`: free-text search\n- `sort`: signed sort fields\n- `page`, `per_page`: pagination\n\n**String filter operators:** eq, ne, in, not_in/nin, contains, starts_with, ends_with, does_not_contain\n\n**Date filter operators:** eq, ne, gt, gte, lt, lte, between\n\n**Default sort:** `-occurred_at,-id`\n\n**Authorization notes:**\n- Module-level: viewer must have `activity` module view permission\n- Subject-level: viewer must have `view` permission on the subject entity\n- For commons entities (email, phone, address, file, assignment, contact_assignment), authorization is checked against the parent entity\n\n**Event types follow pattern:** `{module}.{action}` (e.g., `property.created`, `contact.updated`, `email.deleted`, `email_template.cloned`)\n\n**include parameter:** Prohibited \u2014 relations are always loaded.\n\n**Example:**\n- `?filter[subject_type]=property&filter[subject_id]=<ulid>&filter[event_type]=property.updated&sort=-occurred_at&page=1&per_page=25`"
+    },
+    "response": [
+      {
+        "name": "200 Activity Events (Paginated)",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/activity?filter[subject_type]=property&filter[subject_id]=01jk000000000000000000prop",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "activity"
+            ],
+            "query": [
+              {
+                "key": "filter[subject_type]",
+                "value": "property"
+              },
+              {
+                "key": "filter[subject_id]",
+                "value": "01jk000000000000000000prop"
+              }
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": [\n    {\n      \"id\": \"01jm000000000000000000evt1\",\n      \"occurred_at\": \"2026-03-01T14:30:00.000000Z\",\n      \"event_type\": \"property.updated\",\n      \"origin\": \"api\",\n      \"request_id\": \"req_01jm000000000000000req01\",\n      \"subject\": {\n        \"type\": \"property\",\n        \"id\": \"01jk000000000000000000prop\",\n        \"label\": \"Main Office Building\"\n      },\n      \"related\": [\n        {\n          \"type\": \"company\",\n          \"id\": \"01jk0000000000000000000co1\",\n          \"label\": \"Acme Corp\",\n          \"relation\": null\n        }\n      ],\n      \"actor\": {\n        \"type\": \"tenant_user\",\n        \"id\": \"01jk0000000000000000user01\",\n        \"label\": \"John Doe\"\n      },\n      \"workflow_actor\": null,\n      \"workflow_run_id\": null,\n      \"is_redacted\": false,\n      \"changes\": {\n        \"name\": {\n          \"from\": \"Old Building Name\",\n          \"to\": \"Main Office Building\"\n        },\n        \"is_active\": {\n          \"from\": true,\n          \"to\": false\n        }\n      },\n      \"metadata\": {\n        \"module\": \"property\",\n        \"action\": \"update\",\n        \"origin_context\": {\n          \"method\": \"PATCH\",\n          \"path\": \"acme/api/properties/01jk000000000000000000prop\"\n        }\n      }\n    },\n    {\n      \"id\": \"01jm000000000000000000evt2\",\n      \"occurred_at\": \"2026-03-01T12:00:00.000000Z\",\n      \"event_type\": \"property.created\",\n      \"origin\": \"api\",\n      \"request_id\": \"req_01jm000000000000000req02\",\n      \"subject\": {\n        \"type\": \"property\",\n        \"id\": \"01jk000000000000000000prop\",\n        \"label\": \"Old Building Name\"\n      },\n      \"related\": [\n        {\n          \"type\": \"company\",\n          \"id\": \"01jk0000000000000000000co1\",\n          \"label\": \"Acme Corp\",\n          \"relation\": null\n        }\n      ],\n      \"actor\": {\n        \"type\": \"tenant_user\",\n        \"id\": \"01jk0000000000000000user01\",\n        \"label\": \"John Doe\"\n      },\n      \"workflow_actor\": null,\n      \"workflow_run_id\": null,\n      \"is_redacted\": false,\n      \"changes\": {\n        \"id\": {\n          \"from\": null,\n          \"to\": \"01jk000000000000000000prop\"\n        },\n        \"name\": {\n          \"from\": null,\n          \"to\": \"Old Building Name\"\n        },\n        \"company_id\": {\n          \"from\": null,\n          \"to\": \"01jk0000000000000000000co1\"\n        },\n        \"is_active\": {\n          \"from\": null,\n          \"to\": true\n        }\n      },\n      \"metadata\": {\n        \"module\": \"property\",\n        \"action\": \"create\",\n        \"origin_context\": {\n          \"method\": \"POST\",\n          \"path\": \"acme/api/properties\"\n        }\n      }\n    }\n  ],\n  \"links\": {\n    \"first\": \"https://app.tito.ai/acme/api/activity?page=1\",\n    \"last\": \"https://app.tito.ai/acme/api/activity?page=1\",\n    \"prev\": null,\n    \"next\": null\n  },\n  \"meta\": {\n    \"current_page\": 1,\n    \"from\": 1,\n    \"last_page\": 1,\n    \"links\": [\n      {\n        \"url\": null,\n        \"label\": \"&laquo; Previous\",\n        \"active\": false\n      },\n      {\n        \"url\": \"https://app.tito.ai/acme/api/activity?page=1\",\n        \"label\": \"1\",\n        \"active\": true\n      },\n      {\n        \"url\": null,\n        \"label\": \"Next &raquo;\",\n        \"active\": false\n      }\n    ],\n    \"path\": \"https://app.tito.ai/acme/api/activity\",\n    \"per_page\": 15,\n    \"to\": 2,\n    \"total\": 2\n  }\n}"
+      },
+      {
+        "name": "401 Unauthenticated",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/activity?filter[subject_type]=property&filter[subject_id]=01jk000000000000000000prop",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "activity"
+            ],
+            "query": [
+              {
+                "key": "filter[subject_type]",
+                "value": "property"
+              },
+              {
+                "key": "filter[subject_id]",
+                "value": "01jk000000000000000000prop"
+              }
+            ]
+          }
+        },
+        "status": "Unauthorized",
+        "code": 401,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 401,\n      \"code\": \"UNAUTHENTICATED\",\n      \"title\": \"Unauthenticated\",\n      \"detail\": \"Unauthenticated.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "403 Forbidden",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/activity?filter[subject_type]=property&filter[subject_id]=01jk000000000000000000prop",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "activity"
+            ],
+            "query": [
+              {
+                "key": "filter[subject_type]",
+                "value": "property"
+              },
+              {
+                "key": "filter[subject_id]",
+                "value": "01jk000000000000000000prop"
+              }
+            ]
+          }
+        },
+        "status": "Forbidden",
+        "code": 403,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 403,\n      \"code\": \"FORBIDDEN\",\n      \"title\": \"Forbidden\",\n      \"detail\": \"This action is unauthorized.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "404 Not Found (Subject entity not found)",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/activity?filter[subject_type]=property&filter[subject_id]=nonexistent",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "activity"
+            ],
+            "query": [
+              {
+                "key": "filter[subject_type]",
+                "value": "property"
+              },
+              {
+                "key": "filter[subject_id]",
+                "value": "nonexistent"
+              }
+            ]
+          }
+        },
+        "status": "Not Found",
+        "code": 404,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 404,\n      \"code\": \"NOT_FOUND\",\n      \"title\": \"Not Found\",\n      \"detail\": \"Resource not found.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Validation Error (Missing required filters)",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/activity",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "activity"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"The filter.subject type field is required.\",\n      \"source\": {\n        \"pointer\": \"filter.subject_type\"\n      }\n    },\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"The filter.subject id field is required.\",\n      \"source\": {\n        \"pointer\": \"filter.subject_id\"\n      }\n    }\n  ]\n}"
+      }
+    ]
+  },
+  "order": 10
+}

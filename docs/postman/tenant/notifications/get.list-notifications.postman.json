@@ -1,0 +1,148 @@
+{
+  "item": {
+    "name": "List Notifications",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/notifications",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "notifications"
+        ],
+        "query": [
+          {
+            "key": "filter[unread]",
+            "value": "true",
+            "description": "Boolean. When true, returns only notifications where read_at is null.",
+            "disabled": true
+          },
+          {
+            "key": "page[number]",
+            "value": "1",
+            "description": "Page number (default: 1)",
+            "disabled": true
+          },
+          {
+            "key": "page[size]",
+            "value": "25",
+            "description": "Items per page (default: 25, max: 100)",
+            "disabled": true
+          }
+        ]
+      },
+      "description": "List the authenticated user's notifications, newest first.\n\n**Auth:** requires authenticated tenant session/token (`auth:tenant-api`).\n\n**Query params:**\n- `filter[unread]` \u2014 boolean; when `true`, only unread notifications are returned\n- `page[number]` \u2014 page number (default: 1)\n- `page[size]` \u2014 items per page (default: 25, max: 100)\n\n**Notes:**\n- Results are scoped to the authenticated user (no other user's notifications are visible).\n- Ordered by `created_at` descending.\n- Returns standard Laravel pagination with `data`, `meta`, and `links`.\n\n**Recommended on app start:**\n- `GET /notifications?filter[unread]=true` to hydrate the notification bell."
+    },
+    "response": [
+      {
+        "name": "200 Notifications (Paginated)",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/notifications?filter[unread]=true",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "notifications"
+            ],
+            "query": [
+              {
+                "key": "filter[unread]",
+                "value": "true"
+              }
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": [\n    {\n      \"id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n      \"notifiable_type\": \"user\",\n      \"notifiable_id\": \"01jk2k85cmxw63nc8yveyf6abc\",\n      \"payload\": {\n        \"title\": \"Contact import completed\",\n        \"message\": \"11 contacts processed \\u2014 10 created, 1 failed.\",\n        \"icon\": \"IconFileImport\",\n        \"source\": \"contact_import\",\n        \"meta\": {\n          \"import_id\": \"01jk3f00abcw63nc8yveyf6xyz\"\n        }\n      },\n      \"read_at\": null,\n      \"created_at\": \"2026-03-06T12:00:00.000000Z\",\n      \"updated_at\": \"2026-03-06T12:00:00.000000Z\"\n    }\n  ],\n  \"links\": [\n    {\n      \"url\": null,\n      \"label\": \"&laquo; Previous\",\n      \"page\": null,\n      \"active\": false\n    },\n    {\n      \"url\": \"https://app.tito.ai/demo/api/notifications?page=1\",\n      \"label\": \"1\",\n      \"page\": 1,\n      \"active\": true\n    },\n    {\n      \"url\": null,\n      \"label\": \"Next &raquo;\",\n      \"page\": null,\n      \"active\": false\n    }\n  ],\n  \"meta\": {\n    \"current_page\": 1,\n    \"first_page_url\": \"https://app.tito.ai/demo/api/notifications?page=1\",\n    \"from\": 1,\n    \"last_page\": 1,\n    \"last_page_url\": \"https://app.tito.ai/demo/api/notifications?page=1\",\n    \"next_page_url\": null,\n    \"path\": \"https://app.tito.ai/demo/api/notifications\",\n    \"per_page\": 25,\n    \"prev_page_url\": null,\n    \"to\": 1,\n    \"total\": 1\n  }\n}"
+      },
+      {
+        "name": "401 Unauthenticated",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/notifications",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "notifications"
+            ]
+          }
+        },
+        "status": "Unauthorized",
+        "code": 401,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 401,\n      \"code\": \"UNAUTHENTICATED\",\n      \"title\": \"Unauthenticated\",\n      \"detail\": \"Unauthenticated.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Validation Error",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/notifications?page[size]=999",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "notifications"
+            ],
+            "query": [
+              {
+                "key": "page[size]",
+                "value": "999"
+              }
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"The page.size field must not be greater than 100.\",\n      \"source\": {\n        \"pointer\": \"page.size\"\n      }\n    }\n  ]\n}"
+      }
+    ]
+  },
+  "order": 20
+}

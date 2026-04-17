@@ -1,0 +1,210 @@
+{
+  "item": {
+    "name": "Get Recovery Codes",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/api/auth/tfa/recovery-codes",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "api",
+          "auth",
+          "tfa",
+          "recovery-codes"
+        ]
+      },
+      "description": "Retrieve current two-factor recovery codes.\n\n**Auth:** requires authenticated central session/token (`auth:central-api`).\n\n**Query params:** none\n\n**Behavior:**\n- Requires verified email\n- Requires recent password confirmation (`POST /api/auth/tfa/challenge`)\n- Requires 2FA to be enabled"
+    },
+    "response": [
+      {
+        "name": "200 Recovery Codes",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/tfa/recovery-codes",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "tfa",
+              "recovery-codes"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"recovery_codes\": [\n      {\n        \"code\": \"ABC123-XYZ789\",\n        \"used_at\": null\n      },\n      {\n        \"code\": \"DEF456-UVW000\",\n        \"used_at\": \"2025-01-10T12:00:00.000000Z\"\n      }\n    ]\n  }\n}"
+      },
+      {
+        "name": "401 Unauthenticated",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/tfa/recovery-codes",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "tfa",
+              "recovery-codes"
+            ]
+          }
+        },
+        "status": "Unauthorized",
+        "code": 401,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 401,\n      \"code\": \"UNAUTHENTICATED\",\n      \"title\": \"Unauthenticated\",\n      \"detail\": \"Unauthenticated.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "403 Email Verification Required",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/tfa/recovery-codes",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "tfa",
+              "recovery-codes"
+            ]
+          }
+        },
+        "status": "Forbidden",
+        "code": 403,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 403,\n      \"code\": \"FORBIDDEN\",\n      \"title\": \"Forbidden\",\n      \"detail\": \"Email verification is required for management and destructive actions.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Password Confirmation Required",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/tfa/recovery-codes",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "tfa",
+              "recovery-codes"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"Please confirm your password to continue.\",\n      \"source\": {\n        \"pointer\": \"password\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Two-Factor Not Enabled",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/tfa/recovery-codes",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "tfa",
+              "recovery-codes"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"Two-factor authentication is not enabled.\",\n      \"source\": {\n        \"pointer\": \"two_factor\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "413 Payload Too Large",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/tfa/recovery-codes",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "tfa",
+              "recovery-codes"
+            ]
+          }
+        },
+        "status": "Payload Too Large",
+        "code": 413,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 413,\n      \"code\": \"PAYLOAD_TOO_LARGE\",\n      \"title\": \"Payload Too Large\",\n      \"detail\": \"Uploaded file is too large. Maximum allowed size is 10MB.\"\n    }\n  ]\n}"
+      }
+    ]
+  },
+  "order": 10
+}

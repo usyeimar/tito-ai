@@ -1,0 +1,184 @@
+{
+  "item": {
+    "name": "List Tenants",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/api/tenants",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "api",
+          "tenants"
+        ],
+        "query": [
+          {
+            "key": "filter[search]",
+            "value": "",
+            "description": "Full-text search across: name, slug, search_blob",
+            "disabled": true
+          },
+          {
+            "key": "filter[id]",
+            "value": "",
+            "description": "Exact match, comma-separated for IN, !value for NOT, null/!null",
+            "disabled": true
+          },
+          {
+            "key": "sort",
+            "value": "",
+            "description": "Comma-separated fields. Prefix with - for DESC. Available: name, slug",
+            "disabled": true
+          },
+          {
+            "key": "include",
+            "value": "",
+            "description": "Comma-separated relationships to include. Available: users",
+            "disabled": true
+          },
+          {
+            "key": "page[number]",
+            "value": "1",
+            "description": "Page number (default: 1)",
+            "disabled": true
+          },
+          {
+            "key": "page[size]",
+            "value": "15",
+            "description": "Items per page (default: 15, max: 100)",
+            "disabled": true
+          }
+        ]
+      },
+      "description": "List Tenants using canonical query DSL.\n\n**Auth:** requires authenticated tenant session/token (`auth:tenant-api`).\n\n**Query params (strict):**\n- `filter[id]`, `filter[search]`\n- `sort`\n- `include` (`users`)\n- `page[number]`, `page[size]`\n\n**Legacy params prohibited:** `q`, `filters`, `per_page`\n\n**Sortable fields:**\n- `name`, `slug`\n\n**Sort syntax:** comma-separated fields; prefix `-` for descending or use `field:asc|desc`\n\n**Filter value operator syntax:**\n- `value`, `!value`, `>value`, `>=value`, `<value`, `<=value`\n- `a,b`, `!a,b`, `from..to`, `null`, `!null`\n\n**Example:**\n- `?filter[search]=abc&sort=-created_at&page[number]=1&page[size]=25`"
+    },
+    "response": [
+      {
+        "name": "200 Tenants",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/tenants",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "tenants"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"tenants\": [\n      {\n        \"id\": \"tenant_ulid\",\n        \"slug\": \"demo\",\n        \"name\": \"Demo Tenant\",\n        \"logotype_url\": \"https://app.tito.ai/api/tenants/demo/branding/logotype\",\n        \"logomark_url\": \"https://app.tito.ai/api/tenants/demo/branding/logomark\",\n        \"created_at\": \"2025-01-01T00:00:00.000000Z\",\n        \"updated_at\": \"2025-01-01T00:00:00.000000Z\"\n      }\n    ],\n    \"meta\": {\n      \"current_page\": 1,\n      \"last_page\": 1,\n      \"per_page\": 25,\n      \"total\": 1\n    },\n    \"links\": {\n      \"first\": \"https://app.tito.ai/api/tenants?page=1\",\n      \"last\": \"https://app.tito.ai/api/tenants?page=1\",\n      \"prev\": null,\n      \"next\": null\n    }\n  }\n}"
+      },
+      {
+        "name": "401 Unauthenticated",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/tenants",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "tenants"
+            ]
+          }
+        },
+        "status": "Unauthorized",
+        "code": 401,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 401,\n      \"code\": \"UNAUTHENTICATED\",\n      \"title\": \"Unauthenticated\",\n      \"detail\": \"Unauthenticated.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Invalid Query Params",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/tenants?q=demo",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "tenants"
+            ],
+            "query": [
+              {
+                "key": "q",
+                "value": "demo"
+              }
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"The q field is prohibited.\",\n      \"source\": {\n        \"pointer\": \"q\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "413 Payload Too Large",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/tenants",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "tenants"
+            ]
+          }
+        },
+        "status": "Payload Too Large",
+        "code": 413,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 413,\n      \"code\": \"PAYLOAD_TOO_LARGE\",\n      \"title\": \"Payload Too Large\",\n      \"detail\": \"Uploaded file is too large. Maximum allowed size is 10MB.\"\n    }\n  ]\n}"
+      }
+    ]
+  },
+  "order": 40
+}

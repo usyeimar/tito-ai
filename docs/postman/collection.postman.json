@@ -1,0 +1,504 @@
+{
+  "info": {
+    "_postman_id": "69011e18-4290-4823-b2b8-d39f9a314651",
+    "name": "Tito Backend API",
+    "description": "Laravel 12 + Passport + WebAuthn + TFA.\n\nAuth mode:\n\n- Send X-Auth-Mode: token to receive tokens in JSON (default).\n    \n- Send X-Auth-Mode: cookie to receive HttpOnly cookies instead.\n    \n\nAll successful JSON responses are wrapped in { data: ... } by WrapApiResponses.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "14969501",
+    "_collection_link": "https://go.postman.co/collection/14969501-69011e18-4290-4823-b2b8-d39f9a314651?source=collection_link"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://app.tito.ai"
+    },
+    {
+      "key": "email",
+      "value": "admin@workupcloud.test"
+    },
+    {
+      "key": "password",
+      "value": "ChangeMe123!"
+    },
+    {
+      "key": "device_name",
+      "value": "Postman"
+    },
+    {
+      "key": "auth_mode",
+      "value": "token"
+    },
+    {
+      "key": "central_access_token",
+      "value": ""
+    },
+    {
+      "key": "central_refresh_token",
+      "value": ""
+    },
+    {
+      "key": "tenant_access_token",
+      "value": ""
+    },
+    {
+      "key": "tenant_refresh_token",
+      "value": ""
+    },
+    {
+      "key": "tfa_token",
+      "value": ""
+    },
+    {
+      "key": "otp_code",
+      "value": "000000"
+    },
+    {
+      "key": "tfa_secret",
+      "value": ""
+    },
+    {
+      "key": "tfa_otpauth_url",
+      "value": ""
+    },
+    {
+      "key": "recovery_code",
+      "value": ""
+    },
+    {
+      "key": "password_reset_token",
+      "value": ""
+    },
+    {
+      "key": "tenant_slug",
+      "value": "demo"
+    },
+    {
+      "key": "impersonation_token",
+      "value": ""
+    },
+    {
+      "key": "token_id",
+      "value": ""
+    },
+    {
+      "key": "passkey_credential_id",
+      "value": ""
+    },
+    {
+      "key": "google_access_token",
+      "value": ""
+    },
+    {
+      "key": "microsoft_access_token",
+      "value": ""
+    },
+    {
+      "key": "verification_id",
+      "value": ""
+    },
+    {
+      "key": "verification_hash",
+      "value": ""
+    },
+    {
+      "key": "verification_signature",
+      "value": ""
+    },
+    {
+      "key": "verification_expires",
+      "value": ""
+    },
+    {
+      "key": "role_id",
+      "value": ""
+    },
+    {
+      "key": "tenant_user_id",
+      "value": ""
+    },
+    {
+      "key": "profile_picture_id",
+      "value": ""
+    },
+    {
+      "key": "invitation_id",
+      "value": ""
+    },
+    {
+      "key": "invitation_token",
+      "value": ""
+    },
+    {
+      "key": "invitation_expires",
+      "value": ""
+    },
+    {
+      "key": "invitation_signature",
+      "value": ""
+    },
+    {
+      "key": "formula_id",
+      "value": ""
+    },
+    {
+      "key": "assignment_id",
+      "value": ""
+    },
+    {
+      "key": "assignment_request_id",
+      "value": ""
+    },
+    {
+      "key": "address_id",
+      "value": ""
+    },
+    {
+      "key": "addressable_type",
+      "value": "contacts"
+    },
+    {
+      "key": "addressable_id",
+      "value": ""
+    },
+    {
+      "key": "email_id",
+      "value": ""
+    },
+    {
+      "key": "emailable_type",
+      "value": "contacts"
+    },
+    {
+      "key": "emailable_id",
+      "value": ""
+    },
+    {
+      "key": "file_id",
+      "value": ""
+    },
+    {
+      "key": "folder_id",
+      "value": ""
+    },
+    {
+      "key": "fileable_type",
+      "value": "project"
+    },
+    {
+      "key": "fileable_id",
+      "value": ""
+    },
+    {
+      "key": "files_cursor",
+      "value": ""
+    },
+    {
+      "key": "client_upload_id",
+      "value": ""
+    },
+    {
+      "key": "upload_session_id",
+      "value": ""
+    },
+    {
+      "key": "upload_part_1_etag",
+      "value": ""
+    },
+    {
+      "key": "upload_part_2_etag",
+      "value": ""
+    },
+    {
+      "key": "upload_initiate_idempotency_key",
+      "value": ""
+    },
+    {
+      "key": "upload_complete_idempotency_key",
+      "value": ""
+    },
+    {
+      "key": "phone_id",
+      "value": ""
+    },
+    {
+      "key": "phoneable_type",
+      "value": "contacts"
+    },
+    {
+      "key": "phoneable_id",
+      "value": ""
+    },
+    {
+      "key": "company_id",
+      "value": ""
+    },
+    {
+      "key": "company_import_id",
+      "value": ""
+    },
+    {
+      "key": "contact_id",
+      "value": ""
+    },
+    {
+      "key": "contact_assignment_id",
+      "value": ""
+    },
+    {
+      "key": "contact_import_id",
+      "value": ""
+    },
+    {
+      "key": "lead_id",
+      "value": ""
+    },
+    {
+      "key": "project_id",
+      "value": ""
+    },
+    {
+      "key": "project_import_id",
+      "value": ""
+    },
+    {
+      "key": "property_id",
+      "value": ""
+    },
+    {
+      "key": "property_import_id",
+      "value": ""
+    },
+    {
+      "key": "vendor_company_id",
+      "value": ""
+    },
+    {
+      "key": "marketing_campaign_id",
+      "value": ""
+    },
+    {
+      "key": "marketing_run_id",
+      "value": ""
+    },
+    {
+      "key": "marketing_email_identity_id",
+      "value": ""
+    },
+    {
+      "key": "category_id",
+      "value": ""
+    },
+    {
+      "key": "metadata_object",
+      "value": "lead"
+    },
+    {
+      "key": "custom_field_id",
+      "value": ""
+    },
+    {
+      "key": "industry_id",
+      "value": ""
+    },
+    {
+      "key": "license_type_id",
+      "value": ""
+    },
+    {
+      "key": "priority_id",
+      "value": ""
+    },
+    {
+      "key": "resource_type_id",
+      "value": ""
+    },
+    {
+      "key": "source_id",
+      "value": ""
+    },
+    {
+      "key": "status_id",
+      "value": ""
+    },
+    {
+      "key": "tag_id",
+      "value": ""
+    },
+    {
+      "key": "type_id",
+      "value": ""
+    },
+    {
+      "key": "module_catalog_key",
+      "value": "statuses"
+    },
+    {
+      "key": "notification_id",
+      "value": ""
+    },
+    {
+      "key": "equipment_id",
+      "value": ""
+    },
+    {
+      "key": "material_id",
+      "value": ""
+    },
+    {
+      "key": "vehicle_id",
+      "value": ""
+    },
+    {
+      "key": "ringcentral_oauth_code",
+      "value": ""
+    },
+    {
+      "key": "ringcentral_oauth_state",
+      "value": ""
+    },
+    {
+      "key": "ringcentral_webhook_validation_token",
+      "value": ""
+    },
+    {
+      "key": "ringcentral_call_id",
+      "value": ""
+    },
+    {
+      "key": "ringcentral_sms_thread_id",
+      "value": ""
+    },
+    {
+      "key": "ringcentral_voicemail_id",
+      "value": ""
+    },
+    {
+      "key": "ringcentral_agent_user_id",
+      "value": ""
+    },
+    {
+      "key": "ringcentral_contact_id",
+      "value": ""
+    },
+    {
+      "key": "ringcentral_webhook_delivery_id",
+      "value": ""
+    },
+    {
+      "key": "catalog_service_id",
+      "value": ""
+    },
+    {
+      "key": "catalog_service_node_id",
+      "value": ""
+    },
+    {
+      "key": "catalog_service_parent_node_id",
+      "value": ""
+    },
+    {
+      "key": "catalog_service_offering_id",
+      "value": ""
+    },
+    {
+      "key": "catalog_service_engineering_detail_id",
+      "value": ""
+    },
+    {
+      "key": "service_catalog_category_id",
+      "value": ""
+    },
+    {
+      "key": "service_catalog_vendor_company_id",
+      "value": ""
+    },
+    {
+      "key": "service_catalog_root_file_id",
+      "value": ""
+    },
+    {
+      "key": "service_catalog_offering_file_id",
+      "value": ""
+    },
+    {
+      "key": "service_catalog_resource_type_id",
+      "value": ""
+    },
+    {
+      "key": "service_catalog_secondary_resource_type_id",
+      "value": ""
+    },
+    {
+      "key": "service_catalog_material_id",
+      "value": ""
+    },
+    {
+      "key": "service_catalog_material_resource_type_id",
+      "value": ""
+    },
+    {
+      "key": "document_template_id",
+      "value": ""
+    },
+    {
+      "key": "document_template_entity_id",
+      "value": ""
+    },
+    {
+      "key": "email_template_id",
+      "value": ""
+    },
+    {
+      "key": "email_template_entity_id",
+      "value": ""
+    },
+    {
+      "key": "email_template_asset_reference_id",
+      "value": ""
+    },
+    {
+      "key": "outbound_email_id",
+      "value": ""
+    },
+    {
+      "key": "outbound_module_type",
+      "value": "lead"
+    },
+    {
+      "key": "outbound_module_id",
+      "value": ""
+    },
+    {
+      "key": "system_column_configuration_id",
+      "value": ""
+    },
+    {
+      "key": "system_configuration_id",
+      "value": ""
+    },
+    {
+      "key": "system_user_column_configuration_id",
+      "value": ""
+    },
+    {
+      "key": "workflow_id",
+      "value": ""
+    },
+    {
+      "key": "version_id",
+      "value": ""
+    },
+    {
+      "key": "run_id",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    }
+  ]
+}

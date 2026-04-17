@@ -1,0 +1,69 @@
+{
+  "item": {
+    "name": "Create System Configuration",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"key\": \"custom_notifications\",\n  \"data\": {\n    \"enabled\": true,\n    \"channel\": \"email\"\n  }\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/system/system-configurations",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "system",
+          "system-configurations"
+        ]
+      },
+      "description": "Create a tenant system configuration.\n\n**Auth:** requires authenticated tenant session/token (`auth:tenant-api`), verified email, and `system_configurations.manage` permission.\n\n**Body validation:**\n- `key`: required snake_case string, unique\n- `data`: nullable object/array\n- `meta`: nullable object/array\n\nKnown key-specific validation currently applies to `aws_ses` and `allowed_email_addresses`. For `aws_ses` and `allowed_email_addresses`, operational state like `is_active` is stored in `meta`."
+    },
+    "response": [
+      {
+        "name": "201 Created",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/system/system-configurations",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "system",
+              "system-configurations"
+            ]
+          }
+        },
+        "status": "Created",
+        "code": 201,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"id\": \"01JSCFG000000000000000001\",\n  \"key\": \"custom_notifications\",\n  \"data\": {\n    \"enabled\": true,\n    \"channel\": \"email\"\n  },\n  \"meta\": null,\n  \"created_at\": \"2026-03-08T00:00:00.000000Z\",\n  \"updated_at\": \"2026-03-08T00:00:00.000000Z\"\n}"
+      }
+    ]
+  },
+  "order": 60
+}

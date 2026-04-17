@@ -1,0 +1,364 @@
+{
+  "item": {
+    "name": "Login",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        },
+        {
+          "key": "X-Auth-Mode",
+          "value": "{{auth_mode}}"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"device_name\": \"{{device_name}}\"\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/api/auth/login",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "api",
+          "auth",
+          "login"
+        ]
+      },
+      "description": "Authenticate a central user with email and password.\n\n**Query params:** none\n\n**Request body:**\n- `email` (required)\n- `password` (required)\n- `device_name` (optional)\n\n**Authentication Mode:**\nUses `X-Auth-Mode` header (`token` or `cookie`).\n- **Token mode:** returns `access_token` + `refresh_token` in JSON\n- **Cookie mode:** sets HttpOnly central auth cookies and omits token fields from JSON while still returning `expires_in`\n\n**Behavior:**\n- If the account has 2FA enabled, returns `tfa_required=true` with a temporary `tfa_token` and no auth tokens\n- If the account email is unverified, successful responses include `email_verification_required=true` and may include `verification_sent`\n- Validation and credential errors return `VALIDATION_ERROR` with `source.pointer` set to `_form`"
+    },
+    "response": [
+      {
+        "name": "200 Authenticated (Token Mode)",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/login",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "login"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"user_id\",\n      \"name\": \"Test User\",\n      \"email\": \"test@example.com\",\n      \"profile_picture_url\": \"{{base_url}}/api/profile-pictures/profile_picture_id\",\n      \"two_factor_enabled\": false,\n      \"permissions\": {\n        \"central\": [\n          \"access\",\n          \"users.view\"\n        ]\n      }\n    },\n    \"tenants\": [\n      {\n        \"id\": \"1\",\n        \"slug\": \"demo\",\n        \"name\": \"Demo Tenant\",\n        \"created_at\": \"2025-01-01T00:00:00.000000Z\",\n        \"updated_at\": \"2025-01-01T00:00:00.000000Z\"\n      }\n    ],\n    \"email_verification_required\": false,\n    \"tfa_required\": false,\n    \"access_token\": \"token\",\n    \"refresh_token\": \"refresh_token\",\n    \"expires_in\": 3600,\n    \"token_type\": \"Bearer\"\n  }\n}"
+      },
+      {
+        "name": "200 Authenticated (Cookie Mode)",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/login",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "login"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"user_id\",\n      \"name\": \"Test User\",\n      \"email\": \"test@example.com\",\n      \"profile_picture_url\": null,\n      \"two_factor_enabled\": false,\n      \"permissions\": {}\n    },\n    \"tenants\": [\n      {\n        \"id\": \"1\",\n        \"slug\": \"demo\",\n        \"name\": \"Demo Tenant\",\n        \"created_at\": \"2025-01-01T00:00:00.000000Z\",\n        \"updated_at\": \"2025-01-01T00:00:00.000000Z\"\n      }\n    ],\n    \"email_verification_required\": false,\n    \"tfa_required\": false,\n    \"expires_in\": 3600\n  }\n}"
+      },
+      {
+        "name": "200 Authenticated (Email Verification Required)",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/login",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "login"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"user_id\",\n      \"name\": \"Test User\",\n      \"email\": \"unverified@example.com\",\n      \"profile_picture_url\": null,\n      \"two_factor_enabled\": false,\n      \"permissions\": {}\n    },\n    \"tenants\": [\n      {\n        \"id\": \"1\",\n        \"slug\": \"demo\",\n        \"name\": \"Demo Tenant\",\n        \"created_at\": \"2025-01-01T00:00:00.000000Z\",\n        \"updated_at\": \"2025-01-01T00:00:00.000000Z\"\n      }\n    ],\n    \"email_verification_required\": true,\n    \"tfa_required\": false,\n    \"verification_sent\": true,\n    \"access_token\": \"token\",\n    \"refresh_token\": \"refresh_token\",\n    \"expires_in\": 3600,\n    \"token_type\": \"Bearer\"\n  }\n}"
+      },
+      {
+        "name": "200 Authenticated (Cookie Mode + Email Verification Required)",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/login",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "login"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"user_id\",\n      \"name\": \"Test User\",\n      \"email\": \"unverified@example.com\",\n      \"profile_picture_url\": null,\n      \"two_factor_enabled\": false,\n      \"permissions\": {}\n    },\n    \"tenants\": [\n      {\n        \"id\": \"1\",\n        \"slug\": \"demo\",\n        \"name\": \"Demo Tenant\",\n        \"created_at\": \"2025-01-01T00:00:00.000000Z\",\n        \"updated_at\": \"2025-01-01T00:00:00.000000Z\"\n      }\n    ],\n    \"email_verification_required\": true,\n    \"tfa_required\": false,\n    \"verification_sent\": true,\n    \"expires_in\": 3600\n  }\n}"
+      },
+      {
+        "name": "200 TFA Required",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/login",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "login"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"user_id\",\n      \"name\": \"Test User\",\n      \"email\": \"test@example.com\",\n      \"profile_picture_url\": null,\n      \"two_factor_enabled\": true,\n      \"permissions\": {}\n    },\n    \"tenants\": [\n      {\n        \"id\": \"1\",\n        \"slug\": \"demo\",\n        \"name\": \"Demo Tenant\",\n        \"created_at\": \"2025-01-01T00:00:00.000000Z\",\n        \"updated_at\": \"2025-01-01T00:00:00.000000Z\"\n      }\n    ],\n    \"email_verification_required\": false,\n    \"tfa_required\": true,\n    \"tfa_token\": \"tfa_token\"\n  }\n}"
+      },
+      {
+        "name": "200 TFA Required (Email Verification Required)",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/login",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "login"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"user_id\",\n      \"name\": \"Test User\",\n      \"email\": \"unverified@example.com\",\n      \"profile_picture_url\": null,\n      \"two_factor_enabled\": true,\n      \"permissions\": {}\n    },\n    \"tenants\": [\n      {\n        \"id\": \"1\",\n        \"slug\": \"demo\",\n        \"name\": \"Demo Tenant\",\n        \"created_at\": \"2025-01-01T00:00:00.000000Z\",\n        \"updated_at\": \"2025-01-01T00:00:00.000000Z\"\n      }\n    ],\n    \"email_verification_required\": true,\n    \"tfa_required\": true,\n    \"tfa_token\": \"tfa_token\",\n    \"verification_sent\": true\n  }\n}"
+      },
+      {
+        "name": "422 Validation Error (_form pointer)",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/login",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "login"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"The email field is required.\",\n      \"source\": {\n        \"pointer\": \"_form\"\n      }\n    },\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"The password field is required.\",\n      \"source\": {\n        \"pointer\": \"_form\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Invalid Credentials (_form pointer)",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/login",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "login"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"The provided credentials are incorrect.\",\n      \"source\": {\n        \"pointer\": \"_form\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "429 Too Many Requests",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/login",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "login"
+            ]
+          }
+        },
+        "status": "Too Many Requests",
+        "code": 429,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 429,\n      \"code\": \"TOO_MANY_REQUESTS\",\n      \"title\": \"Too Many Requests\",\n      \"detail\": \"Too Many Attempts.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "413 Payload Too Large",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/login",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "login"
+            ]
+          }
+        },
+        "status": "Payload Too Large",
+        "code": 413,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 413,\n      \"code\": \"PAYLOAD_TOO_LARGE\",\n      \"title\": \"Payload Too Large\",\n      \"detail\": \"Uploaded file is too large. Maximum allowed size is 10MB.\"\n    }\n  ]\n}"
+      }
+    ],
+    "event": [
+      {
+        "listen": "test",
+        "script": {
+          "exec": [
+            "const payload = pm.response.json();",
+            "if (payload && payload.data) {",
+            "  const data = payload.data;",
+            "  if (data.access_token) {",
+            "    pm.collectionVariables.set('central_access_token', data.access_token);",
+            "    pm.collectionVariables.set('token', data.access_token);",
+            "  }",
+            "  if (data.refresh_token) {",
+            "    pm.collectionVariables.set('central_refresh_token', data.refresh_token);",
+            "    pm.collectionVariables.set('refresh_token', data.refresh_token);",
+            "  }",
+            "  if (data.tfa_token) {",
+            "    pm.collectionVariables.set('tfa_token', data.tfa_token);",
+            "  }",
+            "  if (Array.isArray(data.tenants) && data.tenants.length > 0) {",
+            "    const slug = data.tenants[0]?.slug;",
+            "    if (slug && !pm.collectionVariables.get('tenant_slug')) {",
+            "      pm.collectionVariables.set('tenant_slug', slug);",
+            "    }",
+            "  }",
+            "}"
+          ],
+          "type": "text/javascript",
+          "packages": {}
+        }
+      }
+    ]
+  },
+  "order": 20
+}

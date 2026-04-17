@@ -1,0 +1,27 @@
+{
+  "item": {
+    "name": "Get Role",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/roles/{{role_id}}",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "roles",
+          "{{role_id}}"
+        ]
+      }
+    }
+  },
+  "order": 20
+}

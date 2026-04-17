@@ -1,0 +1,40 @@
+{
+  "item": {
+    "name": "Update Profile Picture",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "formdata",
+        "formdata": [
+          {
+            "key": "profile_picture",
+            "type": "file",
+            "src": [
+              "",
+              "/C:/Users/Yeima/Downloads/Untitled design.png"
+            ]
+          }
+        ]
+      },
+      "url": {
+        "raw": "{{base_url}}/api/auth/me/profile-picture",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "api",
+          "auth",
+          "me",
+          "profile-picture"
+        ]
+      }
+    }
+  },
+  "order": 60
+}

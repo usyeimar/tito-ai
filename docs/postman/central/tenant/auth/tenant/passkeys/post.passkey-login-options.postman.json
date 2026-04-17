@@ -1,0 +1,164 @@
+{
+  "item": {
+    "name": "Passkey Login Options",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"email\": \"{{email}}\"\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/api/auth/passkeys/login/options",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "api",
+          "auth",
+          "passkeys",
+          "login",
+          "options"
+        ]
+      },
+      "description": "Generate WebAuthn assertion options for passkey login.\n\n**Auth:** not required.\n\n**Query params:** none\n\n**Request body validation:**\n- `email`: sometimes|email\n\n**Behavior:**\n- Endpoint is rate-limited (`throttle:auth.passkeys`)\n- If `email` is provided, options may be scoped to that account's credentials"
+    },
+    "response": [
+      {
+        "name": "200 Options Generated",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/passkeys/login/options",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "passkeys",
+              "login",
+              "options"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"challenge\": \"base64url_challenge\",\n    \"timeout\": 60000,\n    \"rpId\": \"workupcloud.test\",\n    \"userVerification\": \"preferred\",\n    \"allowCredentials\": [\n      {\n        \"type\": \"public-key\",\n        \"id\": \"credential_id\"\n      }\n    ]\n  }\n}"
+      },
+      {
+        "name": "422 Invalid Email",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/passkeys/login/options",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "passkeys",
+              "login",
+              "options"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"The email field must be a valid email address.\",\n      \"source\": {\n        \"pointer\": \"email\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "429 Too Many Requests",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/passkeys/login/options",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "passkeys",
+              "login",
+              "options"
+            ]
+          }
+        },
+        "status": "Too Many Requests",
+        "code": 429,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 429,\n      \"code\": \"TOO_MANY_REQUESTS\",\n      \"title\": \"Too Many Requests\",\n      \"detail\": \"Too Many Attempts.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "413 Payload Too Large",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/passkeys/login/options",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "passkeys",
+              "login",
+              "options"
+            ]
+          }
+        },
+        "status": "Payload Too Large",
+        "code": 413,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 413,\n      \"code\": \"PAYLOAD_TOO_LARGE\",\n      \"title\": \"Payload Too Large\",\n      \"detail\": \"Uploaded file is too large. Maximum allowed size is 10MB.\"\n    }\n  ]\n}"
+      }
+    ]
+  },
+  "order": 40
+}

@@ -1,0 +1,87 @@
+{
+  "item": {
+    "name": "Update Workspace Branding",
+    "request": {
+      "method": "PATCH",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "formdata",
+        "formdata": [
+          {
+            "key": "logotype",
+            "type": "file",
+            "value": ""
+          },
+          {
+            "key": "logomark",
+            "type": "file",
+            "value": ""
+          },
+          {
+            "key": "remove_logotype",
+            "value": "false",
+            "type": "text",
+            "disabled": true
+          },
+          {
+            "key": "remove_logomark",
+            "value": "false",
+            "type": "text",
+            "disabled": true
+          }
+        ]
+      },
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/system/workspace-branding",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "system",
+          "workspace-branding"
+        ]
+      },
+      "description": "Update tenant workspace branding from tenant context.\n\n**Auth:** requires authenticated tenant session/token (`auth:tenant-api`), verified email, and `tenant.manage` permission.\n\n**Body validation:**\n- `logotype`: sometimes nullable image max 5MB\n- `logomark`: sometimes nullable image max 5MB\n- `remove_logotype`: sometimes boolean\n- `remove_logomark`: sometimes boolean"
+    },
+    "response": [
+      {
+        "name": "200 Updated",
+        "originalRequest": {
+          "method": "PATCH",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/system/workspace-branding",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "system",
+              "workspace-branding"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"tenant\": {\n      \"id\": \"tenant_ulid\",\n      \"slug\": \"{{tenant_slug}}\",\n      \"name\": \"Demo Tenant\",\n      \"logotype_url\": \"https://app.tito.ai/{{tenant_slug}}/api/workspace-branding/logotype\",\n      \"logomark_url\": \"https://app.tito.ai/{{tenant_slug}}/api/workspace-branding/logomark\"\n    }\n  }\n}"
+      }
+    ]
+  },
+  "order": 20
+}

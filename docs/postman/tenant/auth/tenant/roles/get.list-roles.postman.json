@@ -1,0 +1,71 @@
+{
+  "item": {
+    "name": "List Roles",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/roles",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "roles"
+        ],
+        "query": [
+          {
+            "key": "filter[search]",
+            "value": "",
+            "description": "Full-text search across: name, guard_name, search_blob",
+            "disabled": true
+          },
+          {
+            "key": "filter[id]",
+            "value": "",
+            "description": "Exact match, comma-separated for IN, !value for NOT, null/!null",
+            "disabled": true
+          },
+          {
+            "key": "filter[guard_name]",
+            "value": "",
+            "description": "Enum value. Supports: value, !value, value1,value2 for IN",
+            "disabled": true
+          },
+          {
+            "key": "sort",
+            "value": "",
+            "description": "Comma-separated fields. Prefix with - for DESC. Available: name",
+            "disabled": true
+          },
+          {
+            "key": "include",
+            "value": "",
+            "description": "Comma-separated relationships to include. Available: permissions",
+            "disabled": true
+          },
+          {
+            "key": "page[number]",
+            "value": "1",
+            "description": "Page number (default: 1)",
+            "disabled": true
+          },
+          {
+            "key": "page[size]",
+            "value": "15",
+            "description": "Items per page (default: 15, max: 100)",
+            "disabled": true
+          }
+        ]
+      },
+      "description": "List Roles using canonical query DSL.\n\n**Auth:** requires authenticated tenant session/token (`auth:tenant-api`).\n\n**Query params (strict):**\n- `filter[id]`, `filter[guard_name]`, `filter[search]`\n- `sort`\n- `include` (`permissions`)\n- `page[number]`, `page[size]`\n\n**Legacy params prohibited:** `q`, `filters`, `per_page`\n\n**Sortable fields:**\n- `name`\n\n**Sort syntax:** comma-separated fields; prefix `-` for descending or use `field:asc|desc`\n\n**Filter value operator syntax:**\n- `value`, `!value`, `>value`, `>=value`, `<value`, `<=value`\n- `a,b`, `!a,b`, `from..to`, `null`, `!null`\n\n**Example:**\n- `?filter[search]=abc&sort=-created_at&page[number]=1&page[size]=25`"
+    }
+  },
+  "order": 40
+}

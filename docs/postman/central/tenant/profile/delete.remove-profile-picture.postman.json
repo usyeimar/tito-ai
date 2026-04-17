@@ -1,0 +1,27 @@
+{
+  "item": {
+    "name": "Remove Profile Picture",
+    "request": {
+      "method": "DELETE",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/api/auth/me/profile-picture",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "api",
+          "auth",
+          "me",
+          "profile-picture"
+        ]
+      }
+    }
+  },
+  "order": 10
+}

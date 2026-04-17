@@ -1,0 +1,62 @@
+{
+  "item": {
+    "name": "List System Email Identities",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/system/system-configurations/email-identities",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "system",
+          "system-configurations",
+          "email-identities"
+        ]
+      },
+      "description": "List SES identities available to the tenant's current `aws_ses` configuration.\n\n**Auth:** requires authenticated tenant session/token (`auth:tenant-api`) and `system_configurations.view` permission.\n\nUse this endpoint to power sender/domain pickers in the UI with upstream SES domains and email identities, including domain coverage for exact parent domains only.\n\nCoverage is intentionally conservative:\n- `acme.com` covers `user@acme.com`\n- `acme.com` does not cover `user@billing.acme.com`\n- exact domain match only; subdomain inheritance is not implied"
+    },
+    "response": [
+      {
+        "name": "200 Email Identities",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/system/system-configurations/email-identities",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "system",
+              "system-configurations",
+              "email-identities"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"ready\": true,\n    \"summary\": \"Loaded SES email identities for this tenant.\",\n    \"domains\": [\n      {\n        \"identity\": \"acme.com\",\n        \"type\": \"domain\",\n        \"verified\": true,\n        \"sending_enabled\": true,\n        \"covered_by_domain\": null\n      }\n    ],\n    \"emails\": [\n      {\n        \"identity\": \"alerts@acme.com\",\n        \"type\": \"email\",\n        \"verified\": true,\n        \"sending_enabled\": true,\n        \"covered_by_domain\": \"acme.com\"\n      },\n      {\n        \"identity\": \"draft@partner.com\",\n        \"type\": \"email\",\n        \"verified\": false,\n        \"sending_enabled\": false,\n        \"covered_by_domain\": null\n      }\n    ],\n    \"from_email\": \"alerts@acme.com\",\n    \"fetched_at\": \"2026-03-08T03:00:00.000000Z\"\n  }\n}"
+      }
+    ]
+  },
+  "order": 40
+}

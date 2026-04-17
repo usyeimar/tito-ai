@@ -1,0 +1,294 @@
+{
+  "item": {
+    "name": "Verify Email (JSON)",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/api/auth/email/verify/{{verification_id}}/{{verification_hash}}?signature={{verification_signature}}&expires={{verification_expires}}",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "api",
+          "auth",
+          "email",
+          "verify",
+          "{{verification_id}}",
+          "{{verification_hash}}"
+        ],
+        "query": [
+          {
+            "key": "signature",
+            "value": "{{verification_signature}}"
+          },
+          {
+            "key": "expires",
+            "value": "{{verification_expires}}"
+          }
+        ]
+      },
+      "description": "Verify a central user's email address using a signed verification URL.\n\n**Auth:** requires authenticated central session/token (`auth:central-api`).\n\n**Path params:**\n- `verification_id`: central user id\n- `verification_hash`: `sha1(user_email)`\n\n**Query params:**\n- `signature` (required): signed URL signature\n- `expires` (required): signed URL expiration timestamp\n\n**Behavior:**\n- Validates the signed URL (`signed` middleware)\n- Loads the user by `verification_id`\n- Validates `verification_hash` against the user's email\n- Marks email as verified and dispatches verification event on success\n- Returns validation errors when the hash is invalid or email is already verified"
+    },
+    "response": [
+      {
+        "name": "200 Verified",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/email/verify/{{verification_id}}/{{verification_hash}}?signature={{verification_signature}}&expires={{verification_expires}}",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "email",
+              "verify",
+              "{{verification_id}}",
+              "{{verification_hash}}"
+            ],
+            "query": [
+              {
+                "key": "signature",
+                "value": "{{verification_signature}}"
+              },
+              {
+                "key": "expires",
+                "value": "{{verification_expires}}"
+              }
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"message\": \"Email successfully verified.\"\n  }\n}"
+      },
+      {
+        "name": "401 Unauthenticated",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/email/verify/{{verification_id}}/{{verification_hash}}?signature={{verification_signature}}&expires={{verification_expires}}",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "email",
+              "verify",
+              "{{verification_id}}",
+              "{{verification_hash}}"
+            ],
+            "query": [
+              {
+                "key": "signature",
+                "value": "{{verification_signature}}"
+              },
+              {
+                "key": "expires",
+                "value": "{{verification_expires}}"
+              }
+            ]
+          }
+        },
+        "status": "Unauthorized",
+        "code": 401,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 401,\n      \"code\": \"UNAUTHENTICATED\",\n      \"title\": \"Unauthenticated\",\n      \"detail\": \"Unauthenticated.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "403 Invalid Signature",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/email/verify/{{verification_id}}/{{verification_hash}}?signature={{verification_signature}}&expires={{verification_expires}}",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "email",
+              "verify",
+              "{{verification_id}}",
+              "{{verification_hash}}"
+            ],
+            "query": [
+              {
+                "key": "signature",
+                "value": "{{verification_signature}}"
+              },
+              {
+                "key": "expires",
+                "value": "{{verification_expires}}"
+              }
+            ]
+          }
+        },
+        "status": "Forbidden",
+        "code": 403,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 403,\n      \"code\": \"INVALID_SIGNATURE\",\n      \"title\": \"Invalid Signature\",\n      \"detail\": \"This link is invalid or has expired.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "404 User Not Found",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/email/verify/{{verification_id}}/{{verification_hash}}?signature={{verification_signature}}&expires={{verification_expires}}",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "email",
+              "verify",
+              "{{verification_id}}",
+              "{{verification_hash}}"
+            ],
+            "query": [
+              {
+                "key": "signature",
+                "value": "{{verification_signature}}"
+              },
+              {
+                "key": "expires",
+                "value": "{{verification_expires}}"
+              }
+            ]
+          }
+        },
+        "status": "Not Found",
+        "code": 404,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 404,\n      \"code\": \"NOT_FOUND\",\n      \"title\": \"Not Found\",\n      \"detail\": \"Resource not found.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Invalid Verification Link",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/email/verify/{{verification_id}}/{{verification_hash}}?signature={{verification_signature}}&expires={{verification_expires}}",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "email",
+              "verify",
+              "{{verification_id}}",
+              "{{verification_hash}}"
+            ],
+            "query": [
+              {
+                "key": "signature",
+                "value": "{{verification_signature}}"
+              },
+              {
+                "key": "expires",
+                "value": "{{verification_expires}}"
+              }
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"This verification link is invalid.\",\n      \"source\": {\n        \"pointer\": \"email\"\n      }\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Already Verified",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/email/verify/{{verification_id}}/{{verification_hash}}?signature={{verification_signature}}&expires={{verification_expires}}",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "email",
+              "verify",
+              "{{verification_id}}",
+              "{{verification_hash}}"
+            ],
+            "query": [
+              {
+                "key": "signature",
+                "value": "{{verification_signature}}"
+              },
+              {
+                "key": "expires",
+                "value": "{{verification_expires}}"
+              }
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"This email address has already been verified.\",\n      \"source\": {\n        \"pointer\": \"email\"\n      }\n    }\n  ]\n}"
+      }
+    ]
+  },
+  "order": 10
+}

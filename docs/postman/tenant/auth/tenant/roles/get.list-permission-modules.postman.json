@@ -1,0 +1,54 @@
+{
+  "item": {
+    "name": "List Permission Modules",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/permissions",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "permissions"
+        ],
+        "query": [
+          {
+            "key": "filter[search]",
+            "value": "",
+            "disabled": true
+          },
+          {
+            "key": "sort",
+            "value": "",
+            "disabled": true
+          },
+          {
+            "key": "include",
+            "value": "",
+            "disabled": true
+          },
+          {
+            "key": "page[number]",
+            "value": "",
+            "disabled": true
+          },
+          {
+            "key": "page[size]",
+            "value": "",
+            "disabled": true
+          }
+        ]
+      },
+      "description": "Strict query DSL only. Legacy params `q`, `filters[]`, `sort[]`, `include[]`, top-level `page`, and `per_page` are not supported.\n\nAvailable filters:\n- `filter[search]`\n\nThis endpoint does not support `sort`, `include`, or `page[number]`/`page[size]`.\nExample: `?filter[search]=user`"
+    }
+  },
+  "order": 30
+}

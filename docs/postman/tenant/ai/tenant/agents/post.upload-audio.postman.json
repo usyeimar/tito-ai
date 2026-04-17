@@ -1,0 +1,37 @@
+{
+  "item": {
+    "name": "Upload Audio",
+    "request": {
+      "method": "POST",
+      "header": [],
+      "body": {
+        "mode": "formdata",
+        "formdata": [
+          {
+            "key": "audio",
+            "type": "file",
+            "value": ""
+          }
+        ]
+      },
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/ai/agents/{{agent_id}}/sessions/{{session_id}}/audio",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "ai",
+          "agents",
+          "{{agent_id}}",
+          "sessions",
+          "{{session_id}}",
+          "audio"
+        ]
+      },
+      "description": "Endpoint polim\u00f3rfico para subir archivos de audio (WAV/MP3). Se almacena en la tabla `files` y se vincula a la sesi\u00f3n."
+    }
+  },
+  "order": 40
+}

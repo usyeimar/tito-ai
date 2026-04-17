@@ -1,0 +1,150 @@
+{
+  "item": {
+    "name": "Batch Delete Notifications",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"ids\": [\n    \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"b2c3d4e5-f6a7-8901-bcde-f12345678901\"\n  ]\n}"
+      },
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/notifications/batch/delete",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "notifications",
+          "batch",
+          "delete"
+        ]
+      },
+      "description": "Delete multiple notifications in a single request.\n\n**Auth:** requires authenticated tenant session/token (`auth:tenant-api`).\n\n**Request body:**\n- `ids` \u2014 required array of notification UUIDs (min: 1, max: 200, values must be distinct)\n\n**Behavior:**\n- Only deletes notifications that belong to the authenticated user.\n- IDs that don't exist or belong to other users are silently ignored.\n- Returns the count of notifications actually deleted."
+    },
+    "response": [
+      {
+        "name": "200 Batch Deleted",
+        "originalRequest": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"ids\": [\n    \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\n    \"b2c3d4e5-f6a7-8901-bcde-f12345678901\"\n  ]\n}"
+          },
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/notifications/batch/delete",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "notifications",
+              "batch",
+              "delete"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"deleted_count\": 2\n  }\n}"
+      },
+      {
+        "name": "401 Unauthenticated",
+        "originalRequest": {
+          "method": "POST",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/notifications/batch/delete",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "notifications",
+              "batch",
+              "delete"
+            ]
+          }
+        },
+        "status": "Unauthorized",
+        "code": 401,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 401,\n      \"code\": \"UNAUTHENTICATED\",\n      \"title\": \"Unauthenticated\",\n      \"detail\": \"Unauthenticated.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "422 Validation Error",
+        "originalRequest": {
+          "method": "POST",
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": {
+            "mode": "raw",
+            "raw": "{\n  \"ids\": []\n}"
+          },
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/notifications/batch/delete",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "notifications",
+              "batch",
+              "delete"
+            ]
+          }
+        },
+        "status": "Unprocessable Entity",
+        "code": 422,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 422,\n      \"code\": \"VALIDATION_ERROR\",\n      \"title\": \"Validation Error\",\n      \"detail\": \"The ids field must have at least 1 items.\",\n      \"source\": {\n        \"pointer\": \"ids\"\n      }\n    }\n  ]\n}"
+      }
+    ]
+  },
+  "order": 30
+}

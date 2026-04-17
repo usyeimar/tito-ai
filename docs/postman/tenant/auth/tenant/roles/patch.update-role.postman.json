@@ -1,0 +1,36 @@
+{
+  "item": {
+    "name": "Update Role",
+    "request": {
+      "method": "PATCH",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"name\": \"Support Updated\",\n  \"permissions\": [\"user.view\"]\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/roles/{{role_id}}",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "roles",
+          "{{role_id}}"
+        ]
+      }
+    }
+  },
+  "order": 50
+}

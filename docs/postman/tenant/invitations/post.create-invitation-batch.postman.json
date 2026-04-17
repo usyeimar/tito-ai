@@ -1,0 +1,37 @@
+{
+  "item": {
+    "name": "Create Invitation (Batch)",
+    "request": {
+      "method": "POST",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"emails\": [\"invitee1@example.com\", \"invitee2@example.com\"]\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/invitations/batch",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "invitations",
+          "batch"
+        ]
+      },
+      "description": "Creates invitations in bulk. Emails are sent after successful transaction commit. Failures are reported per-email."
+    }
+  },
+  "order": 30
+}

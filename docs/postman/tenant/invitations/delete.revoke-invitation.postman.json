@@ -1,0 +1,27 @@
+{
+  "item": {
+    "name": "Revoke Invitation",
+    "request": {
+      "method": "DELETE",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/invitations/{{invitation_id}}",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "invitations",
+          "{{invitation_id}}"
+        ]
+      }
+    }
+  },
+  "order": 10
+}

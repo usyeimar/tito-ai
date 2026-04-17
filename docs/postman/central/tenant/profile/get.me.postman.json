@@ -1,0 +1,57 @@
+{
+  "item": {
+    "name": "Me",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/api/auth/me",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "api",
+          "auth",
+          "me"
+        ]
+      }
+    },
+    "response": [
+      {
+        "name": "200 Me",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/api/auth/me",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "api",
+              "auth",
+              "me"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "Text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"data\": {\n    \"user\": {\n      \"id\": \"user_id\",\n      \"name\": \"Test User\",\n      \"email\": \"test@example.com\",\n      \"profile_picture_url\": \"https://app.tito.ai/api/profile-pictures/01kprofilepictureid\",\n      \"two_factor_enabled\": false,\n      \"permissions\": {}\n    },\n    \"tenants\": [],\n    \"email_verification_required\": false,\n    \"tfa_required\": false,\n    \"expires_in\": 3600\n  }\n}"
+      }
+    ]
+  },
+  "order": 20
+}

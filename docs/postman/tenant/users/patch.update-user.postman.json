@@ -1,0 +1,37 @@
+{
+  "item": {
+    "name": "Update User",
+    "request": {
+      "method": "PATCH",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "body": {
+        "mode": "raw",
+        "raw": "{\n  \"name\": \"Updated User\",\n  \"email\": \"updated-user@example.com\",\n  \"type_id\": \"{{type_id}}\"\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/users/{{tenant_user_id}}",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "users",
+          "{{tenant_user_id}}"
+        ]
+      },
+      "description": "Update a tenant user.\n\n**Request body validation (supported fields):**\n- `name`: sometimes|string|max:255\n- `email`: sometimes|email|max:255\n- `type_id`: sometimes|nullable|string|exists:types.id where module_type=`users`\n\n**Note:**\n- Proposal/resource defaults are no longer stored on users directly. Use `type.resource_type_profile` instead."
+    }
+  },
+  "order": 70
+}

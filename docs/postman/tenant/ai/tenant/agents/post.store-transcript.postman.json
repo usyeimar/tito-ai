@@ -1,0 +1,35 @@
+{
+  "item": {
+    "name": "Store Transcript",
+    "request": {
+      "method": "POST",
+      "header": [],
+      "body": {
+        "mode": "raw",
+        "raw": "{\r\n    \"speaker\": \"User\",\r\n    \"text\": \"\u00bfQu\u00e9 hora es?\",\r\n    \"offset_ms\": 500\r\n}",
+        "options": {
+          "raw": {
+            "language": "json"
+          }
+        }
+      },
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/agents/{{agent_id}}/sessions/{{session_id}}/transcripts",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "agents",
+          "{{agent_id}}",
+          "sessions",
+          "{{session_id}}",
+          "transcripts"
+        ]
+      },
+      "description": "Registra fragmentos de texto de la transcripci\u00f3n de la sesi\u00f3n."
+    }
+  },
+  "order": 30
+}

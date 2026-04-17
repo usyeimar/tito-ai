@@ -1,0 +1,27 @@
+{
+  "item": {
+    "name": "Show Profile Picture",
+    "request": {
+      "method": "GET",
+      "header": [
+        {
+          "key": "Accept",
+          "value": "application/json"
+        }
+      ],
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/profile-pictures/{{profile_picture_id}}",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "profile-pictures",
+          "{{profile_picture_id}}"
+        ]
+      }
+    }
+  },
+  "order": 40
+}

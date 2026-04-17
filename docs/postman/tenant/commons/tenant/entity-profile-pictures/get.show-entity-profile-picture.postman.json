@@ -1,0 +1,115 @@
+{
+  "item": {
+    "name": "Show Entity Profile Picture",
+    "request": {
+      "method": "GET",
+      "header": [],
+      "url": {
+        "raw": "{{base_url}}/{{tenant_slug}}/api/entity-profile-pictures/{{entity_profile_picture_id}}",
+        "host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "{{tenant_slug}}",
+          "api",
+          "entity-profile-pictures",
+          "{{entity_profile_picture_id}}"
+        ]
+      },
+      "description": "Retrieve an entity profile picture as a binary image response.\n\nThe `entity_profile_picture_id` is the `id` returned in the `profile_picture` object on any entity that supports profile pictures (companies, contacts, leads, projects, vendor companies, vehicles, equipment, materials, resource types).\n\n**Auth:** requires authenticated tenant session/token (`auth:tenant-api`).\n\n**Behavior:** response is a binary `image/webp` file, not wrapped in JSON."
+    },
+    "response": [
+      {
+        "name": "200 OK",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/entity-profile-pictures/{{entity_profile_picture_id}}",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "entity-profile-pictures",
+              "{{entity_profile_picture_id}}"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "text",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "image/webp"
+          }
+        ],
+        "cookie": [],
+        "body": "<binary image bytes>"
+      },
+      {
+        "name": "401 Unauthenticated",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/entity-profile-pictures/{{entity_profile_picture_id}}",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "entity-profile-pictures",
+              "{{entity_profile_picture_id}}"
+            ]
+          }
+        },
+        "status": "Unauthorized",
+        "code": 401,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 401,\n      \"code\": \"UNAUTHENTICATED\",\n      \"title\": \"Unauthenticated\",\n      \"detail\": \"Unauthenticated.\"\n    }\n  ]\n}"
+      },
+      {
+        "name": "404 Not Found",
+        "originalRequest": {
+          "method": "GET",
+          "header": [],
+          "url": {
+            "raw": "{{base_url}}/{{tenant_slug}}/api/entity-profile-pictures/{{entity_profile_picture_id}}",
+            "host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "{{tenant_slug}}",
+              "api",
+              "entity-profile-pictures",
+              "{{entity_profile_picture_id}}"
+            ]
+          }
+        },
+        "status": "Not Found",
+        "code": 404,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n  \"errors\": [\n    {\n      \"status\": 404,\n      \"code\": \"NOT_FOUND\",\n      \"title\": \"Not Found\",\n      \"detail\": \"Resource not found.\"\n    }\n  ]\n}"
+      }
+    ]
+  },
+  "order": 10
+}
