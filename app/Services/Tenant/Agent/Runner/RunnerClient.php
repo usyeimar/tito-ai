@@ -9,6 +9,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
@@ -32,18 +33,26 @@ final class RunnerClient
      * Create a new voice session for the given agent and return the
      * connection payload that the browser SDK needs.
      *
+     * Generates a unique channel_id that the frontend will use to listen
+     * for session events (ended, transcript, etc.) via WebSocket.
+     *
      * @return array{
      *     session_id: string,
      *     room_name: string,
      *     provider: string,
      *     url: string,
      *     access_token: string,
+     *     channel_id: string,
      *     context: array<string, mixed>,
      * }
      */
     public function createSession(Agent $agent): array
     {
-        $config = $this->configBuilder->build($agent);
+        // Generate a unique channel ID for this session
+        $channelId = (string) Str::uuid();
+
+        // Build config with session-specific callback URL
+        $config = $this->configBuilder->build($agent, $channelId);
 
         try {
             $response = $this->request()
@@ -76,8 +85,9 @@ final class RunnerClient
             'session_id' => (string) ($payload['session_id'] ?? ''),
             'room_name' => (string) ($payload['room_name'] ?? ''),
             'provider' => (string) ($payload['provider'] ?? ''),
-            'url' => (string) ($payload['url'] ?? ''),
+            'url' => (string) ($payload['ws_url'] ?? $payload['url'] ?? ''),
             'access_token' => (string) ($payload['access_token'] ?? ''),
+            'channel_id' => $channelId,
             'context' => (array) ($payload['context'] ?? []),
         ];
     }

@@ -9,6 +9,7 @@ use App\Http\Middleware\InjectAccessTokenFromCookie;
 use App\Http\Middleware\RestoreCentralAuth;
 use App\Http\Middleware\ShareWorkspacesWithInertia;
 use App\Http\Middleware\WrapApiResponses;
+use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -37,6 +38,11 @@ return Application::configure(basePath: dirname(__DIR__))
             InjectAccessTokenFromCookie::class,
             ShareWorkspacesWithInertia::class,
         ]);
+
+        $middleware->prependToPriorityList(
+            before: Authenticate::class,
+            prepend: RestoreCentralAuth::class,
+        );
 
         $middleware->prependToGroup('api', [
             // StartSession::class,

@@ -9,9 +9,9 @@ use Spatie\LaravelData\Data;
 class CreateAgentData extends Data
 {
     public function __construct(
-        public string $name,
-        public ?string $slug,
-        public ?string $description,
+        public ?string $name = null,
+        public ?string $slug = null,
+        public ?string $description = null,
         public string $language = 'es-CO',
         public ?array $tags = [],
         public string $timezone = 'UTC',
@@ -23,5 +23,6 @@ class CreateAgentData extends Data
         public ?array $architecture_config = [],
         public ?array $capabilities_config = [],
         public ?array $observability_config = [],
+        public bool $from_scratch = false,
     ) {}
 }

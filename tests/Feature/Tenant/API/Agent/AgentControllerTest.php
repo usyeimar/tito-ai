@@ -93,14 +93,15 @@ describe('Agent API', function () {
                 $response->assertJsonPath('data.language', 'en');
             });
 
-            it('requires name to create an agent', function () {
+            it('creates an agent without name and generates a default one', function () {
                 $response = $this->actingAs($this->user, 'tenant-api')
                     ->postJson($this->tenantApiUrl('ai/agents'), [
                         'language' => 'en',
                     ]);
 
-                $response->assertUnprocessable();
-                assertHasValidationError($response, 'name');
+                $response->assertCreated();
+                expect($response->json('data.name'))->toStartWith('Nuevo Agente');
+                expect($response->json('data.language'))->toBe('en');
             });
         });
 

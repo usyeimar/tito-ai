@@ -16,9 +16,10 @@ use Illuminate\Support\Arr;
 final class AgentConfigBuilder
 {
     /**
+     * @param  string|null  $channelId  Unique channel ID for session events. If provided, a callback URL will be generated.
      * @return array<string, mixed>
      */
-    public function build(Agent $agent): array
+    public function build(Agent $agent, ?string $channelId = null): array
     {
         $agent->loadMissing(['settings', 'tools']);
 
@@ -34,13 +35,14 @@ final class AgentConfigBuilder
             'version' => '1.0.0',
             'agent_id' => (string) $agent->id,
             'tenant_id' => $tenantId,
-            'callback_url' => $this->callbackUrl($tenantId, $agent),
+            'callback_url' => $channelId ? $this->sessionCallbackUrl($tenantId, $channelId) : null,
             'metadata' => [
                 'name' => (string) $agent->name,
                 'slug' => (string) $agent->slug,
                 'description' => (string) ($agent->description ?? ''),
                 'tags' => array_values((array) ($agent->tags ?? [])),
                 'language' => (string) $agent->language,
+                'channel_id' => $channelId,
             ],
             'brain' => $this->brainPayload($brain, $agent),
             'runtime_profiles' => $this->runtimePayload($runtime, $agent),
@@ -206,5 +208,16 @@ final class AgentConfigBuilder
         // Future: tenant-aware webhook endpoint. For now leave null so the
         // runner falls back to its own BACKEND_URL setting.
         return null;
+    }
+
+    /**
+     * Generate a session-specific callback URL for receiving runner events.
+     * The frontend will listen to this channel via WebSocket.
+     */
+    private function sessionCallbackUrl(string $tenantId, string $channelId): string
+    {
+        $baseUrl = rtrim(config('app.url'), '/');
+
+        return "{$baseUrl}/api/ai/runner/webhook/{$channelId}";
     }
 }
