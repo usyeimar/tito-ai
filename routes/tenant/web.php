@@ -33,6 +33,7 @@ Route::middleware([
     'web',
     InitializeTenancyByPath::class,
     'auth:tenant',
+    'has-access-to-workspace',
     CreateFreshApiToken::using('tenant'),
 ])->prefix('{tenant}')->group(function (): void {
     Route::get('/dashboard', function () {

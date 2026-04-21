@@ -5,11 +5,11 @@ use App\Exceptions\Renderers\Tenant\SystemExceptionRenderer;
 use App\Http\Middleware\EnsureCookieAuthOrigin;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\HasAccesToWorkSpace;
 use App\Http\Middleware\InjectAccessTokenFromCookie;
 use App\Http\Middleware\RestoreCentralAuth;
 use App\Http\Middleware\ShareWorkspacesWithInertia;
 use App\Http\Middleware\WrapApiResponses;
-use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,10 +19,6 @@ use Illuminate\Http\Request;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/central/web.php',
-        api: [
-            __DIR__.'/../routes/central/api.php',
-            __DIR__.'/../routes/central/worker.php',
-        ],
         commands: __DIR__.'/../routes/console.php',
         health: '/health',
     )
@@ -39,11 +35,6 @@ return Application::configure(basePath: dirname(__DIR__))
             ShareWorkspacesWithInertia::class,
         ]);
 
-        $middleware->prependToPriorityList(
-            before: Authenticate::class,
-            prepend: RestoreCentralAuth::class,
-        );
-
         $middleware->prependToGroup('api', [
             // StartSession::class,
             InjectAccessTokenFromCookie::class,
@@ -51,6 +42,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->appendToGroup('api', WrapApiResponses::class);
+
+        $middleware->alias([
+            'has-access-to-workspace' => HasAccesToWorkSpace::class,
+        ]);
 
         $middleware->redirectGuestsTo('/login');
     })

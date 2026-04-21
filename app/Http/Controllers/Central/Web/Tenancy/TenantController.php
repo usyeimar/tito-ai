@@ -2,14 +2,17 @@
 
 namespace App\Http\Controllers\Central\Web\Tenancy;
 
+use App\Exceptions\TenantImpersonationUnavailableException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Central\API\Tenancy\StoreTenantRequest;
 use App\Http\Resources\Central\API\Tenancy\TenantResource;
 use App\Models\Central\Tenancy\Tenant;
 use App\Models\Central\Tenancy\TenantInvitation;
-use App\Models\Tenant\Auth\Authentication\User;
+use App\Services\Central\Auth\Impersonation\TenantImpersonationService;
 use App\Services\Central\Tenancy\TenantService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,6 +20,7 @@ class TenantController extends Controller
 {
     public function __construct(
         private readonly TenantService $tenantService,
+        private readonly TenantImpersonationService $tenantImpersonationService,
     ) {}
 
     public function index(Request $request): Response
@@ -58,28 +62,44 @@ class TenantController extends Controller
 
     public function enter(Request $request, Tenant $tenant)
     {
-        $user = $request->user();
-
-        if (! $user->tenants()->whereKey($tenant->getKey())->exists()) {
-            abort(403, 'You do not have access to this workspace.');
-        }
-
-        $tenantUserId = $tenant->run(fn () => User::query()
-            ->where('global_id', $user->global_id)
-            ->where('is_active', true)
-            ->value('id'));
-
-        if (! $tenantUserId) {
-            abort(403, 'Your tenant account is inactive or unavailable. Please contact your workspace administrator.');
-        }
-
         $redirectUrl = route('tenant.dashboard', ['tenant' => $tenant->slug]);
 
-        $token = tenancy()->impersonate($tenant, (string) $tenantUserId, $redirectUrl, 'tenant');
+        try {
+            $result = $this->tenantImpersonationService->createImpersonationUrl(
+                $request->user(),
+                $tenant->slug,
+                $redirectUrl,
+            );
+
+            // dd($result);
+            Log::info('Tenant impersonation URL created.', [
+                'user_id' => $request->user()?->id,
+                'tenant' => $tenant->slug,
+                'redirect_url' => $redirectUrl,
+                'ip' => $request->ip(),
+            ]);
+        } catch (AuthorizationException $e) {
+            dump($e->getMessage());
+
+            return redirect()->route('workspaces')
+                ->withErrors(['message' => 'You do not have access to this workspace.']);
+        } catch (TenantImpersonationUnavailableException $e) {
+            dump($e->getMessage());
+
+            return redirect()->route('workspaces')
+                ->withErrors(['message' => $e->getMessage()]);
+        }
+
+        Log::info('Tenant impersonation issued.', [
+            'user_id' => $request->user()?->id,
+            'tenant' => $tenant->slug,
+            'redirect_url' => $redirectUrl,
+            'ip' => $request->ip(),
+        ]);
 
         return redirect()->route('tenant.impersonate', [
             'tenant' => $tenant->slug,
-            'token' => $token->token,
+            'token' => $result['token'],
         ]);
     }
 }

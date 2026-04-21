@@ -12,10 +12,10 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
-class ShareWorkspacesWithInertia
+readonly class ShareWorkspacesWithInertia
 {
     public function __construct(
-        private readonly TenantService $tenantService,
+        private TenantService $tenantService,
     ) {}
 
     public function handle(Request $request, Closure $next): Response

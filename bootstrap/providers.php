@@ -5,6 +5,8 @@ use App\Providers\AuthServiceProvider;
 use App\Providers\FortifyServiceProvider;
 use App\Providers\TenancyServiceProvider;
 
+// use App\Providers\TenancyServiceProvider;
+
 return [
     AppServiceProvider::class,
     AuthServiceProvider::class,
