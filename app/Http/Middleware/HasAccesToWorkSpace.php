@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use App\Models\Central\Auth\Authentication\CentralUser;
-use App\Models\Tenant\Auth\Authentication\User;
 use App\Services\Central\Tenancy\TenantService;
 use Closure;
 use Illuminate\Http\Request;

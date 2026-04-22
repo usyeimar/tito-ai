@@ -6,7 +6,6 @@ use App\Enums\ModuleType;
 use App\Enums\RateType;
 use App\Models\Tenant\Commons\Concerns\HasProfilePicture;
 use App\Support\Search\TextFilterTokens;
-use App\Traits\HasObjectsMetadata;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -32,7 +31,7 @@ use Spatie\Sluggable\SlugOptions;
  */
 class ResourceType extends Model
 {
-    use HasFactory, HasObjectsMetadata, HasProfilePicture, HasSlug, HasUlids;
+    use HasFactory,  HasProfilePicture, HasSlug, HasUlids;
 
     protected $table = 'metadata_resource_types';
 

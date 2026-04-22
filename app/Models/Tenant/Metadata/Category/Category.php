@@ -3,20 +3,16 @@
 namespace App\Models\Tenant\Metadata\Category;
 
 use App\Enums\ModuleType;
-use App\Models\Tenant\Services\Service\Service;
-use App\Models\Tenant\Services\ServiceItem\ServiceItem;
 use App\Support\Search\TextFilterTokens;
-use App\Traits\HasObjectsMetadata;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
 class Category extends Model
 {
-    use HasFactory, HasObjectsMetadata, HasSlug, HasUlids;
+    use HasFactory,  HasSlug, HasUlids;
 
     protected $table = 'metadata_categories';
 
@@ -24,7 +20,6 @@ class Category extends Model
         ModuleType::COMPANIES,
         ModuleType::CONTACTS,
         ModuleType::VENDOR_COMPANIES,
-        ModuleType::SERVICES,
     ];
 
     protected $fillable = [
@@ -52,16 +47,6 @@ class Category extends Model
             ->saveSlugsTo('slug')
             ->extraScope(fn ($builder) => $builder->where('module_type', $this->module_type))
             ->doNotGenerateSlugsOnUpdate();
-    }
-
-    public function services(): HasMany
-    {
-        return $this->hasMany(Service::class);
-    }
-
-    public function serviceItems(): HasMany
-    {
-        return $this->hasMany(ServiceItem::class);
     }
 
     /**

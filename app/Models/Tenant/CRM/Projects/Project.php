@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Tenant\CRM\Projects;
 
-use App\Models\Tenant\Assignments\Assignment;
-use App\Models\Tenant\Assignments\Concerns\HasAssignments;
 use App\Models\Tenant\Commons\Concerns\HasAddresses;
 use App\Models\Tenant\Commons\Concerns\HasEmails;
 use App\Models\Tenant\Commons\Concerns\HasFiles;
@@ -24,8 +22,6 @@ use App\Models\Tenant\Metadata\Status\Status;
 use App\Models\Tenant\Metadata\Type\Type;
 use App\Support\Search\SearchSync;
 use App\Support\Search\TextFilterTokens;
-use App\Traits\HasObjectsMetadata;
-use App\Traits\HasWorkflows;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -38,28 +34,23 @@ use Laravel\Scout\Searchable;
 class Project extends Model
 {
     use HasAddresses,
-        HasAssignments,
         HasEmails,
         HasFactory,
         HasFiles,
         HasIndustries,
         HasLicenseTypes,
-        HasObjectsMetadata,
         HasPhones,
         HasProfilePicture,
         HasStatus,
         HasTags,
         HasType,
         HasUlids,
-        HasWorkflows,
         Searchable,
         SoftDeletes;
 
     public static function getExposedRelations(): array
     {
         return [
-            'assignments' => Assignment::class,
-            'primaryUserAssignment' => Assignment::class,
             'status' => Status::class,
             'type' => Type::class,
             'company' => Company::class,

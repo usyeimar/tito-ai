@@ -16,7 +16,6 @@ class ProfilePictureController extends Controller
     {
         $user = $request->user();
 
-
         if (! $user || ! $user->global_id) {
             abort(403, 'Access denied.');
         }

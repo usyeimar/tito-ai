@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Tenant\CRM\Companies;
 
-use App\Models\Tenant\Assignments\Assignment;
 use App\Models\Tenant\Commons\Addresses\Address;
 use App\Models\Tenant\Commons\Concerns\HasAddresses;
 use App\Models\Tenant\Commons\Concerns\HasEmails;
@@ -33,8 +32,6 @@ use App\Models\Tenant\Metadata\Tag\Tag;
 use App\Models\Tenant\Metadata\Type\Type;
 use App\Support\Search\SearchSync;
 use App\Support\Search\TextFilterTokens;
-use App\Traits\HasObjectsMetadata;
-use App\Traits\HasWorkflows;
 use Carbon\Carbon;
 use Database\Factories\Tenant\CRM\Companies\CompanyFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -81,14 +78,12 @@ use Laravel\Scout\Searchable;
 class Company extends Model
 {
     /** @use HasFactory<CompanyFactory> */
-    use HasAddresses, HasCategory, HasEmails, HasFactory, HasFavicon, HasFiles, HasIndustries, HasLicenseTypes, HasObjectsMetadata, HasPhones, HasProfilePicture, HasSource, HasTags, HasType, HasUlids, HasWorkflows, Searchable, SoftDeletes;
+    use HasAddresses, HasCategory, HasEmails, HasFactory, HasFavicon, HasFiles, HasIndustries, HasLicenseTypes,  HasPhones, HasProfilePicture, HasSource, HasTags, HasType, HasUlids,  Searchable, SoftDeletes;
 
     /** @return array<string, class-string> */
     public static function getExposedRelations(): array
     {
         return [
-            'assignments' => Assignment::class,
-            'primaryUserAssignment' => Assignment::class,
             'type' => Type::class,
             'category' => Category::class,
             'industries' => Industry::class,

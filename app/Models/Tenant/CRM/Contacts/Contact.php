@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Tenant\CRM\Contacts;
 
-use App\Models\Tenant\Assignments\Assignment;
-use App\Models\Tenant\Assignments\Concerns\HasAssignments;
 use App\Models\Tenant\Commons\Addresses\Address;
 use App\Models\Tenant\Commons\Concerns\HasAddresses;
 use App\Models\Tenant\Commons\Concerns\HasEmails;
@@ -28,8 +26,6 @@ use App\Models\Tenant\Metadata\Source\Source;
 use App\Models\Tenant\Metadata\Tag\Tag;
 use App\Support\Search\SearchSync;
 use App\Support\Search\TextFilterTokens;
-use App\Traits\HasObjectsMetadata;
-use App\Traits\HasWorkflows;
 use Carbon\Carbon;
 use Database\Factories\Tenant\CRM\Contacts\ContactFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -73,19 +69,16 @@ class Contact extends Model
 {
     /** @use HasFactory<ContactFactory> */
     use HasAddresses,
-        HasAssignments,
         HasCategory,
         HasEmails,
         HasFactory,
         HasFiles,
         HasLicenseTypes,
-        HasObjectsMetadata,
         HasPhones,
         HasProfilePicture,
         HasSource,
         HasTags,
         HasUlids,
-        HasWorkflows,
         Searchable,
         SoftDeletes;
 
@@ -174,8 +167,6 @@ class Contact extends Model
             'source' => Source::class,
             'industries' => Industry::class,
             'assignments' => ContactAssignment::class,
-            'userAssignments' => Assignment::class,
-            'primaryUserAssignment' => Assignment::class,
         ];
     }
 

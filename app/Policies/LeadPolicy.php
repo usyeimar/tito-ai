@@ -4,49 +4,44 @@ namespace App\Policies;
 
 use App\Models\Tenant\Auth\Authentication\User;
 use App\Models\Tenant\CRM\Leads\Lead;
-use App\Services\Tenant\Assignments\AssignmentService;
 use Illuminate\Database\Eloquent\Model;
 
 class LeadPolicy extends ModulePolicy
 {
     protected string $module = 'lead';
 
-    public function __construct(
-        private readonly AssignmentService $assignmentService,
-    ) {}
-
     public function view(User $user, Model $model): bool
     {
-        return $this->canView($user) && $this->assignmentService->canViewUncloaked($user, $model);
+        return $this->canView($user);
     }
 
     public function update(User $user, Model $model): bool
     {
-        return $this->canManage($user) && $this->assignmentService->canViewUncloaked($user, $model);
+        return $this->canManage($user);
     }
 
     public function delete(User $user, Model $model): bool
     {
-        return $this->canDelete($user) && $this->assignmentService->canViewUncloaked($user, $model);
+        return $this->canDelete($user);
     }
 
     public function restore(User $user, Model $model): bool
     {
-        return $this->canManage($user) && $this->assignmentService->canViewUncloaked($user, $model);
+        return $this->canManage($user);
     }
 
     public function forceDelete(User $user, Model $model): bool
     {
-        return $this->canDelete($user) && $this->assignmentService->canViewUncloaked($user, $model);
+        return $this->canDelete($user);
     }
 
     public function convert(User $user, Model $model): bool
     {
-        return $this->canManage($user) && $this->assignmentService->canViewUncloaked($user, $model);
+        return $this->canManage($user);
     }
 
     public function assign(User $user, Lead $lead): bool
     {
-        return $this->canManage($user) && $this->assignmentService->canAssign($user, $lead);
+        return $this->canManage($user);
     }
 }

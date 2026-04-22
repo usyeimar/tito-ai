@@ -28,7 +28,6 @@ use App\Models\Tenant\Metadata\Tag\Tag;
 use App\Models\Tenant\Metadata\Type\Type;
 use App\Support\Search\SearchSync;
 use App\Support\Search\TextFilterTokens;
-use App\Traits\HasWorkflows;
 use Database\Factories\Tenant\CRM\VendorCompanies\VendorCompanyFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -91,7 +90,6 @@ class VendorCompany extends Model
         HasTags,
         HasType,
         HasUlids,
-        HasWorkflows,
         Searchable,
         SoftDeletes;
 

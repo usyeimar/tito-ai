@@ -6,7 +6,6 @@ use App\Enums\ModuleType;
 use App\Enums\PhoneLabel;
 use App\Models\Tenant\Commons\Concerns\CommonsConfigurable;
 use App\Support\Search\SearchSync;
-use App\Traits\HasWorkflows;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  */
 class Phone extends Model implements CommonsConfigurable
 {
-    use HasFactory, HasUlids, HasWorkflows;
+    use HasFactory, HasUlids;
 
     public const array PHONEABLE_TYPES = [
         ModuleType::LEADS,

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models\Tenant\CRM\Leads;
 
-use App\Models\Tenant\Assignments\Assignment;
-use App\Models\Tenant\Assignments\Concerns\HasAssignments;
 use App\Models\Tenant\Commons\Concerns\HasAddresses;
 use App\Models\Tenant\Commons\Concerns\HasEmails;
 use App\Models\Tenant\Commons\Concerns\HasFiles;
@@ -24,9 +22,6 @@ use App\Models\Tenant\Metadata\Source\Source;
 use App\Models\Tenant\Metadata\Status\Status;
 use App\Models\Tenant\Metadata\Tag\Tag;
 use App\Support\Search\TextFilterTokens;
-use App\Traits\HasGlobalCustomFields;
-use App\Traits\HasObjectsMetadata;
-use App\Traits\HasWorkflows;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -36,7 +31,7 @@ use Laravel\Scout\Searchable;
 
 class Lead extends Model
 {
-    use HasAddresses, HasAssignments, HasCategory, HasEmails, HasFactory, HasFiles, HasGlobalCustomFields, HasIndustries, HasObjectsMetadata, HasPhones, HasPriority, HasProfilePicture, HasSource, HasStatus, HasTags, HasUlids, HasWorkflows, Searchable, SoftDeletes;
+    use HasAddresses, HasCategory, HasEmails, HasFactory, HasFiles,  HasIndustries,  HasPhones, HasPriority, HasProfilePicture, HasSource, HasStatus, HasTags, HasUlids,  Searchable, SoftDeletes;
 
     protected $fillable = [
         'first_name',
@@ -249,8 +244,6 @@ class Lead extends Model
     public static function getExposedRelations(): array
     {
         return [
-            'assignments' => Assignment::class,
-            'primaryUserAssignment' => Assignment::class,
             'category' => Category::class,
             'status' => Status::class,
             'source' => Source::class,

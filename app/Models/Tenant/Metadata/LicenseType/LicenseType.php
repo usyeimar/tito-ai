@@ -4,7 +4,6 @@ namespace App\Models\Tenant\Metadata\LicenseType;
 
 use App\Enums\ModuleType;
 use App\Support\Search\TextFilterTokens;
-use App\Traits\HasObjectsMetadata;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +25,7 @@ use Spatie\Sluggable\SlugOptions;
  */
 class LicenseType extends Model
 {
-    use HasFactory, HasObjectsMetadata, HasSlug, HasUlids;
+    use HasFactory,  HasSlug, HasUlids;
 
     protected $table = 'metadata_license_types';
 

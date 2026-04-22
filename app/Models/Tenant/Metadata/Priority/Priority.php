@@ -4,8 +4,6 @@ namespace App\Models\Tenant\Metadata\Priority;
 
 use App\Enums\ModuleType;
 use App\Support\Search\TextFilterTokens;
-use App\Traits\HasObjectsMetadata;
-use App\Traits\HasWorkflows;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,7 +27,7 @@ use Spatie\Sluggable\SlugOptions;
  */
 class Priority extends Model
 {
-    use HasFactory, HasObjectsMetadata, HasSlug, HasUlids, HasWorkflows;
+    use HasFactory,  HasSlug, HasUlids;
 
     protected $table = 'metadata_priorities';
 
