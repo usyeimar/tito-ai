@@ -3,12 +3,21 @@
 use App\Models\Tenant\Agent\Agent;
 
 describe('Agent Pages (Inertia)', function () {
-    describe('Index', function () {
-        it('redirects guests to login', function () {
+    describe('Authentication', function () {
+        it('redirects guests to login on index', function () {
             $response = $this->get('/'.$this->tenant->slug.'/agents');
             $response->assertRedirect();
         });
 
+        it('redirects guests to login on show', function () {
+            $agent = Agent::factory()->create();
+
+            $response = $this->get('/'.$this->tenant->slug.'/agents/'.$agent->id);
+            $response->assertRedirect();
+        });
+    });
+
+    describe('Index', function () {
         it('renders the agents index page', function () {
             $response = $this->actingAs($this->user, 'tenant')
                 ->get('/'.$this->tenant->slug.'/agents');
@@ -23,6 +32,27 @@ describe('Agent Pages (Inertia)', function () {
             );
         });
 
+        it('lists existing agents', function () {
+            Agent::factory()->count(3)->create();
+
+            $response = $this->actingAs($this->user, 'tenant')
+                ->get('/'.$this->tenant->slug.'/agents');
+
+            $response->assertOk();
+            $response->assertInertia(
+                fn ($page) => $page->has('agents', 3)
+            );
+        });
+
+        it('supports search query parameter', function () {
+            Agent::factory()->create(['name' => 'Sales Bot']);
+            Agent::factory()->create(['name' => 'Support Bot']);
+
+            $response = $this->actingAs($this->user, 'tenant')
+                ->get('/'.$this->tenant->slug.'/agents?search=Sales');
+
+            $response->assertOk();
+        });
     });
 
     describe('Show', function () {
