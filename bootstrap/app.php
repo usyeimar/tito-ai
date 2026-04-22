@@ -52,7 +52,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $_exception): bool {
-            return $request->expectsJson() || $request->is('api/*') || $request->is('oauth/*');
+            return $request->expectsJson() || $request->is('api/*') || $request->is('*/api/*') || $request->is('oauth/*');
         });
 
         CoreExceptionRenderer::register($exceptions);
