@@ -6,6 +6,7 @@ namespace App\Actions\Tenant\KnowledgeBase;
 
 use App\Data\Tenant\KnowledgeBase\CreateKnowledgeBaseDocumentData;
 use App\Data\Tenant\KnowledgeBase\KnowledgeBaseDocumentData;
+use App\Jobs\Tenant\KnowledgeBase\IngestKnowledgeBaseDocument;
 use App\Models\Tenant\KnowledgeBase\KnowledgeBaseDocument;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -24,6 +25,7 @@ final class CreateKnowledgeBaseDocument
                 'content_format' => $data->content_format ?? 'markdown',
                 'status' => 'draft',
                 'author_id' => $authorId,
+                'indexing_status' => 'pending',
             ]);
 
             $doc->versions()->create([
@@ -35,6 +37,8 @@ final class CreateKnowledgeBaseDocument
 
             return $doc;
         });
+
+        IngestKnowledgeBaseDocument::dispatch($document->id);
 
         return KnowledgeBaseDocumentData::fromModel($document);
     }

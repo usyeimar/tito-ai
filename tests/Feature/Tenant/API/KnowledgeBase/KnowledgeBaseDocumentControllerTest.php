@@ -1,8 +1,14 @@
 <?php
 
+use App\Jobs\Tenant\KnowledgeBase\IngestKnowledgeBaseDocument;
 use App\Models\Tenant\KnowledgeBase\KnowledgeBase;
 use App\Models\Tenant\KnowledgeBase\KnowledgeBaseCategory;
 use App\Models\Tenant\KnowledgeBase\KnowledgeBaseDocument;
+use Illuminate\Support\Facades\Bus;
+
+beforeEach(function (): void {
+    Bus::fake([IngestKnowledgeBaseDocument::class]);
+});
 
 describe('Knowledge Base Document API', function () {
     describe('Authentication', function () {

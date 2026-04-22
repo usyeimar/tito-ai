@@ -1,6 +1,11 @@
 <?php
 
 use App\Models\Tenant\KnowledgeBase\KnowledgeBase;
+use Laravel\Ai\Stores;
+
+beforeEach(function (): void {
+    Stores::fake();
+});
 
 describe('Knowledge Base API', function () {
     describe('Authentication', function () {

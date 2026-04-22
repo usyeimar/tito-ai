@@ -13,7 +13,24 @@ class KnowledgeBaseDocument extends Model
 {
     use HasFactory, HasUlids;
 
-    protected $fillable = ['knowledge_base_category_id', 'title', 'slug', 'content_format', 'status', 'author_id', 'published_at'];
+    protected $fillable = [
+        'knowledge_base_category_id',
+        'title',
+        'slug',
+        'content_format',
+        'status',
+        'author_id',
+        'published_at',
+        'vector_store_file_id',
+        'indexing_status',
+        'indexing_error',
+        'indexed_at',
+    ];
+
+    protected $casts = [
+        'published_at' => 'datetime',
+        'indexed_at' => 'datetime',
+    ];
 
     public function category(): BelongsTo
     {

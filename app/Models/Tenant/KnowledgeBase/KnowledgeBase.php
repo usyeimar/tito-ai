@@ -11,7 +11,7 @@ class KnowledgeBase extends Model
 {
     use HasFactory, HasUlids;
 
-    protected $fillable = ['name', 'slug', 'description', 'is_public'];
+    protected $fillable = ['name', 'slug', 'description', 'is_public', 'vector_store_id'];
 
     public function categories(): HasMany
     {
