@@ -132,6 +132,46 @@ describe('Agents API', function () {
                 expect(Agent::query()->whereKey($agent->id)->exists())->toBeFalse();
             });
         });
+
+        describe('Duplicate', function () {
+            it('duplicates an agent and returns 201', function () {
+                $agent = Agent::factory()->create(['name' => 'Original Agent']);
+
+                $response = $this->actingAs($this->user, 'tenant-api')
+                    ->postJson($this->tenantApiUrl("ai/agents/{$agent->id}/duplicate"), [
+                        'name' => 'Cloned Agent',
+                    ]);
+
+                $response->assertCreated();
+                $response->assertJsonPath('data.name', 'Cloned Agent');
+                $response->assertJsonPath('message', 'Agent duplicated');
+
+                expect(Agent::query()->where('name', 'Cloned Agent')->exists())->toBeTrue();
+                expect(Agent::query()->count())->toBe(2);
+            });
+
+            it('duplicates an agent without a custom name', function () {
+                $agent = Agent::factory()->create(['name' => 'My Agent']);
+
+                $response = $this->actingAs($this->user, 'tenant-api')
+                    ->postJson($this->tenantApiUrl("ai/agents/{$agent->id}/duplicate"));
+
+                $response->assertCreated();
+                expect(Agent::query()->count())->toBe(2);
+            });
+        });
+
+        describe('Summaries', function () {
+            it('lists agent summaries', function () {
+                Agent::factory()->count(3)->create();
+
+                $response = $this->actingAs($this->user, 'tenant-api')
+                    ->getJson($this->tenantApiUrl('ai/agents/summaries'));
+
+                $response->assertOk();
+                $response->assertJsonStructure(['data']);
+            });
+        });
     });
 
 });
