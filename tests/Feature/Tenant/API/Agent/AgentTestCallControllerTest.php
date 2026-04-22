@@ -38,6 +38,29 @@ describe('Agent Test Call', function () {
             $response->assertJsonPath('data.provider', 'livekit');
         });
 
+        it('creates a daily session through the runner', function () {
+            $agent = Agent::factory()->create();
+
+            Http::fake([
+                '*/api/v1/sessions/*' => Http::response([
+                    'session_id' => 'sess_daily_456',
+                    'room_name' => 'room_daily',
+                    'provider' => 'daily',
+                    'url' => 'https://example.daily.co/room_daily',
+                    'access_token' => 'daily-token-xyz',
+                    'context' => [],
+                ], 201),
+            ]);
+
+            $response = $this->actingAs($this->user, 'tenant-api')
+                ->postJson($this->tenantApiUrl("ai/agents/{$agent->id}/test-call"));
+
+            $response->assertCreated();
+            $response->assertJsonPath('success', true);
+            $response->assertJsonPath('data.session_id', 'sess_daily_456');
+            $response->assertJsonPath('data.provider', 'daily');
+        });
+
         it('aborts when runner returns an unsupported transport', function () {
             $agent = Agent::factory()->create();
 
@@ -46,7 +69,7 @@ describe('Agent Test Call', function () {
                     ->push([
                         'session_id' => 'sess_999',
                         'room_name' => '',
-                        'provider' => 'daily',
+                        'provider' => 'twilio',
                         'url' => '',
                         'access_token' => '',
                         'context' => [],
