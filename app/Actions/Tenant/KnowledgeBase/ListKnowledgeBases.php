@@ -4,28 +4,35 @@ declare(strict_types=1);
 
 namespace App\Actions\Tenant\KnowledgeBase;
 
-use App\Data\Tenant\KnowledgeBase\KnowledgeBaseData;
 use App\Models\Tenant\KnowledgeBase\KnowledgeBase;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 final class ListKnowledgeBases
 {
     /**
      * @param  array<string, mixed>  $filters
-     * @return Collection<int, KnowledgeBaseData>
+     * @return LengthAwarePaginator<KnowledgeBase>
      */
-    public function __invoke(array $filters = []): Collection
+    public function __invoke(array $filters = []): LengthAwarePaginator
     {
-        $query = KnowledgeBase::orderBy('name');
-
-        if (! empty($filters['search'])) {
-            $search = '%'.$filters['search'].'%';
-            $query->where(function ($q) use ($search): void {
-                $q->where('name', 'ilike', $search)
-                    ->orWhere('description', 'ilike', $search);
-            });
-        }
-
-        return $query->get()->map(fn (KnowledgeBase $kb) => KnowledgeBaseData::from($kb));
+        return QueryBuilder::for(KnowledgeBase::class)
+            ->allowedFilters(
+                AllowedFilter::partial('name'),
+                AllowedFilter::partial('description'),
+                AllowedFilter::exact('is_public'),
+                AllowedFilter::callback('search', function (Builder $query, mixed $value): void {
+                    $term = '%'.$value.'%';
+                    $query->where(function (Builder $q) use ($term): void {
+                        $q->where('name', 'ilike', $term)
+                            ->orWhere('description', 'ilike', $term);
+                    });
+                }),
+            )
+            ->allowedSorts('name', 'created_at', 'updated_at')
+            ->defaultSort('name')
+            ->paginateFromFilters($filters);
     }
 }

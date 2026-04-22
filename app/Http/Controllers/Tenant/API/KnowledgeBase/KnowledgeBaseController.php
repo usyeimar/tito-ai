@@ -10,7 +10,9 @@ use App\Actions\Tenant\KnowledgeBase\ListKnowledgeBases;
 use App\Actions\Tenant\KnowledgeBase\ShowKnowledgeBase;
 use App\Actions\Tenant\KnowledgeBase\UpdateKnowledgeBase;
 use App\Data\Tenant\KnowledgeBase\CreateKnowledgeBaseData;
+use App\Data\Tenant\KnowledgeBase\KnowledgeBaseData;
 use App\Data\Tenant\KnowledgeBase\UpdateKnowledgeBaseData;
+use App\Http\Controllers\Concerns\PaginatesJsonResponses;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\API\KnowledgeBase\IndexKnowledgeBaseRequest;
 use App\Http\Requests\Tenant\API\KnowledgeBase\StoreKnowledgeBaseRequest;
@@ -22,13 +24,18 @@ use Illuminate\Support\Facades\Gate;
 
 class KnowledgeBaseController extends Controller
 {
+    use PaginatesJsonResponses;
+
     public function index(IndexKnowledgeBaseRequest $request, ListKnowledgeBases $action): JsonResponse
     {
         Gate::authorize('viewAny', KnowledgeBase::class);
 
-        $items = $action($request->validated());
+        $paginator = $action($request->validated());
 
-        return response()->json(['data' => $items]);
+        return $this->paginatedJson(
+            $paginator,
+            fn (KnowledgeBase $kb) => KnowledgeBaseData::from($kb),
+        );
     }
 
     public function store(StoreKnowledgeBaseRequest $request, CreateKnowledgeBase $action): JsonResponse

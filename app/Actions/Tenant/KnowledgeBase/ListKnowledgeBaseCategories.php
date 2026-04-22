@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace App\Actions\Tenant\KnowledgeBase;
 
-use App\Data\Tenant\KnowledgeBase\KnowledgeBaseCategoryData;
 use App\Models\Tenant\KnowledgeBase\KnowledgeBase;
 use App\Models\Tenant\KnowledgeBase\KnowledgeBaseCategory;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class ListKnowledgeBaseCategories
 {
     /**
-     * @return Collection<int, KnowledgeBaseCategoryData>
+     * @param  array<string, mixed>  $filters
+     * @return LengthAwarePaginator<KnowledgeBaseCategory>
      */
-    public function __invoke(KnowledgeBase $knowledgeBase): Collection
+    public function __invoke(KnowledgeBase $knowledgeBase, array $filters = []): LengthAwarePaginator
     {
         return $knowledgeBase->categories()
             ->orderBy('display_order')
-            ->get()
-            ->map(fn (KnowledgeBaseCategory $cat) => KnowledgeBaseCategoryData::from($cat));
+            ->paginateFromFilters($filters);
     }
 }
