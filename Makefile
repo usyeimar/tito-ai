@@ -89,7 +89,7 @@ ps:
 	$(S) ps
 
 postman:
-	python scripts/merge-postman.py
+	python scripts/merge-postman.py --output postman-collection.json
 
 # ============================================================================
 # Runner (Python) Commands

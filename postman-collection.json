@@ -899,296 +899,18 @@
               ]
             },
             {
-              "name": "Tenant",
+              "name": "Knowledge Bases",
               "item": [
                 {
-                  "name": "Knowledge Bases",
+                  "name": "Categories",
                   "item": [
                     {
-                      "name": "Categories",
-                      "item": [
-                        {
-                          "name": "List Categories",
-                          "request": {
-                            "method": "GET",
-                            "header": [],
-                            "url": {
-                              "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/categories",
-                              "host": [
-                                "{{base_url}}"
-                              ],
-                              "path": [
-                                "{{tenant_slug}}",
-                                "api",
-                                "ai",
-                                "knowledge-bases",
-                                "{{knowledge_base_id}}",
-                                "categories"
-                              ]
-                            },
-                            "description": "Returns all categories for a knowledge base, ordered by `display_order`.\n\n**Auth:** `knowledge_base.view` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": [{ \"id\": \"...\", \"knowledge_base_id\": \"...\", \"parent_id\": null, \"name\": \"...\", \"slug\": \"...\", \"display_order\": 0 }] }\n```"
-                          }
-                        },
-                        {
-                          "name": "Create Category",
-                          "request": {
-                            "method": "POST",
-                            "header": [],
-                            "body": {
-                              "mode": "raw",
-                              "raw": "{\n  \"knowledge_base_id\": \"{{knowledge_base_id}}\",\n  \"name\": \"Getting Started\",\n  \"parent_id\": null,\n  \"display_order\": 0\n}",
-                              "options": {
-                                "raw": {
-                                  "language": "json"
-                                }
-                              }
-                            },
-                            "url": {
-                              "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/categories",
-                              "host": [
-                                "{{base_url}}"
-                              ],
-                              "path": [
-                                "{{tenant_slug}}",
-                                "api",
-                                "ai",
-                                "knowledge-bases",
-                                "{{knowledge_base_id}}",
-                                "categories"
-                              ]
-                            },
-                            "description": "Creates a new category. Supports nesting via `parent_id`.\n\n**Required:** `knowledge_base_id`, `name`\n\n**Auth:** `knowledge_base.manage` permission required.\n\n**Response:** `201 Created`\n```json\n{ \"data\": CategoryData, \"message\": \"Knowledge base category created.\" }\n```"
-                          }
-                        },
-                        {
-                          "name": "Update Category",
-                          "request": {
-                            "method": "PATCH",
-                            "header": [],
-                            "body": {
-                              "mode": "raw",
-                              "raw": "{\n  \"name\": \"Updated Category\",\n  \"display_order\": 5\n}",
-                              "options": {
-                                "raw": {
-                                  "language": "json"
-                                }
-                              }
-                            },
-                            "url": {
-                              "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/categories/{{category_id}}",
-                              "host": [
-                                "{{base_url}}"
-                              ],
-                              "path": [
-                                "{{tenant_slug}}",
-                                "api",
-                                "ai",
-                                "knowledge-bases",
-                                "{{knowledge_base_id}}",
-                                "categories",
-                                "{{category_id}}"
-                              ]
-                            },
-                            "description": "Partially updates a category.\n\n**Auth:** `knowledge_base.manage` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": CategoryData, \"message\": \"Knowledge base category updated.\" }\n```"
-                          }
-                        },
-                        {
-                          "name": "Delete Category",
-                          "request": {
-                            "method": "DELETE",
-                            "header": [],
-                            "url": {
-                              "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/categories/{{category_id}}",
-                              "host": [
-                                "{{base_url}}"
-                              ],
-                              "path": [
-                                "{{tenant_slug}}",
-                                "api",
-                                "ai",
-                                "knowledge-bases",
-                                "{{knowledge_base_id}}",
-                                "categories",
-                                "{{category_id}}"
-                              ]
-                            },
-                            "description": "Deletes a category and all its documents.\n\n**Auth:** `knowledge_base.delete` permission required.\n\n**Response:** `204 No Content`"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Documents",
-                      "item": [
-                        {
-                          "name": "List Documents",
-                          "request": {
-                            "method": "GET",
-                            "header": [],
-                            "url": {
-                              "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/documents",
-                              "host": [
-                                "{{base_url}}"
-                              ],
-                              "path": [
-                                "{{tenant_slug}}",
-                                "api",
-                                "ai",
-                                "knowledge-bases",
-                                "{{knowledge_base_id}}",
-                                "documents"
-                              ]
-                            },
-                            "description": "Returns all documents for a knowledge base.\n\n**Auth:** `knowledge_base.view` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": [DocumentData[]] }\n```\n\n**DocumentData:** `id, knowledge_base_category_id, title, slug, content_format, status, author_id, published_at, content, version_number`"
-                          }
-                        },
-                        {
-                          "name": "Create Document",
-                          "request": {
-                            "method": "POST",
-                            "header": [],
-                            "body": {
-                              "mode": "raw",
-                              "raw": "{\n  \"knowledge_base_category_id\": \"{{category_id}}\",\n  \"title\": \"How to reset your password\",\n  \"content\": \"# Password Reset\\n\\nFollow these steps to reset your password...\\n\",\n  \"content_format\": \"markdown\"\n}",
-                              "options": {
-                                "raw": {
-                                  "language": "json"
-                                }
-                              }
-                            },
-                            "url": {
-                              "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/documents",
-                              "host": [
-                                "{{base_url}}"
-                              ],
-                              "path": [
-                                "{{tenant_slug}}",
-                                "api",
-                                "ai",
-                                "knowledge-bases",
-                                "{{knowledge_base_id}}",
-                                "documents"
-                              ]
-                            },
-                            "description": "Creates a new document with an initial version (v1). A slug is auto-generated from the title.\n\n**Required:** `knowledge_base_category_id`, `title`, `content`\n\n**Content formats:** `markdown`, `html`, `plain`\n\n**Auth:** `knowledge_base.manage` permission required.\n\n**Response:** `201 Created`\n```json\n{ \"data\": DocumentData, \"message\": \"Knowledge base document created.\" }\n```"
-                          }
-                        },
-                        {
-                          "name": "Get Document",
-                          "request": {
-                            "method": "GET",
-                            "header": [],
-                            "url": {
-                              "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/documents/{{document_id}}",
-                              "host": [
-                                "{{base_url}}"
-                              ],
-                              "path": [
-                                "{{tenant_slug}}",
-                                "api",
-                                "ai",
-                                "knowledge-bases",
-                                "{{knowledge_base_id}}",
-                                "documents",
-                                "{{document_id}}"
-                              ]
-                            },
-                            "description": "Returns a single document with its latest version content.\n\n**Auth:** `knowledge_base.view` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": DocumentData }\n```"
-                          }
-                        },
-                        {
-                          "name": "Update Document",
-                          "request": {
-                            "method": "PATCH",
-                            "header": [],
-                            "body": {
-                              "mode": "raw",
-                              "raw": "{\n  \"title\": \"Updated: How to reset your password\",\n  \"content\": \"# Password Reset v2\\n\\nUpdated instructions...\\n\",\n  \"status\": \"published\"\n}",
-                              "options": {
-                                "raw": {
-                                  "language": "json"
-                                }
-                              }
-                            },
-                            "url": {
-                              "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/documents/{{document_id}}",
-                              "host": [
-                                "{{base_url}}"
-                              ],
-                              "path": [
-                                "{{tenant_slug}}",
-                                "api",
-                                "ai",
-                                "knowledge-bases",
-                                "{{knowledge_base_id}}",
-                                "documents",
-                                "{{document_id}}"
-                              ]
-                            },
-                            "description": "Partially updates a document. If `content` is changed, a new version is created automatically.\n\nSetting `status` to `published` sets `published_at`.\n\n**Statuses:** `draft`, `published`, `archived`\n\n**Auth:** `knowledge_base.manage` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": DocumentData, \"message\": \"Knowledge base document updated.\" }\n```"
-                          }
-                        },
-                        {
-                          "name": "Delete Document",
-                          "request": {
-                            "method": "DELETE",
-                            "header": [],
-                            "url": {
-                              "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/documents/{{document_id}}",
-                              "host": [
-                                "{{base_url}}"
-                              ],
-                              "path": [
-                                "{{tenant_slug}}",
-                                "api",
-                                "ai",
-                                "knowledge-bases",
-                                "{{knowledge_base_id}}",
-                                "documents",
-                                "{{document_id}}"
-                              ]
-                            },
-                            "description": "Deletes a document and all its versions.\n\n**Auth:** `knowledge_base.delete` permission required.\n\n**Response:** `204 No Content`"
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "name": "Create Knowledge Base",
-                      "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                          "mode": "raw",
-                          "raw": "{\n  \"name\": \"Product Documentation\",\n  \"description\": \"All product-related knowledge for support agents\",\n  \"is_public\": false\n}",
-                          "options": {
-                            "raw": {
-                              "language": "json"
-                            }
-                          }
-                        },
-                        "url": {
-                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases",
-                          "host": [
-                            "{{base_url}}"
-                          ],
-                          "path": [
-                            "{{tenant_slug}}",
-                            "api",
-                            "ai",
-                            "knowledge-bases"
-                          ]
-                        },
-                        "description": "Creates a new knowledge base. A slug is auto-generated from the name.\n\n**Required:** `name`\n\n**Auth:** `knowledge_base.manage` permission required.\n\n**Response:** `201 Created`\n```json\n{ \"data\": KnowledgeBaseData, \"message\": \"Knowledge base created.\" }\n```"
-                      }
-                    },
-                    {
-                      "name": "Get Knowledge Base",
+                      "name": "List Categories",
                       "request": {
                         "method": "GET",
                         "header": [],
                         "url": {
-                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}",
+                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/categories",
                           "host": [
                             "{{base_url}}"
                           ],
@@ -1197,20 +919,52 @@
                             "api",
                             "ai",
                             "knowledge-bases",
-                            "{{knowledge_base_id}}"
+                            "{{knowledge_base_id}}",
+                            "categories"
                           ]
                         },
-                        "description": "Returns a single knowledge base.\n\n**Auth:** `knowledge_base.view` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": KnowledgeBaseData }\n```"
+                        "description": "Returns all categories for a knowledge base, ordered by `display_order`.\n\n**Auth:** `knowledge_base.view` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": [{ \"id\": \"...\", \"knowledge_base_id\": \"...\", \"parent_id\": null, \"name\": \"...\", \"slug\": \"...\", \"display_order\": 0 }] }\n```"
                       }
                     },
                     {
-                      "name": "Update Knowledge Base",
+                      "name": "Create Category",
+                      "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"knowledge_base_id\": \"{{knowledge_base_id}}\",\n  \"name\": \"Getting Started\",\n  \"parent_id\": null,\n  \"display_order\": 0\n}",
+                          "options": {
+                            "raw": {
+                              "language": "json"
+                            }
+                          }
+                        },
+                        "url": {
+                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/categories",
+                          "host": [
+                            "{{base_url}}"
+                          ],
+                          "path": [
+                            "{{tenant_slug}}",
+                            "api",
+                            "ai",
+                            "knowledge-bases",
+                            "{{knowledge_base_id}}",
+                            "categories"
+                          ]
+                        },
+                        "description": "Creates a new category. Supports nesting via `parent_id`.\n\n**Required:** `knowledge_base_id`, `name`\n\n**Auth:** `knowledge_base.manage` permission required.\n\n**Response:** `201 Created`\n```json\n{ \"data\": CategoryData, \"message\": \"Knowledge base category created.\" }\n```"
+                      }
+                    },
+                    {
+                      "name": "Update Category",
                       "request": {
                         "method": "PATCH",
                         "header": [],
                         "body": {
                           "mode": "raw",
-                          "raw": "{\n  \"name\": \"Updated KB Name\",\n  \"is_public\": true\n}",
+                          "raw": "{\n  \"name\": \"Updated Category\",\n  \"display_order\": 5\n}",
                           "options": {
                             "raw": {
                               "language": "json"
@@ -1218,7 +972,7 @@
                           }
                         },
                         "url": {
-                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}",
+                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/categories/{{category_id}}",
                           "host": [
                             "{{base_url}}"
                           ],
@@ -1227,19 +981,21 @@
                             "api",
                             "ai",
                             "knowledge-bases",
-                            "{{knowledge_base_id}}"
+                            "{{knowledge_base_id}}",
+                            "categories",
+                            "{{category_id}}"
                           ]
                         },
-                        "description": "Partially updates a knowledge base.\n\n**Auth:** `knowledge_base.manage` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": KnowledgeBaseData, \"message\": \"Knowledge base updated.\" }\n```"
+                        "description": "Partially updates a category.\n\n**Auth:** `knowledge_base.manage` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": CategoryData, \"message\": \"Knowledge base category updated.\" }\n```"
                       }
                     },
                     {
-                      "name": "Delete Knowledge Base",
+                      "name": "Delete Category",
                       "request": {
                         "method": "DELETE",
                         "header": [],
                         "url": {
-                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}",
+                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/categories/{{category_id}}",
                           "host": [
                             "{{base_url}}"
                           ],
@@ -1248,31 +1004,49 @@
                             "api",
                             "ai",
                             "knowledge-bases",
-                            "{{knowledge_base_id}}"
+                            "{{knowledge_base_id}}",
+                            "categories",
+                            "{{category_id}}"
                           ]
                         },
-                        "description": "Permanently deletes a knowledge base and all its categories and documents.\n\n**Auth:** `knowledge_base.delete` permission required.\n\n**Response:** `204 No Content`"
+                        "description": "Deletes a category and all its documents.\n\n**Auth:** `knowledge_base.delete` permission required.\n\n**Response:** `204 No Content`"
                       }
                     }
                   ]
                 },
                 {
-                  "name": "Runner",
+                  "name": "Documents",
                   "item": [
                     {
-                      "name": "Runner Webhook",
+                      "name": "List Documents",
+                      "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/documents",
+                          "host": [
+                            "{{base_url}}"
+                          ],
+                          "path": [
+                            "{{tenant_slug}}",
+                            "api",
+                            "ai",
+                            "knowledge-bases",
+                            "{{knowledge_base_id}}",
+                            "documents"
+                          ]
+                        },
+                        "description": "Returns all documents for a knowledge base.\n\n**Auth:** `knowledge_base.view` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": [DocumentData[]] }\n```\n\n**DocumentData:** `id, knowledge_base_category_id, title, slug, content_format, status, author_id, published_at, content, version_number`"
+                      }
+                    },
+                    {
+                      "name": "Create Document",
                       "request": {
                         "method": "POST",
-                        "header": [
-                          {
-                            "key": "X-Tito-Agent-Key",
-                            "value": "{{runner_api_key}}",
-                            "description": "Runner API key for authentication."
-                          }
-                        ],
+                        "header": [],
                         "body": {
                           "mode": "raw",
-                          "raw": "{\n  \"event\": \"session.ended\",\n  \"agent_id\": \"{{agent_id}}\",\n  \"tenant_id\": \"{{tenant_slug}}\",\n  \"room_name\": \"tito_agent_abc123\",\n  \"timestamp\": 1745276400.123,\n  \"data\": {\n    \"session_id\": \"sess_a1b2c3d4e5f6\",\n    \"status\": \"completed\",\n    \"duration\": 125.4,\n    \"reason\": \"agent_hangup\",\n    \"transcription\": [\n      { \"role\": \"user\", \"content\": \"Hello\" },\n      { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n    ],\n    \"recording_path\": \"/data/recordings/session_abc123.wav\"\n  }\n}",
+                          "raw": "{\n  \"knowledge_base_category_id\": \"{{category_id}}\",\n  \"title\": \"How to reset your password\",\n  \"content\": \"# Password Reset\\n\\nFollow these steps to reset your password...\\n\",\n  \"content_format\": \"markdown\"\n}",
                           "options": {
                             "raw": {
                               "language": "json"
@@ -1280,7 +1054,7 @@
                           }
                         },
                         "url": {
-                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/runner/webhook",
+                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/documents",
                           "host": [
                             "{{base_url}}"
                           ],
@@ -1288,20 +1062,21 @@
                             "{{tenant_slug}}",
                             "api",
                             "ai",
-                            "runner",
-                            "webhook"
+                            "knowledge-bases",
+                            "{{knowledge_base_id}}",
+                            "documents"
                           ]
                         },
-                        "description": "Receives lifecycle events from the Python runner. No user auth \u2014 uses `X-Tito-Agent-Key` header.\n\n**Events:**\n- `session.started` \u2014 Creates `AgentSession` in DB, broadcasts to frontend.\n- `session.ended` \u2014 Updates session status, persists full transcript, broadcasts.\n- `session.transcript` \u2014 Persists individual transcript entry, broadcasts.\n- `session.error` \u2014 Marks session as failed, broadcasts.\n\n**Session ID:** Extracted from `data.session_id` in the payload.\n\n**Response:** `200 OK`\n```json\n{ \"status\": \"received\" }\n```\n\n**Error:** `401` if API key is invalid."
+                        "description": "Creates a new document with an initial version (v1). A slug is auto-generated from the title.\n\n**Required:** `knowledge_base_category_id`, `title`, `content`\n\n**Content formats:** `markdown`, `html`, `plain`\n\n**Auth:** `knowledge_base.manage` permission required.\n\n**Response:** `201 Created`\n```json\n{ \"data\": DocumentData, \"message\": \"Knowledge base document created.\" }\n```"
                       }
                     },
                     {
-                      "name": "Get Session Status",
+                      "name": "Get Document",
                       "request": {
                         "method": "GET",
                         "header": [],
                         "url": {
-                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/runner/sessions/{{session_id}}/status",
+                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/documents/{{document_id}}",
                           "host": [
                             "{{base_url}}"
                           ],
@@ -1309,22 +1084,54 @@
                             "{{tenant_slug}}",
                             "api",
                             "ai",
-                            "runner",
-                            "sessions",
-                            "{{session_id}}",
-                            "status"
+                            "knowledge-bases",
+                            "{{knowledge_base_id}}",
+                            "documents",
+                            "{{document_id}}"
                           ]
                         },
-                        "description": "Polls the current state of a session. Used by the frontend to detect when the agent ends the call.\n\n**No user auth required** \u2014 stripped via middleware.\n\n**Response:** `200 OK`\n```json\n{\n  \"data\": {\n    \"session_id\": \"sess_a1b2c3d4e5f6\",\n    \"tenant_id\": \"...\",\n    \"agent_id\": \"...\",\n    \"room_name\": \"...\",\n    \"status\": \"active\",\n    \"started_at\": \"2026-04-21T18:00:00+00:00\",\n    \"ended_at\": null,\n    \"ended_by\": null\n  }\n}\n```\n\n**Error:** `404` if session not found."
+                        "description": "Returns a single document with its latest version content.\n\n**Auth:** `knowledge_base.view` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": DocumentData }\n```"
                       }
                     },
                     {
-                      "name": "Mark Session User-Ended",
+                      "name": "Update Document",
                       "request": {
-                        "method": "POST",
+                        "method": "PATCH",
+                        "header": [],
+                        "body": {
+                          "mode": "raw",
+                          "raw": "{\n  \"title\": \"Updated: How to reset your password\",\n  \"content\": \"# Password Reset v2\\n\\nUpdated instructions...\\n\",\n  \"status\": \"published\"\n}",
+                          "options": {
+                            "raw": {
+                              "language": "json"
+                            }
+                          }
+                        },
+                        "url": {
+                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/documents/{{document_id}}",
+                          "host": [
+                            "{{base_url}}"
+                          ],
+                          "path": [
+                            "{{tenant_slug}}",
+                            "api",
+                            "ai",
+                            "knowledge-bases",
+                            "{{knowledge_base_id}}",
+                            "documents",
+                            "{{document_id}}"
+                          ]
+                        },
+                        "description": "Partially updates a document. If `content` is changed, a new version is created automatically.\n\nSetting `status` to `published` sets `published_at`.\n\n**Statuses:** `draft`, `published`, `archived`\n\n**Auth:** `knowledge_base.manage` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": DocumentData, \"message\": \"Knowledge base document updated.\" }\n```"
+                      }
+                    },
+                    {
+                      "name": "Delete Document",
+                      "request": {
+                        "method": "DELETE",
                         "header": [],
                         "url": {
-                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/runner/sessions/{{session_id}}/user-ended",
+                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}/documents/{{document_id}}",
                           "host": [
                             "{{base_url}}"
                           ],
@@ -1332,55 +1139,117 @@
                             "{{tenant_slug}}",
                             "api",
                             "ai",
-                            "runner",
-                            "sessions",
-                            "{{session_id}}",
-                            "user-ended"
+                            "knowledge-bases",
+                            "{{knowledge_base_id}}",
+                            "documents",
+                            "{{document_id}}"
                           ]
                         },
-                        "description": "Marks a session as ended by the user (browser hang-up). Updates the cache state so the runner can detect it.\n\n**No user auth required.**\n\n**Response:** `200 OK`\n```json\n{ \"message\": \"Session marked as ended by user\" }\n```\n\n**Error:** `404` if session not found."
-                      }
-                    },
-                    {
-                      "name": "Upload Session Audio",
-                      "request": {
-                        "method": "POST",
-                        "header": [
-                          {
-                            "key": "X-Tito-Agent-Key",
-                            "value": "{{runner_api_key}}",
-                            "description": "Runner API key."
-                          }
-                        ],
-                        "body": {
-                          "mode": "formdata",
-                          "formdata": [
-                            {
-                              "key": "audio",
-                              "type": "file",
-                              "description": "WAV/MP3 audio file (max 100MB)."
-                            }
-                          ]
-                        },
-                        "url": {
-                          "raw": "{{base_url}}/{{tenant_slug}}/api/ai/runner/sessions/{{session_id}}/audio",
-                          "host": [
-                            "{{base_url}}"
-                          ],
-                          "path": [
-                            "{{tenant_slug}}",
-                            "api",
-                            "ai",
-                            "runner",
-                            "sessions",
-                            "{{session_id}}",
-                            "audio"
-                          ]
-                        },
-                        "description": "Uploads a session recording from the runner. Stored locally and linked to the `AgentSession`.\n\n**No user auth** \u2014 uses `X-Tito-Agent-Key` header.\n\n**Response:** `201 Created`\n```json\n{ \"data\": { \"id\": \"...\", \"name\": \"session_abc.wav\", \"size\": 1048576 }, \"message\": \"Audio uploaded.\" }\n```\n\n**Errors:** `401` invalid key, `404` session not found."
+                        "description": "Deletes a document and all its versions.\n\n**Auth:** `knowledge_base.delete` permission required.\n\n**Response:** `204 No Content`"
                       }
                     }
                   ]
+                },
+                {
+                  "name": "Create Knowledge Base",
+                  "request": {
+                    "method": "POST",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Product Documentation\",\n  \"description\": \"All product-related knowledge for support agents\",\n  \"is_public\": false\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "{{tenant_slug}}",
+                        "api",
+                        "ai",
+                        "knowledge-bases"
+                      ]
+                    },
+                    "description": "Creates a new knowledge base. A slug is auto-generated from the name.\n\n**Required:** `name`\n\n**Auth:** `knowledge_base.manage` permission required.\n\n**Response:** `201 Created`\n```json\n{ \"data\": KnowledgeBaseData, \"message\": \"Knowledge base created.\" }\n```"
+                  }
+                },
+                {
+                  "name": "Get Knowledge Base",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "{{tenant_slug}}",
+                        "api",
+                        "ai",
+                        "knowledge-bases",
+                        "{{knowledge_base_id}}"
+                      ]
+                    },
+                    "description": "Returns a single knowledge base.\n\n**Auth:** `knowledge_base.view` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": KnowledgeBaseData }\n```"
+                  }
+                },
+                {
+                  "name": "Update Knowledge Base",
+                  "request": {
+                    "method": "PATCH",
+                    "header": [],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"name\": \"Updated KB Name\",\n  \"is_public\": true\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "{{tenant_slug}}",
+                        "api",
+                        "ai",
+                        "knowledge-bases",
+                        "{{knowledge_base_id}}"
+                      ]
+                    },
+                    "description": "Partially updates a knowledge base.\n\n**Auth:** `knowledge_base.manage` permission required.\n\n**Response:** `200 OK`\n```json\n{ \"data\": KnowledgeBaseData, \"message\": \"Knowledge base updated.\" }\n```"
+                  }
+                },
+                {
+                  "name": "Delete Knowledge Base",
+                  "request": {
+                    "method": "DELETE",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/{{tenant_slug}}/api/ai/knowledge-bases/{{knowledge_base_id}}",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "{{tenant_slug}}",
+                        "api",
+                        "ai",
+                        "knowledge-bases",
+                        "{{knowledge_base_id}}"
+                      ]
+                    },
+                    "description": "Permanently deletes a knowledge base and all its categories and documents.\n\n**Auth:** `knowledge_base.delete` permission required.\n\n**Response:** `204 No Content`"
+                  }
                 }
               ]
             },
@@ -1678,8 +1547,130 @@
               ]
             },
             {
-              "name": "Knowledge Bases",
-              "item": []
+              "name": "Runner",
+              "item": [
+                {
+                  "name": "Runner Webhook",
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "X-Tito-Agent-Key",
+                        "value": "{{runner_api_key}}",
+                        "description": "Runner API key for authentication."
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"event\": \"session.ended\",\n  \"agent_id\": \"{{agent_id}}\",\n  \"tenant_id\": \"{{tenant_slug}}\",\n  \"room_name\": \"tito_agent_abc123\",\n  \"timestamp\": 1745276400.123,\n  \"data\": {\n    \"session_id\": \"sess_a1b2c3d4e5f6\",\n    \"status\": \"completed\",\n    \"duration\": 125.4,\n    \"reason\": \"agent_hangup\",\n    \"transcription\": [\n      { \"role\": \"user\", \"content\": \"Hello\" },\n      { \"role\": \"assistant\", \"content\": \"Hi! How can I help?\" }\n    ],\n    \"recording_path\": \"/data/recordings/session_abc123.wav\"\n  }\n}",
+                      "options": {
+                        "raw": {
+                          "language": "json"
+                        }
+                      }
+                    },
+                    "url": {
+                      "raw": "{{base_url}}/{{tenant_slug}}/api/ai/runner/webhook",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "{{tenant_slug}}",
+                        "api",
+                        "ai",
+                        "runner",
+                        "webhook"
+                      ]
+                    },
+                    "description": "Receives lifecycle events from the Python runner. No user auth \u2014 uses `X-Tito-Agent-Key` header.\n\n**Events:**\n- `session.started` \u2014 Creates `AgentSession` in DB, broadcasts to frontend.\n- `session.ended` \u2014 Updates session status, persists full transcript, broadcasts.\n- `session.transcript` \u2014 Persists individual transcript entry, broadcasts.\n- `session.error` \u2014 Marks session as failed, broadcasts.\n\n**Session ID:** Extracted from `data.session_id` in the payload.\n\n**Response:** `200 OK`\n```json\n{ \"status\": \"received\" }\n```\n\n**Error:** `401` if API key is invalid."
+                  }
+                },
+                {
+                  "name": "Get Session Status",
+                  "request": {
+                    "method": "GET",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/{{tenant_slug}}/api/ai/runner/sessions/{{session_id}}/status",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "{{tenant_slug}}",
+                        "api",
+                        "ai",
+                        "runner",
+                        "sessions",
+                        "{{session_id}}",
+                        "status"
+                      ]
+                    },
+                    "description": "Polls the current state of a session. Used by the frontend to detect when the agent ends the call.\n\n**No user auth required** \u2014 stripped via middleware.\n\n**Response:** `200 OK`\n```json\n{\n  \"data\": {\n    \"session_id\": \"sess_a1b2c3d4e5f6\",\n    \"tenant_id\": \"...\",\n    \"agent_id\": \"...\",\n    \"room_name\": \"...\",\n    \"status\": \"active\",\n    \"started_at\": \"2026-04-21T18:00:00+00:00\",\n    \"ended_at\": null,\n    \"ended_by\": null\n  }\n}\n```\n\n**Error:** `404` if session not found."
+                  }
+                },
+                {
+                  "name": "Mark Session User-Ended",
+                  "request": {
+                    "method": "POST",
+                    "header": [],
+                    "url": {
+                      "raw": "{{base_url}}/{{tenant_slug}}/api/ai/runner/sessions/{{session_id}}/user-ended",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "{{tenant_slug}}",
+                        "api",
+                        "ai",
+                        "runner",
+                        "sessions",
+                        "{{session_id}}",
+                        "user-ended"
+                      ]
+                    },
+                    "description": "Marks a session as ended by the user (browser hang-up). Updates the cache state so the runner can detect it.\n\n**No user auth required.**\n\n**Response:** `200 OK`\n```json\n{ \"message\": \"Session marked as ended by user\" }\n```\n\n**Error:** `404` if session not found."
+                  }
+                },
+                {
+                  "name": "Upload Session Audio",
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "X-Tito-Agent-Key",
+                        "value": "{{runner_api_key}}",
+                        "description": "Runner API key."
+                      }
+                    ],
+                    "body": {
+                      "mode": "formdata",
+                      "formdata": [
+                        {
+                          "key": "audio",
+                          "type": "file",
+                          "description": "WAV/MP3 audio file (max 100MB)."
+                        }
+                      ]
+                    },
+                    "url": {
+                      "raw": "{{base_url}}/{{tenant_slug}}/api/ai/runner/sessions/{{session_id}}/audio",
+                      "host": [
+                        "{{base_url}}"
+                      ],
+                      "path": [
+                        "{{tenant_slug}}",
+                        "api",
+                        "ai",
+                        "runner",
+                        "sessions",
+                        "{{session_id}}",
+                        "audio"
+                      ]
+                    },
+                    "description": "Uploads a session recording from the runner. Stored locally and linked to the `AgentSession`.\n\n**No user auth** \u2014 uses `X-Tito-Agent-Key` header.\n\n**Response:** `201 Created`\n```json\n{ \"data\": { \"id\": \"...\", \"name\": \"session_abc.wav\", \"size\": 1048576 }, \"message\": \"Audio uploaded.\" }\n```\n\n**Errors:** `401` invalid key, `404` session not found."
+                  }
+                }
+              ]
             }
           ]
         },
