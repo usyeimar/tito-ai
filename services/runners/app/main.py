@@ -41,6 +41,16 @@ async def lifespan(app: FastAPI):
         except Exception as e:
             logger.warning(f"Failed to start runner registry: {e}")
 
+    # ── Redis Command Consumer (receives commands from Laravel) ───────────────
+    from app.services.command_consumer import command_consumer
+
+    try:
+        await command_consumer.start()
+        app.state.command_consumer = command_consumer
+        logger.info("Redis command consumer started")
+    except Exception as e:
+        logger.warning(f"Failed to start command consumer: {e}")
+
     # ── SIP Bridge (optional) ────────────────────────────────────────────────
     from app.core.config import settings as _settings
 
@@ -135,6 +145,15 @@ async def lifespan(app: FastAPI):
             logger.info("Runner registry stopped")
         except Exception as e:
             logger.warning(f"Runner registry stop error: {e}")
+
+    # ── Command Consumer shutdown ─────────────────────────────────────────────
+    consumer = getattr(app.state, "command_consumer", None)
+    if consumer:
+        try:
+            await consumer.stop()
+            logger.info("Command consumer stopped")
+        except Exception as e:
+            logger.warning(f"Command consumer stop error: {e}")
 
     # 0.3 Graceful Shutdown: notify and stop all sessions
     from app.services.session_manager import session_manager
