@@ -6,10 +6,10 @@ namespace App\Http\Controllers\Tenant\API\Agent;
 
 use App\Events\Tenant\Agent\AgentSessionEvent;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Tenant\API\Agent\RunnerWebhookRequest;
 use App\Models\Tenant\Agent\AgentSession;
 use App\Services\Tenant\Agent\Runner\SessionStateService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -19,18 +19,19 @@ class AgentSessionWebhookController extends Controller
         private readonly SessionStateService $sessionState,
     ) {}
 
-    public function handle(Request $request): JsonResponse
+    public function handle(RunnerWebhookRequest $request): JsonResponse
     {
-        if (! $this->isValidApiKey($request->header('X-Tito-Agent-Key'))) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        $event = $request->input('event');
-        $agentId = $request->input('agent_id');
-        $data = $request->input('data', []);
-        $sessionId = $data['session_id'] ?? $request->input('session_id', '');
+        $event = $request->validated('event');
+        $agentId = $request->validated('agent_id');
+        $data = $request->validated('data') ?? [];
+        $sessionId = $data['session_id'] ?? $request->validated('session_id', '');
 
         Log::info("Runner webhook: {$event}", ['session_id' => $sessionId, 'agent_id' => $agentId]);
+
+        // Extend cache TTL on every event to prevent active sessions from expiring
+        if ($sessionId) {
+            $this->sessionState->touch($sessionId);
+        }
 
         match ($event) {
             'session.started' => $this->handleSessionStarted($sessionId, $agentId, $data),
@@ -139,12 +140,5 @@ class AgentSessionWebhookController extends Controller
             'agent_id' => $agentId,
             'error' => $data['error'] ?? 'Unknown error',
         ]));
-    }
-
-    private function isValidApiKey(?string $apiKey): bool
-    {
-        $expectedKey = config('runners.api_key');
-
-        return empty($expectedKey) || $apiKey === $expectedKey;
     }
 }

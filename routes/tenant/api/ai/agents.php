@@ -9,6 +9,7 @@ use App\Http\Controllers\Tenant\API\Agent\AgentSessionWebhookController;
 use App\Http\Controllers\Tenant\API\Agent\AgentTestCallController;
 use App\Http\Controllers\Tenant\API\Agent\AgentToolController;
 use App\Http\Controllers\Tenant\API\Agent\ConversationController;
+use App\Http\Middleware\VerifyRunnerSignature;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('agents')->name('agents.')
@@ -52,12 +53,13 @@ Route::post('ai/runner/sessions/{sessionId}/user-ended', [AgentTestCallControlle
     ->name('ai.runner.session.user-ended')
     ->withoutMiddleware(['auth:tenant-api', 'auth:api']);
 
-// Webhook endpoint for runner events (authenticated via X-Tito-Agent-Key header)
-Route::post('ai/runner/webhook', [AgentSessionWebhookController::class, 'handle'])
-    ->name('ai.runner.webhook')
-    ->withoutMiddleware(['auth:tenant-api', 'auth:api']);
+// Runner endpoints: HMAC signature verification + rate limiting
+Route::middleware([VerifyRunnerSignature::class, 'throttle:runner-webhook'])
+    ->withoutMiddleware(['auth:tenant-api', 'auth:api'])
+    ->group(function () {
+        Route::post('ai/runner/webhook', [AgentSessionWebhookController::class, 'handle'])
+            ->name('ai.runner.webhook');
 
-// Audio upload endpoint for runner to POST recordings
-Route::post('ai/runner/sessions/{sessionId}/audio', [AgentSessionAudioController::class, 'store'])
-    ->name('ai.runner.session.audio')
-    ->withoutMiddleware(['auth:tenant-api', 'auth:api']);
+        Route::post('ai/runner/sessions/{sessionId}/audio', [AgentSessionAudioController::class, 'store'])
+            ->name('ai.runner.session.audio');
+    });

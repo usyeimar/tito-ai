@@ -14,12 +14,7 @@ class AgentSessionAudioController extends Controller
 {
     public function store(Request $request, string $sessionId, UploadSessionAudio $action): JsonResponse
     {
-        $apiKey = $request->header('X-Tito-Agent-Key');
-        $expectedKey = config('runners.api_key');
-
-        if (! empty($expectedKey) && $apiKey !== $expectedKey) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
+        // Auth handled by VerifyRunnerSignature middleware
 
         $request->validate([
             'audio' => ['required', 'file', 'max:102400'],

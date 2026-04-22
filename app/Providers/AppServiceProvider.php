@@ -186,6 +186,10 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute($limit)->by($userKey.'|'.$fileId.'|'.$request->ip());
         });
 
+        RateLimiter::for('runner-webhook', function (Request $request): Limit {
+            return Limit::perMinute(120)->by($request->ip() ?? 'unknown');
+        });
+
     }
 
     /**
