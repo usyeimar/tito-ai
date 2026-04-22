@@ -17,20 +17,27 @@ use RuntimeException;
  * Responsible for creating, listing and terminating voice agent sessions.
  * The runner is the only component that talks to LiveKit / Daily directly.
  *
- * When use_registry is enabled, uses RunnerRegistry for load balancing.
+ * Includes circuit breaker and retry with exponential backoff.
  *
  * @see services/runners/app/api/v1/sessions.py
  */
 final class RunnerClient
 {
+    private const MAX_RETRIES = 3;
+
+    private const BASE_DELAY_MS = 200;
+
     public function __construct(
         private readonly AgentConfigBuilder $configBuilder,
+        private readonly CircuitBreaker $circuitBreaker,
         private readonly ?RunnerRegistry $runnerRegistry = null,
     ) {}
 
     /**
-     * Create a new voice session for the given agent and return the
-     * connection payload that the browser SDK needs.
+     * Create a new voice session for the given agent.
+     *
+     * The runner decides which transport (livekit/daily) to use based on
+     * its own configuration — Laravel never sends transport preference.
      *
      * @return array{
      *     session_id: string,
@@ -43,56 +50,48 @@ final class RunnerClient
      */
     public function createSession(Agent $agent): array
     {
+        $this->ensureAvailable();
+
         $config = $this->configBuilder->build($agent);
 
-        try {
+        return $this->withRetry(function () use ($config): array {
             $response = $this->request()
                 ->post('/api/v1/sessions/', $config);
-        } catch (ConnectionException $e) {
-            throw new RuntimeException(
-                'No se pudo contactar el servicio de runners: '.$e->getMessage(),
-                previous: $e,
-            );
-        }
 
-        if ($response->failed()) {
-            Log::warning('Tito runners session create failed', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
+            if ($response->failed()) {
+                Log::warning('Runner session create failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
 
-            $message = (string) ($response->json('detail.message')
-                ?? $response->json('message')
-                ?? $response->json('detail')
-                ?? 'Failed to create runner session');
+                $message = (string) ($response->json('detail.message')
+                    ?? $response->json('message')
+                    ?? $response->json('detail')
+                    ?? 'Failed to create runner session');
 
-            throw new RuntimeException($message);
-        }
+                throw new RuntimeException($message);
+            }
 
-        /** @var array<string, mixed> $payload */
-        $payload = $response->json();
-        $sessionId = (string) ($payload['session_id'] ?? '');
+            /** @var array<string, mixed> $payload */
+            $payload = $response->json();
 
-        return [
-            'session_id' => $sessionId,
-            'room_name' => (string) ($payload['room_name'] ?? ''),
-            'provider' => (string) ($payload['provider'] ?? ''),
-            'url' => (string) ($payload['ws_url'] ?? $payload['url'] ?? ''),
-            'access_token' => (string) ($payload['access_token'] ?? ''),
-            'context' => (array) ($payload['context'] ?? []),
-        ];
+            return [
+                'session_id' => (string) ($payload['session_id'] ?? ''),
+                'room_name' => (string) ($payload['room_name'] ?? ''),
+                'provider' => (string) ($payload['provider'] ?? ''),
+                'url' => (string) ($payload['ws_url'] ?? $payload['url'] ?? ''),
+                'access_token' => (string) ($payload['access_token'] ?? ''),
+                'context' => (array) ($payload['context'] ?? []),
+            ];
+        });
     }
 
     /**
      * Terminate a session on the correct runner.
-     *
-     * If the session was on a specific runner (identified by host_id),
-     * sends the delete to that runner. Otherwise, uses the registry.
      */
     public function terminateSession(string $sessionId, ?string $hostId = null): bool
     {
         try {
-            // If we know which runner has the session, use it directly
             if ($hostId) {
                 $runner = $this->runnerRegistry?->getRunner($hostId);
                 if ($runner && ($runner['url'] ?? '')) {
@@ -100,23 +99,66 @@ final class RunnerClient
                 }
             }
 
-            // Fallback: try base_url or any available runner
             $url = $this->getRunnerUrl();
-            if (! $url) {
-                return false;
-            }
 
-            return $this->terminateOnRunner($url, $sessionId);
+            return $url ? $this->terminateOnRunner($url, $sessionId) : false;
         } catch (ConnectionException) {
             return false;
         }
     }
 
     /**
-     * Get the runner URL to use for requests.
+     * Execute a callable with retry + exponential backoff + circuit breaker.
      *
-     * Uses registry for load balancing if enabled, otherwise falls back to base_url.
+     * @template T
+     *
+     * @param  callable(): T  $callback
+     * @return T
      */
+    private function withRetry(callable $callback): mixed
+    {
+        $lastException = null;
+
+        for ($attempt = 1; $attempt <= self::MAX_RETRIES; $attempt++) {
+            try {
+                $result = $callback();
+                $this->circuitBreaker->recordSuccess();
+
+                return $result;
+            } catch (ConnectionException $e) {
+                $lastException = $e;
+                $this->circuitBreaker->recordFailure();
+                Log::warning('Runner connection failed', [
+                    'attempt' => $attempt,
+                    'error' => $e->getMessage(),
+                ]);
+            } catch (RuntimeException $e) {
+                // Don't retry business logic errors (4xx)
+                $this->circuitBreaker->recordFailure();
+                throw $e;
+            }
+
+            if ($attempt < self::MAX_RETRIES) {
+                $delayMs = self::BASE_DELAY_MS * (2 ** ($attempt - 1));
+                usleep($delayMs * 1000);
+            }
+        }
+
+        throw new RuntimeException(
+            'Runner unavailable after '.self::MAX_RETRIES.' attempts: '.$lastException?->getMessage(),
+            previous: $lastException,
+        );
+    }
+
+    private function ensureAvailable(): void
+    {
+        if (! $this->circuitBreaker->isAvailable()) {
+            throw new RuntimeException(
+                'Runner service circuit breaker is open. Service temporarily unavailable.'
+            );
+        }
+    }
+
     private function getRunnerUrl(): ?string
     {
         if (config('runners.use_registry', false) && $this->runnerRegistry) {
@@ -132,13 +174,9 @@ final class RunnerClient
             }
         }
 
-        // Fallback to configured base URL
         return rtrim((string) config('runners.base_url', 'http://localhost:8000'), '/');
     }
 
-    /**
-     * Send terminate request to a specific runner URL.
-     */
     private function terminateOnRunner(string $baseUrl, string $sessionId): bool
     {
         try {

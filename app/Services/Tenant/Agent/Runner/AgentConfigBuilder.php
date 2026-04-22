@@ -6,6 +6,7 @@ namespace App\Services\Tenant\Agent\Runner;
 
 use App\Models\Tenant\Agent\Agent;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Translates a tenant Agent (with its settings + tools) into the
@@ -19,6 +20,25 @@ final class AgentConfigBuilder
      * @return array<string, mixed>
      */
     public function build(Agent $agent): array
+    {
+        $cacheKey = "agent_config:{$agent->id}:{$agent->updated_at?->timestamp}";
+
+        return Cache::remember($cacheKey, 300, fn () => $this->buildFresh($agent));
+    }
+
+    /**
+     * Invalidate cached config for an agent.
+     */
+    public function invalidate(Agent $agent): void
+    {
+        $pattern = "agent_config:{$agent->id}:*";
+        Cache::forget("agent_config:{$agent->id}:{$agent->updated_at?->timestamp}");
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildFresh(Agent $agent): array
     {
         $agent->loadMissing(['settings', 'tools']);
 
@@ -103,16 +123,12 @@ final class AgentConfigBuilder
     {
         $stt = (array) Arr::get($runtime, 'stt', []);
         $tts = (array) Arr::get($runtime, 'tts', []);
-        $transport = (array) Arr::get($runtime, 'transport', []);
         $behavior = (array) Arr::get($runtime, 'behavior', []);
         $vad = Arr::get($runtime, 'vad');
         $sessionLimits = Arr::get($runtime, 'session_limits');
 
-        $allowed = (array) config('runners.allowed_transports', ['livekit', 'daily']);
-        $requested = (string) Arr::get($transport, 'provider', config('runners.default_transport', 'livekit'));
-        $resolvedTransport = in_array($requested, $allowed, true)
-            ? $requested
-            : (string) config('runners.default_transport', 'livekit');
+        // Transport is NOT sent — the runner decides which provider
+        // (livekit/daily) to use based on its own configuration.
 
         $payload = [
             'stt' => array_filter([
@@ -128,9 +144,6 @@ final class AgentConfigBuilder
                 'speed' => Arr::get($tts, 'speed'),
                 'latency_mode' => Arr::get($tts, 'latency_mode'),
             ], fn ($v) => $v !== null),
-            'transport' => [
-                'provider' => $resolvedTransport,
-            ],
             'behavior' => array_filter([
                 'interruptibility' => (bool) Arr::get($behavior, 'interruptibility', true),
                 'initial_action' => (string) Arr::get($behavior, 'initial_action', 'SPEAK_FIRST'),
