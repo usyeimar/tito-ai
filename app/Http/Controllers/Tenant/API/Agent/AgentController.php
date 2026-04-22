@@ -14,6 +14,7 @@ use App\Actions\Tenant\Agent\UpdateAgent;
 use App\Data\Tenant\Agent\AgentData;
 use App\Data\Tenant\Agent\CreateAgentData;
 use App\Data\Tenant\Agent\UpdateAgentData;
+use App\Http\Controllers\Concerns\PaginatesJsonResponses;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\API\Agent\IndexAgentRequest;
 use App\Http\Requests\Tenant\API\Agent\StoreAgentRequest;
@@ -26,13 +27,18 @@ use Illuminate\Support\Facades\Gate;
 
 class AgentController extends Controller
 {
+    use PaginatesJsonResponses;
+
     public function index(IndexAgentRequest $request, ListAgents $action): JsonResponse
     {
         Gate::authorize('viewAny', Agent::class);
 
-        return response()->json([
-            'data' => $action($request->validated())->map->toArray()->values(),
-        ]);
+        $paginator = $action($request->validated());
+
+        return $this->paginatedJson(
+            $paginator,
+            fn (Agent $agent) => AgentData::fromAgent($agent)->toArray(),
+        );
     }
 
     public function store(StoreAgentRequest $request, CreateAgent $action): JsonResponse

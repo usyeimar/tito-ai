@@ -12,6 +12,7 @@ use App\Actions\Tenant\Agent\UpdateTrunk;
 use App\Data\Tenant\Agent\CreateTrunkData;
 use App\Data\Tenant\Agent\TrunkData;
 use App\Data\Tenant\Agent\UpdateTrunkData;
+use App\Http\Controllers\Concerns\PaginatesJsonResponses;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Tenant\Agent\StoreTrunkRequest;
 use App\Http\Requests\Tenant\Agent\UpdateTrunkRequest;
@@ -23,15 +24,18 @@ use Illuminate\Support\Facades\Gate;
 
 class TrunkController extends Controller
 {
+    use PaginatesJsonResponses;
+
     public function index(IndexTrunkRequest $request, ListTrunks $action): JsonResponse
     {
         Gate::authorize('viewAny', Trunk::class);
 
-        $trunks = $action($request->validated());
+        $paginator = $action($request->validated());
 
-        return response()->json([
-            'data' => $trunks->map(fn (Trunk $trunk) => TrunkData::fromTrunk($trunk)->toArray())->values(),
-        ]);
+        return $this->paginatedJson(
+            $paginator,
+            fn (Trunk $trunk) => TrunkData::fromTrunk($trunk)->toArray(),
+        );
     }
 
     public function store(StoreTrunkRequest $request, CreateTrunkData $data, CreateTrunk $action): JsonResponse

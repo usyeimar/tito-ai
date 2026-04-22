@@ -6,13 +6,18 @@ namespace App\Actions\Tenant\Agent;
 
 use App\Models\Tenant\Agent\Agent;
 use App\Models\Tenant\Agent\AgentTool;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class ListAgentTools
 {
-    /** @return Collection<int, AgentTool> */
-    public function __invoke(Agent $agent): Collection
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return LengthAwarePaginator<AgentTool>
+     */
+    public function __invoke(Agent $agent, array $filters = []): LengthAwarePaginator
     {
-        return $agent->tools()->orderBy('name')->get();
+        return $agent->tools()
+            ->orderBy('name')
+            ->paginateFromFilters($filters);
     }
 }

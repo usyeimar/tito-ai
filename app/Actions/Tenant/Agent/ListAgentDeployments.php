@@ -6,13 +6,19 @@ namespace App\Actions\Tenant\Agent;
 
 use App\Models\Tenant\Agent\Agent;
 use App\Models\Tenant\Agent\AgentDeployment;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class ListAgentDeployments
 {
-    /** @return Collection<int, AgentDeployment> */
-    public function __invoke(Agent $agent): Collection
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return LengthAwarePaginator<AgentDeployment>
+     */
+    public function __invoke(Agent $agent, array $filters = []): LengthAwarePaginator
     {
-        return $agent->deployments()->orderByDesc('enabled')->orderBy('channel')->get();
+        return $agent->deployments()
+            ->orderByDesc('enabled')
+            ->orderBy('channel')
+            ->paginateFromFilters($filters);
     }
 }

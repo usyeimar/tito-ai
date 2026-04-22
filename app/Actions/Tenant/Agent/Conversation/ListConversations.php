@@ -36,9 +36,6 @@ final class ListConversations
             $query->where('started_at', '<=', $filters['filter']['started_before']);
         }
 
-        $perPage = $filters['page']['size'] ?? 20;
-        $page = $filters['page']['number'] ?? 1;
-
-        return $query->paginate(perPage: (int) $perPage, page: (int) $page);
+        return $query->paginateFromFilters($filters);
     }
 }

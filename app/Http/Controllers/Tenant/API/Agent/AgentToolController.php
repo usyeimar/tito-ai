@@ -11,7 +11,9 @@ use App\Actions\Tenant\Agent\UpdateAgentTool;
 use App\Data\Tenant\Agent\AgentToolData;
 use App\Data\Tenant\Agent\CreateAgentToolData;
 use App\Data\Tenant\Agent\UpdateAgentToolData;
+use App\Http\Controllers\Concerns\PaginatesJsonResponses;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Tenant\API\Agent\IndexAgentToolRequest;
 use App\Http\Requests\Tenant\API\Agent\StoreAgentToolRequest;
 use App\Http\Requests\Tenant\API\Agent\UpdateAgentToolRequest;
 use App\Models\Tenant\Agent\Agent;
@@ -22,21 +24,19 @@ use Illuminate\Support\Facades\Gate;
 
 class AgentToolController extends Controller
 {
-    public function index(Agent $agent, ListAgentTools $action): JsonResponse
+    use PaginatesJsonResponses;
+
+    public function index(IndexAgentToolRequest $request, Agent $agent, ListAgentTools $action): JsonResponse
     {
         Gate::authorize('view', $agent);
 
         $baseUrl = $this->toolsBaseUrl($agent);
-        $tools = $action($agent);
+        $paginator = $action($agent, $request->validated());
 
-        return response()->json([
-            'data' => $tools->map(fn (AgentTool $tool) => AgentToolData::fromTool($tool, $baseUrl)),
-            '_links' => [
-                'self' => ['href' => $baseUrl, 'method' => 'GET'],
-                'create' => ['href' => $baseUrl, 'method' => 'POST'],
-                'agent' => ['href' => $this->agentUrl($agent), 'method' => 'GET'],
-            ],
-        ]);
+        return $this->paginatedJson(
+            $paginator,
+            fn (AgentTool $tool) => AgentToolData::fromTool($tool, $baseUrl),
+        );
     }
 
     public function store(StoreAgentToolRequest $request, Agent $agent, CreateAgentTool $action): JsonResponse

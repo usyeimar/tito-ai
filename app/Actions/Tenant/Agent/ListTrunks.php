@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Actions\Tenant\Agent;
 
 use App\Models\Tenant\Agent\Trunk;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class ListTrunks
 {
     /**
      * @param  array<string, mixed>  $filters
-     * @return Collection<int, Trunk>
+     * @return LengthAwarePaginator<Trunk>
      */
-    public function __invoke(array $filters = []): Collection
+    public function __invoke(array $filters = []): LengthAwarePaginator
     {
         $query = Trunk::query();
 
@@ -33,6 +33,6 @@ final class ListTrunks
             $query->where('agent_id', $filters['agent_id']);
         }
 
-        return $query->orderBy('name')->get();
+        return $query->orderBy('name')->paginateFromFilters($filters);
     }
 }

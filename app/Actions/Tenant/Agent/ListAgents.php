@@ -4,30 +4,37 @@ declare(strict_types=1);
 
 namespace App\Actions\Tenant\Agent;
 
-use App\Data\Tenant\Agent\AgentData;
 use App\Models\Tenant\Agent\Agent;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 final class ListAgents
 {
     /**
      * @param  array<string, mixed>  $filters
-     * @return Collection<int, AgentData>
+     * @return LengthAwarePaginator<Agent>
      */
-    public function __invoke(array $filters = []): Collection
+    public function __invoke(array $filters = []): LengthAwarePaginator
     {
-        $query = Agent::with(['settings', 'tools', 'deployments'])
-            ->orderBy('name');
-
-        if (! empty($filters['search'])) {
-            $search = '%'.$filters['search'].'%';
-            $query->where(function ($q) use ($search): void {
-                $q->where('name', 'ilike', $search)
-                    ->orWhere('slug', 'ilike', $search)
-                    ->orWhere('description', 'ilike', $search);
-            });
-        }
-
-        return $query->get()->map(fn (Agent $agent) => AgentData::fromAgent($agent));
+        return QueryBuilder::for(Agent::class)
+            ->with(['settings', 'tools', 'deployments'])
+            ->allowedFilters(
+                AllowedFilter::partial('name'),
+                AllowedFilter::partial('slug'),
+                AllowedFilter::partial('description'),
+                AllowedFilter::callback('search', function (Builder $query, mixed $value): void {
+                    $term = '%'.$value.'%';
+                    $query->where(function (Builder $q) use ($term): void {
+                        $q->where('name', 'ilike', $term)
+                            ->orWhere('slug', 'ilike', $term)
+                            ->orWhere('description', 'ilike', $term);
+                    });
+                }),
+            )
+            ->allowedSorts('name', 'created_at', 'updated_at')
+            ->defaultSort('name')
+            ->paginateFromFilters($filters);
     }
 }

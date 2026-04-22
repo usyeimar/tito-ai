@@ -12,7 +12,9 @@ use App\Actions\Tenant\Agent\UpdateAgentDeployment;
 use App\Data\Tenant\Agent\AgentDeploymentData;
 use App\Data\Tenant\Agent\CreateAgentDeploymentData;
 use App\Data\Tenant\Agent\UpdateAgentDeploymentData;
+use App\Http\Controllers\Concerns\PaginatesJsonResponses;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Tenant\API\Agent\IndexAgentDeploymentRequest;
 use App\Http\Requests\Tenant\API\Agent\StoreAgentDeploymentRequest;
 use App\Http\Requests\Tenant\API\Agent\UpdateAgentDeploymentRequest;
 use App\Models\Tenant\Agent\Agent;
@@ -23,21 +25,19 @@ use Illuminate\Support\Facades\Gate;
 
 class AgentDeploymentController extends Controller
 {
-    public function index(Agent $agent, ListAgentDeployments $action): JsonResponse
+    use PaginatesJsonResponses;
+
+    public function index(IndexAgentDeploymentRequest $request, Agent $agent, ListAgentDeployments $action): JsonResponse
     {
         Gate::authorize('view', $agent);
 
         $baseUrl = $this->deploymentsBaseUrl($agent);
-        $deployments = $action($agent);
+        $paginator = $action($agent, $request->validated());
 
-        return response()->json([
-            'data' => $deployments->map(fn (AgentDeployment $d) => AgentDeploymentData::fromDeployment($d, $baseUrl)),
-            '_links' => [
-                'self' => ['href' => $baseUrl, 'method' => 'GET'],
-                'create' => ['href' => $baseUrl, 'method' => 'POST'],
-                'agent' => ['href' => $this->agentUrl($agent), 'method' => 'GET'],
-            ],
-        ]);
+        return $this->paginatedJson(
+            $paginator,
+            fn (AgentDeployment $d) => AgentDeploymentData::fromDeployment($d, $baseUrl),
+        );
     }
 
     public function store(StoreAgentDeploymentRequest $request, Agent $agent, CreateAgentDeployment $action): JsonResponse
