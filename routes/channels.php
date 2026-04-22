@@ -35,15 +35,6 @@ tenant_channel('notifications.{userId}', function ($user, string $tenant, string
     return (string) $user->getAuthIdentifier() === $userId;
 });
 
-tenant_channel('ringcentral.user.{userId}', function ($user, string $tenant, string $userId): bool {
-    return (string) $user->getAuthIdentifier() === $userId
-        && $user->can('ring_central.view');
-});
-
-tenant_channel('ringcentral.shared', function ($user): bool {
-    return $user->can('ring_central.view');
-});
-
-tenant_channel('ringcentral.admin', function ($user): bool {
-    return $user->can('ring_central.manage');
+tenant_channel('agent-sessions.{sessionId}', function ($user, string $tenant, string $sessionId): bool {
+    return $user->can('agent.view');
 });
