@@ -2,91 +2,107 @@
 
 use App\Models\Tenant\KnowledgeBase\KnowledgeBase;
 
-it('requires authentication to list knowledge bases', function () {
-    $response = $this->getJson($this->tenantApiUrl('ai/knowledge-bases'));
-    $response->assertUnauthorized();
-});
+describe('Knowledge Base API', function () {
+    describe('Authentication', function () {
+        it('requires authentication to list knowledge bases', function () {
+            $response = $this->getJson($this->tenantApiUrl('ai/knowledge-bases'));
+            $response->assertUnauthorized();
+        });
 
-it('requires authentication to create a knowledge base', function () {
-    $response = $this->postJson($this->tenantApiUrl('ai/knowledge-bases'), [
-        'name' => 'Test KB',
-    ]);
-    $response->assertUnauthorized();
-});
+        it('requires authentication to create a knowledge base', function () {
+            $response = $this->postJson($this->tenantApiUrl('ai/knowledge-bases'), [
+                'name' => 'Test KB',
+            ]);
+            $response->assertUnauthorized();
+        });
+    });
 
-it('lists knowledge bases', function () {
-    KnowledgeBase::factory()->count(3)->create();
+    describe('Knowledge Base Management', function () {
+        describe('List', function () {
+            it('lists knowledge bases', function () {
+                KnowledgeBase::factory()->count(3)->create();
 
-    $response = $this->actingAs($this->user, 'tenant-api')
-        ->getJson($this->tenantApiUrl('ai/knowledge-bases'));
+                $response = $this->actingAs($this->user, 'tenant-api')
+                    ->getJson($this->tenantApiUrl('ai/knowledge-bases'));
 
-    $response->assertOk();
-});
+                $response->assertOk();
+            });
+        });
 
-it('creates a knowledge base', function () {
-    $response = $this->actingAs($this->user, 'tenant-api')
-        ->postJson($this->tenantApiUrl('ai/knowledge-bases'), [
-            'name' => 'My Knowledge Base',
-            'description' => 'A test knowledge base',
-            'is_public' => true,
-        ]);
+        describe('Create', function () {
+            it('creates a knowledge base', function () {
+                $response = $this->actingAs($this->user, 'tenant-api')
+                    ->postJson($this->tenantApiUrl('ai/knowledge-bases'), [
+                        'name' => 'My Knowledge Base',
+                        'description' => 'A test knowledge base',
+                        'is_public' => true,
+                    ]);
 
-    $response->assertCreated();
-    $response->assertJsonPath('data.name', 'My Knowledge Base');
-    $response->assertJsonPath('data.is_public', true);
-});
+                $response->assertCreated();
+                $response->assertJsonPath('data.name', 'My Knowledge Base');
+                $response->assertJsonPath('data.is_public', true);
+            });
 
-it('shows a knowledge base', function () {
-    $kb = KnowledgeBase::factory()->create([
-        'name' => 'Test KB',
-        'description' => 'Test description',
-    ]);
+            it('requires name to create knowledge base', function () {
+                $response = $this->actingAs($this->user, 'tenant-api')
+                    ->postJson($this->tenantApiUrl('ai/knowledge-bases'), [
+                        'description' => 'No name provided',
+                    ]);
 
-    $response = $this->actingAs($this->user, 'tenant-api')
-        ->getJson($this->tenantApiUrl("ai/knowledge-bases/{$kb->id}"));
+                $response->assertUnprocessable();
+                assertHasValidationError($response, 'name');
+            });
+        });
 
-    $response->assertOk();
-    $response->assertJsonPath('data.id', (string) $kb->id);
-    $response->assertJsonPath('data.name', 'Test KB');
-});
+        describe('Show', function () {
+            it('shows a knowledge base', function () {
+                $kb = KnowledgeBase::factory()->create([
+                    'name' => 'Test KB',
+                    'description' => 'Test description',
+                ]);
 
-it('returns 404 for non-existent knowledge base', function () {
-    $response = $this->actingAs($this->user, 'tenant-api')
-        ->getJson($this->tenantApiUrl('ai/knowledge-bases/01HX99999999999999999999999'));
+                $response = $this->actingAs($this->user, 'tenant-api')
+                    ->getJson($this->tenantApiUrl("ai/knowledge-bases/{$kb->id}"));
 
-    $response->assertNotFound();
-});
+                $response->assertOk();
+                $response->assertJsonPath('data.id', (string) $kb->id);
+                $response->assertJsonPath('data.name', 'Test KB');
+            });
 
-it('updates a knowledge base', function () {
-    $kb = KnowledgeBase::factory()->create(['name' => 'Original']);
+            it('returns 404 for non-existent knowledge base', function () {
+                $response = $this->actingAs($this->user, 'tenant-api')
+                    ->getJson($this->tenantApiUrl('ai/knowledge-bases/01HX99999999999999999999999'));
 
-    $response = $this->actingAs($this->user, 'tenant-api')
-        ->patchJson($this->tenantApiUrl("ai/knowledge-bases/{$kb->id}"), [
-            'name' => 'Updated KB',
-        ]);
+                $response->assertNotFound();
+            });
+        });
 
-    $response->assertOk();
-    $response->assertJsonPath('data.name', 'Updated KB');
+        describe('Update', function () {
+            it('updates a knowledge base', function () {
+                $kb = KnowledgeBase::factory()->create(['name' => 'Original']);
 
-    expect($kb->fresh()->name)->toBe('Updated KB');
-});
+                $response = $this->actingAs($this->user, 'tenant-api')
+                    ->patchJson($this->tenantApiUrl("ai/knowledge-bases/{$kb->id}"), [
+                        'name' => 'Updated KB',
+                    ]);
 
-it('deletes a knowledge base', function () {
-    $kb = KnowledgeBase::factory()->create();
+                $response->assertOk();
+                $response->assertJsonPath('data.name', 'Updated KB');
 
-    $response = $this->actingAs($this->user, 'tenant-api')
-        ->deleteJson($this->tenantApiUrl("ai/knowledge-bases/{$kb->id}"));
+                expect($kb->fresh()->name)->toBe('Updated KB');
+            });
+        });
 
-    $response->assertNoContent();
-    expect(KnowledgeBase::query()->whereKey($kb->id)->exists())->toBeFalse();
-});
+        describe('Delete', function () {
+            it('deletes a knowledge base', function () {
+                $kb = KnowledgeBase::factory()->create();
 
-it('requires name to create knowledge base', function () {
-    $response = $this->actingAs($this->user, 'tenant-api')
-        ->postJson($this->tenantApiUrl('ai/knowledge-bases'), [
-            'description' => 'No name provided',
-        ]);
+                $response = $this->actingAs($this->user, 'tenant-api')
+                    ->deleteJson($this->tenantApiUrl("ai/knowledge-bases/{$kb->id}"));
 
-    $response->assertUnprocessable();
-    assertHasValidationError($response, 'name');
+                $response->assertNoContent();
+                expect(KnowledgeBase::query()->whereKey($kb->id)->exists())->toBeFalse();
+            });
+        });
+    });
 });
