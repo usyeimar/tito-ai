@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Tenant\API\Agent\ConversationController;
+use App\Http\Controllers\Tenant\API\Conversations\ConversationController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('conversations')->name('conversations.')

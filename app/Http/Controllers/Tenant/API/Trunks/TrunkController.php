@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Tenant\API\Agent;
+namespace App\Http\Controllers\Tenant\API\Trunks;
 
 use App\Actions\Tenant\Agent\CreateTrunk;
 use App\Actions\Tenant\Agent\DeleteTrunk;
@@ -38,16 +38,15 @@ class TrunkController extends Controller
         );
     }
 
-    public function store(StoreTrunkRequest $request, CreateTrunk $action): JsonResponse
+    public function store(StoreTrunkRequest $request, CreateTrunkData $data, CreateTrunk $action): JsonResponse
     {
         Gate::authorize('create', Trunk::class);
 
-        $data = CreateTrunkData::from($request->validated());
         $trunk = $action($data);
 
         return response()->json([
             'data' => TrunkData::fromTrunk($trunk)->toArray(),
-            'message' => 'Trunk created.',
+            'message' => 'Trunk created',
         ], 201);
     }
 
@@ -62,16 +61,15 @@ class TrunkController extends Controller
         ]);
     }
 
-    public function update(UpdateTrunkRequest $request, Trunk $trunk, UpdateTrunk $action): JsonResponse
+    public function update(UpdateTrunkRequest $request, Trunk $trunk, UpdateTrunkData $data, UpdateTrunk $action): JsonResponse
     {
         Gate::authorize('update', $trunk);
 
-        $data = UpdateTrunkData::from($request->validated());
         $trunk = $action($trunk, $data);
 
         return response()->json([
             'data' => TrunkData::fromTrunk($trunk)->toArray(),
-            'message' => 'Trunk updated.',
+            'message' => 'Trunk updated',
         ]);
     }
 

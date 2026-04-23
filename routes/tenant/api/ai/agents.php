@@ -8,7 +8,7 @@ use App\Http\Controllers\Tenant\API\Agent\AgentSessionAudioController;
 use App\Http\Controllers\Tenant\API\Agent\AgentSessionWebhookController;
 use App\Http\Controllers\Tenant\API\Agent\AgentTestCallController;
 use App\Http\Controllers\Tenant\API\Agent\AgentToolController;
-use App\Http\Controllers\Tenant\API\Agent\ConversationController;
+use App\Http\Controllers\Tenant\API\Conversations\ConversationController;
 use App\Http\Middleware\VerifyRunnerSignature;
 use Illuminate\Support\Facades\Route;
 

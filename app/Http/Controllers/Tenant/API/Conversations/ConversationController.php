@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Tenant\API\Agent;
+namespace App\Http\Controllers\Tenant\API\Conversations;
 
 use App\Actions\Tenant\Agent\Conversation\DeleteConversation;
 use App\Actions\Tenant\Agent\Conversation\GetConversationTranscripts;
