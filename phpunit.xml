@@ -25,12 +25,14 @@
         <env name="CACHE_STORE" value="array"/>
         
         <!-- PostgreSQL Testing Configuration for Sail -->
-        <env name="DB_CONNECTION" value="pgsql"/>
-        <env name="DB_HOST" value="pgsql"/>
-        <env name="DB_PORT" value="5432"/>
-        <env name="DB_DATABASE" value="testing_app"/>
-        <env name="DB_USERNAME" value="sail"/>
-        <env name="DB_PASSWORD" value="password"/>
+        <env name="DB_CONNECTION" value="pgsql" force="true"/>
+        <env name="DB_HOST" value="pgsql" force="true"/>
+        <env name="DB_PORT" value="5432" force="true"/>
+        <env name="DB_DATABASE" value="testing_app" force="true"/>
+        <env name="DB_USERNAME" value="sail" force="true"/>
+        <env name="DB_PASSWORD" value="password" force="true"/>
+        <env name="DB_CONNECTION_CENTRAL" value="pgsql" force="true"/>
+        <env name="DB_DATABASE_CENTRAL" value="testing_app" force="true"/>
         
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
