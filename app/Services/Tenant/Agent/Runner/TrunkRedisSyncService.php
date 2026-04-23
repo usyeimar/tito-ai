@@ -36,26 +36,24 @@ final class TrunkRedisSyncService
     public function sync(Trunk $trunk): void
     {
         $trunkId = (string) $trunk->id;
-        $workspaceSlug = $trunk->workspace_slug;
+        $tenantId = $this->resolveTenantId();
 
-        $payload = $this->buildPayload($trunk);
+        $payload = $this->buildPayload($trunk, $tenantId);
 
         try {
             $redis = $this->redis();
 
-            // Store trunk config with TTL
             $redis->setex(
                 self::TRUNK_KEY_PREFIX.$trunkId,
                 self::DEFAULT_TTL_SECONDS,
                 json_encode($payload)
             );
 
-            // Add to workspace index for lookups
-            $redis->sadd("trunk:index:{$workspaceSlug}", $trunkId);
+            $redis->sadd("trunk:index:{$tenantId}", $trunkId);
 
             Log::info('Trunk synced to Redis', [
                 'trunk_id' => $trunkId,
-                'workspace_slug' => $workspaceSlug,
+                'tenant_id' => $tenantId,
                 'name' => $trunk->name,
             ]);
         } catch (Throwable $e) {
@@ -73,17 +71,17 @@ final class TrunkRedisSyncService
     public function remove(Trunk $trunk): void
     {
         $trunkId = (string) $trunk->id;
-        $workspaceSlug = $trunk->workspace_slug;
+        $tenantId = $this->resolveTenantId();
 
         try {
             $redis = $this->redis();
 
             $redis->del(self::TRUNK_KEY_PREFIX.$trunkId);
-            $redis->srem("trunk:index:{$workspaceSlug}", $trunkId);
+            $redis->srem("trunk:index:{$tenantId}", $trunkId);
 
             Log::info('Trunk removed from Redis', [
                 'trunk_id' => $trunkId,
-                'workspace_slug' => $workspaceSlug,
+                'tenant_id' => $tenantId,
             ]);
         } catch (Throwable $e) {
             Log::error('Failed to remove trunk from Redis', [
@@ -126,17 +124,19 @@ final class TrunkRedisSyncService
     }
 
     /**
-     * Get all synced trunk IDs for a workspace.
+     * Get all synced trunk IDs for a tenant.
      *
      * @return array<string>
      */
-    public function getSyncedTrunkIds(string $workspaceSlug): array
+    public function getSyncedTrunkIds(?string $tenantId = null): array
     {
+        $id = $tenantId ?? $this->resolveTenantId();
+
         try {
-            return $this->redis()->smembers("trunk:index:{$workspaceSlug}");
+            return $this->redis()->smembers("trunk:index:{$id}");
         } catch (Throwable $e) {
             Log::warning('Failed to get synced trunks from Redis', [
-                'workspace_slug' => $workspaceSlug,
+                'tenant_id' => $id,
                 'error' => $e->getMessage(),
             ]);
 
@@ -146,14 +146,15 @@ final class TrunkRedisSyncService
 
     /**
      * Build the Redis payload from a Trunk model.
+     *
+     * @return array<string, mixed>
      */
-    private function buildPayload(Trunk $trunk): array
+    private function buildPayload(Trunk $trunk, string $tenantId): array
     {
         $payload = [
             'trunk_id' => (string) $trunk->id,
             'name' => $trunk->name,
-            'tenant_id' => $trunk->workspace_slug, // For compatibility with runner
-            'workspace_slug' => $trunk->workspace_slug,
+            'tenant_id' => $tenantId,
             'mode' => $trunk->mode,
             'max_concurrent_calls' => $trunk->max_concurrent_calls,
             'codecs' => $trunk->codecs ?? ['ulaw', 'alaw'],
@@ -166,7 +167,6 @@ final class TrunkRedisSyncService
             'updated_at' => $trunk->updated_at?->timestamp ?? time(),
         ];
 
-        // Add runner-specific configuration
         if ($this->runnerAripEndpoint) {
             $payload['ari_endpoint'] = $this->runnerAripEndpoint;
         }
@@ -179,13 +179,17 @@ final class TrunkRedisSyncService
             $payload['api_port'] = $this->runnerApiPort;
         }
 
-        // For inbound trunks, add default ARI app config if not set
         if ($trunk->mode === Trunk::MODE_INBOUND) {
             $payload['app_name'] = $payload['app_name'] ?? 'tito-ai';
             $payload['app_password'] = $payload['app_password'] ?? config('services.asterisk.ari_password', 'tito-ari-secret');
         }
 
         return $payload;
+    }
+
+    private function resolveTenantId(): string
+    {
+        return (string) (tenant('id') ?? 'central');
     }
 
     private function redis(): Connection
