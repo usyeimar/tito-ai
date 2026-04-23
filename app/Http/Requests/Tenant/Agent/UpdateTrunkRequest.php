@@ -26,8 +26,7 @@ class UpdateTrunkRequest extends FormRequest
     {
         return [
             'name' => ['sometimes', 'string', 'max:255'],
-            'agent_id' => ['nullable', 'string', 'ulid'],
-            'workspace_slug' => ['sometimes', 'string', 'max:100'],
+            'agent_id' => ['nullable', 'string', 'ulid', 'exists:agents,id'],
             'mode' => ['sometimes', 'string', 'in:inbound,register,outbound'],
             'max_concurrent_calls' => ['sometimes', 'integer', 'min:1', 'max:1000'],
             'codecs' => ['sometimes', 'array'],

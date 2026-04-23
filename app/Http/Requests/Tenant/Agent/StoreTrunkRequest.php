@@ -26,8 +26,7 @@ class StoreTrunkRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'agent_id' => ['nullable', 'string', 'ulid'],
-            'workspace_slug' => ['nullable', 'string', 'max:100'],
+            'agent_id' => ['nullable', 'string', 'ulid', 'exists:agents,id'],
             'mode' => ['nullable', 'string', 'in:inbound,register,outbound'],
             'max_concurrent_calls' => ['nullable', 'integer', 'min:1', 'max:1000'],
             'codecs' => ['nullable', 'array'],
