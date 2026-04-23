@@ -7,6 +7,8 @@ namespace App\Actions\Tenant\Agent;
 use App\Models\Tenant\Agent\Agent;
 use App\Models\Tenant\Agent\AgentDeployment;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 final class ListAgentDeployments
 {
@@ -16,9 +18,13 @@ final class ListAgentDeployments
      */
     public function __invoke(Agent $agent, array $filters = []): LengthAwarePaginator
     {
-        return $agent->deployments()
-            ->orderByDesc('enabled')
-            ->orderBy('channel')
+        return QueryBuilder::for($agent->deployments())
+            ->allowedFilters(
+                AllowedFilter::exact('channel'),
+                AllowedFilter::exact('enabled'),
+            )
+            ->allowedSorts('channel', 'enabled', 'created_at')
+            ->defaultSort('-enabled', 'channel')
             ->paginateFromFilters($filters);
     }
 }

@@ -6,36 +6,34 @@ namespace App\Actions\Tenant\Agent\Conversation;
 
 use App\Models\Tenant\Agent\AgentSession;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 final class ListConversations
 {
-    /** @param array<string, mixed> $filters */
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return LengthAwarePaginator<AgentSession>
+     */
     public function __invoke(array $filters = []): LengthAwarePaginator
     {
-        $query = AgentSession::with('agent')
-            ->withCount('transcripts')
-            ->orderByDesc('started_at');
-
-        if (! empty($filters['filter']['agent_id'])) {
-            $query->where('agent_id', $filters['filter']['agent_id']);
-        }
-
-        if (! empty($filters['filter']['status'])) {
-            $query->where('status', $filters['filter']['status']);
-        }
-
-        if (! empty($filters['filter']['channel'])) {
-            $query->where('channel', $filters['filter']['channel']);
-        }
-
-        if (! empty($filters['filter']['started_after'])) {
-            $query->where('started_at', '>=', $filters['filter']['started_after']);
-        }
-
-        if (! empty($filters['filter']['started_before'])) {
-            $query->where('started_at', '<=', $filters['filter']['started_before']);
-        }
-
-        return $query->paginateFromFilters($filters);
+        return QueryBuilder::for(
+            AgentSession::query()->with('agent')->withCount('transcripts')
+        )
+            ->allowedFilters(
+                AllowedFilter::exact('agent_id'),
+                AllowedFilter::exact('status'),
+                AllowedFilter::exact('channel'),
+                AllowedFilter::callback('started_after', function (Builder $query, mixed $value): void {
+                    $query->where('started_at', '>=', $value);
+                }),
+                AllowedFilter::callback('started_before', function (Builder $query, mixed $value): void {
+                    $query->where('started_at', '<=', $value);
+                }),
+            )
+            ->allowedSorts('started_at', 'ended_at', 'status', 'created_at')
+            ->defaultSort('-started_at')
+            ->paginateFromFilters($filters);
     }
 }

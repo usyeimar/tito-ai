@@ -18,7 +18,6 @@ final class CreateTrunk
             $trunk = Trunk::create([
                 'name' => $data->name,
                 'agent_id' => $data->agent_id,
-                'workspace_slug' => $data->workspace_slug,
                 'mode' => $data->mode,
                 'max_concurrent_calls' => $data->max_concurrent_calls,
                 'codecs' => $data->codecs,
@@ -31,23 +30,17 @@ final class CreateTrunk
                 'outbound' => $data->outbound,
             ]);
 
-            // Sync trunk to Redis for SIP bridge resolution
             $this->syncToRedis($trunk);
 
             return $trunk;
         });
     }
 
-    /**
-     * Dispatch job to sync trunk configuration to Redis.
-     * This allows the SIP bridge to resolve trunk configs when calls arrive from Asterisk.
-     */
     private function syncToRedis(Trunk $trunk): void
     {
         try {
             SyncTrunkToRedisJob::dispatch((string) $trunk->id);
         } catch (\Throwable $e) {
-            // Don't fail trunk creation if sync fails, just log it
             Log::warning('Failed to dispatch trunk sync job', [
                 'trunk_id' => $trunk->id,
                 'error' => $e->getMessage(),

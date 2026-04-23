@@ -6,6 +6,9 @@ namespace App\Actions\Tenant\Agent;
 
 use App\Models\Tenant\Agent\Trunk;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 final class ListTrunks
 {
@@ -15,24 +18,22 @@ final class ListTrunks
      */
     public function __invoke(array $filters = []): LengthAwarePaginator
     {
-        $query = Trunk::query();
-
-        if (isset($filters['workspace_slug'])) {
-            $query->where('workspace_slug', $filters['workspace_slug']);
-        }
-
-        if (isset($filters['status'])) {
-            $query->where('status', $filters['status']);
-        }
-
-        if (isset($filters['mode'])) {
-            $query->where('mode', $filters['mode']);
-        }
-
-        if (isset($filters['agent_id'])) {
-            $query->where('agent_id', $filters['agent_id']);
-        }
-
-        return $query->orderBy('name')->paginateFromFilters($filters);
+        return QueryBuilder::for(Trunk::class)
+            ->allowedFilters(
+                AllowedFilter::exact('status'),
+                AllowedFilter::exact('mode'),
+                AllowedFilter::exact('agent_id'),
+                AllowedFilter::partial('name'),
+                AllowedFilter::callback('search', function (Builder $query, mixed $value): void {
+                    $term = '%'.$value.'%';
+                    $query->where(function (Builder $q) use ($term): void {
+                        $q->where('name', 'ilike', $term)
+                            ->orWhere('sip_host', 'ilike', $term);
+                    });
+                }),
+            )
+            ->allowedSorts('name', 'status', 'mode', 'created_at', 'updated_at')
+            ->defaultSort('name')
+            ->paginateFromFilters($filters);
     }
 }

@@ -16,7 +16,6 @@ final class UpdateTrunk
         $trunk->update(array_filter([
             'name' => $data->name,
             'agent_id' => $data->agent_id,
-            'workspace_slug' => $data->workspace_slug,
             'mode' => $data->mode,
             'max_concurrent_calls' => $data->max_concurrent_calls,
             'codecs' => $data->codecs,
@@ -29,15 +28,11 @@ final class UpdateTrunk
             'outbound' => $data->outbound,
         ], fn ($value) => $value !== null));
 
-        // Sync trunk to Redis for SIP bridge resolution
         $this->syncToRedis($trunk);
 
         return $trunk;
     }
 
-    /**
-     * Dispatch job to sync trunk configuration to Redis.
-     */
     private function syncToRedis(Trunk $trunk): void
     {
         try {
