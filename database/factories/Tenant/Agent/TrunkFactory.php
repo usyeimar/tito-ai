@@ -15,19 +15,14 @@ class TrunkFactory extends Factory
 {
     protected $model = Trunk::class;
 
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     public function definition(): array
     {
         return [
             'agent_id' => null,
-            'workspace_slug' => 'default',
-            'name' => $this->faker->words(3, true).' Trunk',
+            'name' => fake()->words(3, true).' Trunk',
             'mode' => Trunk::MODE_INBOUND,
-            'max_concurrent_calls' => $this->faker->numberBetween(5, 50),
+            'max_concurrent_calls' => fake()->numberBetween(5, 50),
             'codecs' => ['ulaw', 'alaw'],
             'status' => Trunk::STATUS_ACTIVE,
             'inbound_auth' => [
@@ -37,69 +32,55 @@ class TrunkFactory extends Factory
             'routes' => [
                 [
                     'pattern' => '*',
-                    'agent_id' => null, // Set via withAgent() or manually
+                    'agent_id' => null,
                     'priority' => 0,
                     'enabled' => true,
                 ],
             ],
-            'sip_host' => $this->faker->domainName(),
+            'sip_host' => fake()->domainName(),
             'sip_port' => 5060,
             'register_config' => null,
             'outbound' => null,
         ];
     }
 
-    /**
-     * Indicate that the trunk is for inbound calls.
-     */
     public function inbound(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'mode' => Trunk::MODE_INBOUND,
-        ]);
+        return $this->state(fn () => ['mode' => Trunk::MODE_INBOUND]);
     }
 
-    /**
-     * Indicate that the trunk is for SIP registration.
-     */
     public function register(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn () => [
             'mode' => Trunk::MODE_REGISTER,
             'register_config' => [
                 'server' => 'sip.example.com',
                 'port' => 5060,
-                'username' => $this->faker->userName(),
-                'password' => $this->faker->password(8, 16),
+                'username' => fake()->userName(),
+                'password' => fake()->password(8, 16),
                 'register_interval' => 60,
             ],
         ]);
     }
 
-    /**
-     * Indicate that the trunk is for outbound calls.
-     */
     public function outbound(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn () => [
             'mode' => Trunk::MODE_OUTBOUND,
             'outbound' => [
-                'trunk_name' => $this->faker->company(),
+                'trunk_name' => fake()->company(),
                 'server' => 'sip.example.com',
                 'port' => 5060,
-                'username' => $this->faker->userName(),
-                'password' => $this->faker->password(8, 16),
-                'caller_id' => $this->faker->phoneNumber(),
+                'username' => fake()->userName(),
+                'password' => fake()->password(8, 16),
+                'caller_id' => fake()->phoneNumber(),
             ],
         ]);
     }
 
-    /**
-     * Associate with an agent.
-     */
     public function withAgent(Agent $agent): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn () => [
             'agent_id' => $agent->id,
             'routes' => [
                 [
@@ -112,23 +93,13 @@ class TrunkFactory extends Factory
         ]);
     }
 
-    /**
-     * Indicate that the trunk is active.
-     */
     public function active(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'status' => Trunk::STATUS_ACTIVE,
-        ]);
+        return $this->state(fn () => ['status' => Trunk::STATUS_ACTIVE]);
     }
 
-    /**
-     * Indicate that the trunk is inactive.
-     */
     public function inactive(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'status' => Trunk::STATUS_INACTIVE,
-        ]);
+        return $this->state(fn () => ['status' => Trunk::STATUS_INACTIVE]);
     }
 }
