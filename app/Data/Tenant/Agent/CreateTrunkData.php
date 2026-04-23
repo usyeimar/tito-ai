@@ -11,7 +11,6 @@ class CreateTrunkData extends Data
     public function __construct(
         public string $name,
         public ?string $agent_id = null,
-        public string $workspace_slug = 'default',
         public string $mode = 'inbound',
         public int $max_concurrent_calls = 10,
         public ?array $codecs = ['ulaw', 'alaw'],

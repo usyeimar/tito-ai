@@ -12,7 +12,6 @@ class TrunkData extends Data
     public function __construct(
         public string $id,
         public ?string $agent_id,
-        public ?string $workspace_slug,
         public string $name,
         public string $mode,
         public string $status,
@@ -33,7 +32,6 @@ class TrunkData extends Data
         return new self(
             id: $trunk->id,
             agent_id: $trunk->agent_id,
-            workspace_slug: tenant()?->slug,
             name: $trunk->name,
             mode: $trunk->mode,
             status: $trunk->status,

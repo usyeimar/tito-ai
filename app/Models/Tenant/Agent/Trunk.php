@@ -19,7 +19,6 @@ class Trunk extends Model
 
     protected $fillable = [
         'agent_id',
-        'workspace_slug',
         'name',
         'mode',
         'max_concurrent_calls',
@@ -133,10 +132,10 @@ class Trunk extends Model
     }
 
     /**
-     * Get the Redis index key for a workspace.
+     * Get the Redis index key for the current tenant.
      */
-    public static function getIndexKey(string $workspaceSlug): string
+    public static function getIndexKey(?string $tenantSlug = null): string
     {
-        return 'trunk:index:'.$workspaceSlug;
+        return 'trunk:index:'.($tenantSlug ?? tenant()?->slug ?? 'default');
     }
 }

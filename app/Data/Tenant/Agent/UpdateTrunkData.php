@@ -11,7 +11,6 @@ class UpdateTrunkData extends Data
     public function __construct(
         public ?string $name = null,
         public ?string $agent_id = null,
-        public ?string $workspace_slug = null,
         public ?string $mode = null,
         public ?int $max_concurrent_calls = null,
         public ?array $codecs = null,
