@@ -6,10 +6,11 @@ use App\Models\Central\Auth\Authentication\CentralUser;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Stancl\Tenancy\Database\Concerns\CentralConnection;
 
 class SocialAccount extends Model
 {
-    use HasUlids;
+    use CentralConnection, HasUlids;
 
     protected $table = 'social_accounts';
 

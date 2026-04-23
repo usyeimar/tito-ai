@@ -3,6 +3,8 @@
 namespace App\Http\Responses;
 
 use App\Actions\Fortify\AuthenticateUser;
+use App\Http\Middleware\HydrateCentralAuth;
+use App\Models\Central\Auth\Authentication\CentralUser;
 use App\Services\Central\Auth\Token\TokenCookieService;
 use Illuminate\Http\Request;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
@@ -35,6 +37,10 @@ class LoginResponse implements LoginResponseContract
 
         $response = redirect()->to($redirect);
 
+        if ($user instanceof CentralUser) {
+            $response->headers->setCookie(HydrateCentralAuth::cookie($user));
+        }
+
         if ($this->cookieService->shouldUseCookies($request)) {
             $response->headers->setCookie(
                 $this->cookieService->centralAccessCookie($tokens['access_token'])
@@ -50,16 +56,10 @@ class LoginResponse implements LoginResponseContract
 
     private function getRedirectUrl(Request $request): string
     {
-        $redirect = Fortify::redirects('login');
-
-        if ($redirect !== null) {
-            return $redirect;
-        }
-
         if ($request->session()->has('url.intended')) {
             return $request->session()->pull('url.intended');
         }
 
-        return '/';
+        return Fortify::redirects('login') ?? '/';
     }
 }
