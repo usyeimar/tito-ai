@@ -18,6 +18,12 @@ class IndexKnowledgeBaseDocumentRequest extends FormRequest
 
     public function rules(): array
     {
-        return $this->canonicalSearchRules();
+        return [
+            ...$this->canonicalSearchRules(),
+            'filter.knowledge_base_category_id' => ['nullable', 'string', 'ulid'],
+            'filter.status' => ['nullable', 'string', 'in:draft,published,archived'],
+            'filter.indexing_status' => ['nullable', 'string', 'in:pending,indexed,failed'],
+            'filter.title' => ['nullable', 'string', 'max:255'],
+        ];
     }
 }

@@ -13,6 +13,10 @@ class IndexAgentToolRequest extends FormRequest
 
     public function rules(): array
     {
-        return $this->canonicalSearchRules();
+        return [
+            ...$this->canonicalSearchRules(),
+            'filter.name' => ['nullable', 'string', 'max:255'],
+            'filter.is_active' => ['nullable', 'boolean'],
+        ];
     }
 }

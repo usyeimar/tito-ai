@@ -18,6 +18,9 @@ class IndexKnowledgeBaseCategoryRequest extends FormRequest
 
     public function rules(): array
     {
-        return $this->canonicalSearchRules();
+        return [
+            ...$this->canonicalSearchRules(),
+            'filter.name' => ['nullable', 'string', 'max:255'],
+        ];
     }
 }

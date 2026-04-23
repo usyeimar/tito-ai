@@ -13,6 +13,13 @@ class IndexTrunkRequest extends FormRequest
 
     public function rules(): array
     {
-        return $this->canonicalSearchRules();
+        return [
+            ...$this->canonicalSearchRules(),
+            'filter.status' => ['nullable', 'string', 'in:active,inactive,suspended'],
+            'filter.mode' => ['nullable', 'string', 'in:inbound,register,outbound'],
+            'filter.agent_id' => ['nullable', 'string', 'ulid'],
+            'filter.name' => ['nullable', 'string', 'max:255'],
+            'filter.search' => ['nullable', 'string', 'max:255'],
+        ];
     }
 }

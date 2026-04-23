@@ -13,6 +13,10 @@ class IndexAgentDeploymentRequest extends FormRequest
 
     public function rules(): array
     {
-        return $this->canonicalSearchRules();
+        return [
+            ...$this->canonicalSearchRules(),
+            'filter.channel' => ['nullable', 'string', 'in:web-widget,sip,whatsapp'],
+            'filter.enabled' => ['nullable', 'boolean'],
+        ];
     }
 }

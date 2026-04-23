@@ -15,9 +15,9 @@ class IndexConversationRequest extends FormRequest
     {
         return [
             ...$this->canonicalSearchRules(),
-            'filter.agent_id' => ['nullable', 'string'],
+            'filter.agent_id' => ['nullable', 'string', 'ulid'],
             'filter.status' => ['nullable', 'string', 'in:active,completed,failed,ended'],
-            'filter.channel' => ['nullable', 'string'],
+            'filter.channel' => ['nullable', 'string', 'max:50'],
             'filter.started_after' => ['nullable', 'date'],
             'filter.started_before' => ['nullable', 'date'],
         ];
