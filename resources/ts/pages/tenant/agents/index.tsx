@@ -38,12 +38,11 @@ import {
 
 type Props = {
     tenant: TenantSummary;
-    filters: { search: string };
-    agents: Agent[];
 };
 
-export default function AgentsIndex({ tenant, filters, agents }: Props) {
-    const [search, setSearch] = React.useState(filters.search ?? '');
+export default function AgentsIndex({ tenant }: Props) {
+    const [agents, setAgents] = React.useState<Agent[]>([]);
+    const [search, setSearch] = React.useState('');
     const [createOpen, setCreateOpen] = React.useState(false);
     const [name, setName] = React.useState('');
     const [description, setDescription] = React.useState('');
@@ -51,21 +50,38 @@ export default function AgentsIndex({ tenant, filters, agents }: Props) {
     const [submitting, setSubmitting] = React.useState(false);
     const [formError, setFormError] = React.useState<string | null>(null);
 
+    const fetchAgents = React.useCallback(async (searchTerm?: string) => {
+        try {
+            const params = new URLSearchParams();
+            if (searchTerm) params.set('filter[search]', searchTerm);
+            const qs = params.toString();
+            const result = await tenantApi<{ data: Agent[] }>(
+                tenant.slug,
+                `/ai/agents${qs ? `?${qs}` : ''}`,
+            );
+            setAgents(result.data);
+        } catch (err) {
+            console.error('Failed to fetch agents', err);
+        }
+    }, [tenant.slug]);
+
+    React.useEffect(() => {
+        fetchAgents();
+    }, [fetchAgents]);
+
+    React.useEffect(() => {
+        const timeout = setTimeout(() => {
+            fetchAgents(search || undefined);
+        }, 300);
+        return () => clearTimeout(timeout);
+    }, [search, fetchAgents]);
+
     const breadcrumbs: BreadcrumbItem[] = [
         { title: tenant.name, href: `/${tenant.slug}/agents` },
         { title: 'Asistentes', href: `/${tenant.slug}/agents` },
     ];
 
-    const filtered = React.useMemo(() => {
-        if (!search.trim()) return agents;
-        const needle = search.toLowerCase();
-        return agents.filter(
-            (a) =>
-                a.name.toLowerCase().includes(needle) ||
-                a.slug.toLowerCase().includes(needle) ||
-                (a.description ?? '').toLowerCase().includes(needle),
-        );
-    }, [agents, search]);
+    const filtered = agents;
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -107,7 +123,7 @@ export default function AgentsIndex({ tenant, filters, agents }: Props) {
             await tenantApi(tenant.slug, `/ai/agents/${agent.id}`, {
                 method: 'DELETE',
             });
-            router.reload({ only: ['agents'] });
+            router.visit(`/${tenant.slug}/agents`);
         } catch (err) {
             alert(
                 err instanceof TenantApiError

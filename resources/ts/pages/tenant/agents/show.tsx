@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     ArrowUpRight,
     BarChart3,
@@ -88,7 +88,7 @@ import type { BreadcrumbItem } from '@/types';
 type Props = {
     tenant: TenantSummary;
     agent: Agent | null;
-    agents: Agent[];
+    agents?: Agent[];
 };
 
 const COST_PER_MINUTE = 0.098;
@@ -96,9 +96,10 @@ const COST_PER_MINUTE = 0.098;
 export default function AgentShow({
     tenant,
     agent: initialAgent,
-    agents,
+    agents: deferredAgents,
 }: Props) {
-    const [agent, setAgent] = useState<Agent | null>(initialAgent ?? agents[0] ?? null);
+    const [agents, setAgents] = useState<Agent[]>(deferredAgents ?? []);
+    const [agent, setAgent] = useState<Agent | null>(initialAgent);
     const [activeTab, setActiveTab] = useState('agent');
     const [searchQuery, setSearchQuery] = useState('');
     const [isSaving, setIsSaving] = useState(false);
@@ -117,23 +118,30 @@ export default function AgentShow({
     const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
     const [isCreating, setIsCreating] = useState(false);
 
+    // Sync deferred agents prop when it arrives from Inertia
     useEffect(() => {
-        setAgent(initialAgent ?? agents[0] ?? null);
-    }, [initialAgent, agents]);
+        if (deferredAgents) {
+            setAgents(deferredAgents);
+            if (!initialAgent && deferredAgents.length > 0 && !agent) {
+                setAgent(deferredAgents[0]);
+            }
+        }
+    }, [deferredAgents]);
 
-    const filteredAgents = useMemo(() => {
-        if (!searchQuery.trim()) return agents;
-        const query = searchQuery.toLowerCase();
-        return agents.filter(
-            (a) =>
-                a.name.toLowerCase().includes(query) ||
-                a.slug.toLowerCase().includes(query),
-        );
-    }, [agents, searchQuery]);
+    useEffect(() => {
+        setAgent(initialAgent);
+    }, [initialAgent]);
+
+    const filteredAgents = searchQuery.trim()
+        ? agents.filter((a) =>
+            a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            a.slug.toLowerCase().includes(searchQuery.toLowerCase()),
+        )
+        : agents;
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: tenant.name, href: `/${tenant.slug}/dashboard` },
-        { title: 'Agent Setup', href: `/${tenant.slug}/agents` },
+        { title: 'Agentes', href: `/${tenant.slug}/agents` },
         ...(agent
             ? [
                 {
@@ -237,7 +245,10 @@ export default function AgentShow({
                 '/ai/agents',
                 {
                     method: 'POST',
-                    body: { from_scratch: true },
+                    body: {
+                        name: `Agente ${new Date().toLocaleDateString('es-CO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}`,
+                        language: 'es-CO',
+                    },
                 },
             );
             setNewAgentOpen(false);
@@ -431,7 +442,6 @@ export default function AgentShow({
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={agent?.name ?? 'Agent Setup'} />
             <TooltipProvider>
                 <div className="flex h-[calc(100vh-4rem)] flex-col">
                     {/* Main Content - 3 Columns */}
@@ -485,39 +495,37 @@ export default function AgentShow({
                             <div className="p-4 lg:p-6">
                                 {!agent ? (
                                     <div className="flex min-h-[calc(100vh-12rem)] flex-col items-center justify-center px-4 text-center">
-                                        {/* <div className="relative">
-                                        <div className="absolute -inset-4 rounded-full bg-gradient-to-br " />
-                                        <div className="relative flex size-20 items-center justify-center rounded-2xl border border-border bg-card shadow-sm">
+                                        <div className="flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5">
+                                            <Sparkles className="size-8 text-primary" />
                                         </div>
-                                    </div> */}
-                                        <Bot className="size-9 text-muted-foreground/70" />
 
                                         <h3 className="mt-6 text-xl font-semibold tracking-tight">
-                                            No agent selected
-                                        </h3>
-                                        <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
                                             {agents.length === 0
-                                                ? 'Create your first AI agent to start automating calls, qualifying leads, and more.'
-                                                : 'Select an agent from the list to view and edit its configuration.'}
+                                                ? 'Crea tu primer agente'
+                                                : 'Selecciona un agente'}
+                                        </h3>
+                                        <p className="mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
+                                            {agents.length === 0
+                                                ? 'Configura un agente de IA para automatizar llamadas, calificar leads y atender clientes.'
+                                                : 'Elige un agente de la lista para ver y editar su configuración.'}
                                         </p>
                                         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row">
-                                            {agents.length === 0 && (
+                                            {agents.length === 0 ? (
                                                 <Button
                                                     className="gap-2"
                                                     onClick={() => setNewAgentOpen(true)}
                                                 >
                                                     <Plus className="size-4" />
-                                                    Create your first agent
+                                                    Nuevo agente
                                                 </Button>
-                                            )}
-                                            {agents.length > 0 && (
+                                            ) : (
                                                 <>
                                                     <Button
                                                         className="gap-2 lg:hidden"
                                                         onClick={() => setLeftSheetOpen(true)}
                                                     >
                                                         <Menu className="size-4" />
-                                                        View agents
+                                                        Ver agentes
                                                     </Button>
                                                     <Button
                                                         variant="outline"
@@ -525,7 +533,7 @@ export default function AgentShow({
                                                         onClick={() => setNewAgentOpen(true)}
                                                     >
                                                         <Plus className="size-4" />
-                                                        New agent
+                                                        Nuevo agente
                                                     </Button>
                                                 </>
                                             )}
@@ -2044,7 +2052,7 @@ export default function AgentShow({
                                         variant="outline"
                                         onClick={() => setNewAgentOpen(false)}
                                     >
-                                        Cancel
+                                        Cancelar
                                     </Button>
                                     <Button
                                         onClick={handleCreateAgent}
@@ -2057,7 +2065,7 @@ export default function AgentShow({
                                         className="gap-2"
                                     >
                                         <Sparkles className="size-4" />
-                                        {isCreating ? 'Generating...' : 'Generate Agent'}
+                                        {isCreating ? 'Generando...' : 'Generar agente'}
                                     </Button>
                                 </div>
 
@@ -2076,7 +2084,7 @@ export default function AgentShow({
                                     onClick={handleCreateFromScratch}
                                     disabled={isCreating}
                                 >
-                                    {isCreating ? 'Creating...' : 'I want to create an agent from scratch'}
+                                    {isCreating ? 'Creando...' : 'Crear agente desde cero'}
                                 </Button>
                             </div>
                         </DialogContent>
