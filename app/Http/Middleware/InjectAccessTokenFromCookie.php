@@ -17,32 +17,13 @@ class InjectAccessTokenFromCookie
             return $next($request);
         }
 
-        if ($debug) {
-            Log::debug('Cookie auth middleware entered', [
-                'path' => $request->path(),
-                'method' => $request->method(),
-            ]);
-        }
-
+        // If Authorization header already present, skip
         if ($request->headers->has('Authorization')) {
-            if ($debug) {
-                Log::debug('Cookie auth skipped; Authorization header present', [
-                    'path' => $request->path(),
-                ]);
-            }
-
             return $next($request);
         }
 
         $cookieService = app(TokenCookieService::class);
         if (! $cookieService->shouldUseCookies($request)) {
-            if ($debug) {
-                Log::debug('Cookie auth skipped; shouldUseCookies=false', [
-                    'path' => $request->path(),
-                    'auth_mode' => $request->header('X-Auth-Mode'),
-                ]);
-            }
-
             return $next($request);
         }
 
@@ -52,25 +33,27 @@ class InjectAccessTokenFromCookie
             : $cookieService->centralAccessCookieName();
 
         $token = $request->cookie($cookieName);
-        if ($debug) {
-            Log::debug('Cookie auth lookup', [
-                'path' => $request->path(),
-                'auth_mode' => $request->header('X-Auth-Mode'),
-                'cookie_name' => $cookieName,
-                'has_cookie' => is_string($token) && $token !== '',
-                'cookie_length' => is_string($token) ? strlen($token) : null,
-                'cookie_names' => array_keys($request->cookies->all()),
-                'header_names' => array_keys($request->headers->all()),
-                'bearer_token' => $request->bearerToken(),
-            ]);
-        }
+
         if (is_string($token) && $token !== '') {
             $request->headers->set('Authorization', 'Bearer '.$token);
+
             if ($debug) {
                 Log::debug('Cookie auth injected Authorization header', [
                     'path' => $request->path(),
+                    'cookie' => $cookieName,
                 ]);
             }
+
+            return $next($request);
+        }
+
+        // No OAuth cookie found — let Passport's TokenGuard try the
+        // laravel_token cookie (set by CreateFreshApiToken) on its own.
+        // We must NOT inject an empty Authorization header.
+        if ($debug) {
+            Log::debug('Cookie auth: no OAuth token cookie, falling back to Passport cookie auth', [
+                'path' => $request->path(),
+            ]);
         }
 
         return $next($request);

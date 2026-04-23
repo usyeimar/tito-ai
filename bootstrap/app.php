@@ -12,6 +12,8 @@ use App\Http\Middleware\HydrateTenantAuth;
 use App\Http\Middleware\InjectAccessTokenFromCookie;
 use App\Http\Middleware\ShareWorkspacesWithInertia;
 use App\Http\Middleware\WrapApiResponses;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -47,7 +49,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->prependToGroup('api', [
-            // StartSession::class,
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
             InjectAccessTokenFromCookie::class,
             EnsureCookieAuthOrigin::class,
         ]);

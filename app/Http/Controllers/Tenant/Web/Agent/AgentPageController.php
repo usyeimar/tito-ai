@@ -6,9 +6,9 @@ namespace App\Http\Controllers\Tenant\Web\Agent;
 
 use App\Actions\Tenant\Agent\ListAgents;
 use App\Actions\Tenant\Agent\ShowAgent;
+use App\Data\Tenant\Agent\AgentSummaryData;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant\Agent\Agent;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,29 +16,29 @@ use Stancl\Tenancy\Contracts\Tenant;
 
 class AgentPageController extends Controller
 {
-    public function index(Request $request, ListAgents $action): Response
+    public function index(ListAgents $listAction): Response
     {
         Gate::authorize('viewAny', Agent::class);
 
         return Inertia::render('tenant/agents/show', [
             'tenant' => $this->tenantPayload(),
             'agent' => null,
-            'agents' => $action(['search' => $request->query('search')])
-                ->map->toArray()
-                ->values(),
+            'agents' => Inertia::defer(fn () => $listAction()
+                ->through(fn (Agent $a) => AgentSummaryData::fromAgent($a)->toArray())
+                ->items()),
         ]);
     }
 
-    public function show(Request $request, Agent $agent, ShowAgent $action, ListAgents $listAction): Response
+    public function show(Agent $agent, ShowAgent $showAction, ListAgents $listAction): Response
     {
         Gate::authorize('view', $agent);
 
         return Inertia::render('tenant/agents/show', [
             'tenant' => $this->tenantPayload(),
-            'agent' => $action($agent)->toArray(),
-            'agents' => $listAction(['search' => $request->query('search')])
-                ->map->toArray()
-                ->values(),
+            'agent' => $showAction($agent)->toArray(),
+            'agents' => Inertia::defer(fn () => $listAction()
+                ->through(fn (Agent $a) => AgentSummaryData::fromAgent($a)->toArray())
+                ->items()),
         ]);
     }
 
