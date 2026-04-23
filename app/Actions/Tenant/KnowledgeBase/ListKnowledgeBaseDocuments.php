@@ -7,6 +7,9 @@ namespace App\Actions\Tenant\KnowledgeBase;
 use App\Models\Tenant\KnowledgeBase\KnowledgeBase;
 use App\Models\Tenant\KnowledgeBase\KnowledgeBaseDocument;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 final class ListKnowledgeBaseDocuments
 {
@@ -16,12 +19,18 @@ final class ListKnowledgeBaseDocuments
      */
     public function __invoke(KnowledgeBase $knowledgeBase, array $filters = []): LengthAwarePaginator
     {
-        return KnowledgeBaseDocument::query()
-            ->whereHas('category', fn ($q) => $q->where('knowledge_base_id', $knowledgeBase->id))
-            ->when(! empty($filters['filter']['knowledge_base_category_id']), function ($q) use ($filters): void {
-                $q->where('knowledge_base_category_id', $filters['filter']['knowledge_base_category_id']);
-            })
-            ->orderByDesc('created_at')
+        $baseQuery = KnowledgeBaseDocument::query()
+            ->whereHas('category', fn (Builder $q) => $q->where('knowledge_base_id', $knowledgeBase->id));
+
+        return QueryBuilder::for($baseQuery)
+            ->allowedFilters(
+                AllowedFilter::exact('knowledge_base_category_id'),
+                AllowedFilter::exact('status'),
+                AllowedFilter::exact('indexing_status'),
+                AllowedFilter::partial('title'),
+            )
+            ->allowedSorts('title', 'status', 'created_at', 'updated_at')
+            ->defaultSort('-created_at')
             ->paginateFromFilters($filters);
     }
 }

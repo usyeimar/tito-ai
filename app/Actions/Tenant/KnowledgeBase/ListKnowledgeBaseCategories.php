@@ -7,6 +7,8 @@ namespace App\Actions\Tenant\KnowledgeBase;
 use App\Models\Tenant\KnowledgeBase\KnowledgeBase;
 use App\Models\Tenant\KnowledgeBase\KnowledgeBaseCategory;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 final class ListKnowledgeBaseCategories
 {
@@ -16,8 +18,12 @@ final class ListKnowledgeBaseCategories
      */
     public function __invoke(KnowledgeBase $knowledgeBase, array $filters = []): LengthAwarePaginator
     {
-        return $knowledgeBase->categories()
-            ->orderBy('display_order')
+        return QueryBuilder::for($knowledgeBase->categories())
+            ->allowedFilters(
+                AllowedFilter::partial('name'),
+            )
+            ->allowedSorts('name', 'display_order', 'created_at')
+            ->defaultSort('display_order')
             ->paginateFromFilters($filters);
     }
 }

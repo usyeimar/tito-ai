@@ -6,6 +6,7 @@ namespace App\Actions\Tenant\KnowledgeBase;
 
 use App\Data\Tenant\KnowledgeBase\KnowledgeBaseDocumentData;
 use App\Data\Tenant\KnowledgeBase\UpdateKnowledgeBaseDocumentData;
+use App\Jobs\Tenant\KnowledgeBase\IngestKnowledgeBaseDocument;
 use App\Models\Tenant\KnowledgeBase\KnowledgeBaseDocument;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -15,13 +16,15 @@ final class UpdateKnowledgeBaseDocument
     public function __invoke(KnowledgeBaseDocument $document, UpdateKnowledgeBaseDocumentData $data): KnowledgeBaseDocumentData
     {
         $authorId = request()->user()->id;
+        $contentChanged = false;
 
-        DB::transaction(function () use ($data, $document, $authorId): void {
+        DB::transaction(function () use ($data, $document, $authorId, &$contentChanged): void {
             $updateAttributes = [];
 
             if ($data->title !== null) {
                 $updateAttributes['title'] = $data->title;
                 $updateAttributes['slug'] = Str::slug($data->title).'-'.Str::random(5);
+                $contentChanged = true;
             }
 
             if ($data->status !== null) {
@@ -44,8 +47,14 @@ final class UpdateKnowledgeBaseDocument
                     'author_id' => $authorId,
                     'change_summary' => 'Content updated',
                 ]);
+
+                $contentChanged = true;
             }
         });
+
+        if ($contentChanged) {
+            IngestKnowledgeBaseDocument::dispatch($document->id);
+        }
 
         return KnowledgeBaseDocumentData::fromModel($document->refresh());
     }
