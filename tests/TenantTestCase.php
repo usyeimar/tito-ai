@@ -2,9 +2,11 @@
 
 namespace Tests;
 
+use App\Models\Central\Auth\Authentication\CentralUser;
 use App\Models\Central\Auth\Role\Role;
 use App\Models\Central\Tenancy\Tenant;
 use App\Models\Tenant\Auth\Authentication\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
@@ -17,6 +19,8 @@ abstract class TenantTestCase extends TestCase
     protected ?Tenant $tenant = null;
 
     protected ?User $user = null;
+
+    protected ?CentralUser $centralUser = null;
 
     protected function setUp(): void
     {
@@ -36,6 +40,22 @@ abstract class TenantTestCase extends TestCase
         $this->setupDefaultUser();
     }
 
+    /**
+     * Mirrors production auth: tenant web routes require both the tenant
+     * session guard and a CentralUser on the web guard with workspace access.
+     * Acting on the tenant guard alone hits HasAccesToWorkSpace (401).
+     */
+    public function actingAs(Authenticatable $user, $guard = null)
+    {
+        parent::actingAs($user, $guard);
+
+        if ($guard === 'tenant' && $this->centralUser !== null) {
+            $this->app['auth']->guard('web')->setUser($this->centralUser);
+        }
+
+        return $this;
+    }
+
     protected function createTestTenant(): Tenant
     {
         $tenant = Tenant::create([
@@ -53,9 +73,28 @@ abstract class TenantTestCase extends TestCase
             'guard_name' => 'tenant',
         ]);
 
+        $globalId = (string) Str::ulid();
+
+        $this->centralUser = tenancy()->central(function () use ($globalId): CentralUser {
+            $centralUser = CentralUser::firstOrCreate(
+                ['email' => 'admin@test.com'],
+                [
+                    'global_id' => $globalId,
+                    'name' => 'Test Admin',
+                    'email_verified_at' => now(),
+                    'password' => bcrypt('password'),
+                ]
+            );
+
+            $centralUser->tenants()->syncWithoutDetaching([$this->tenant->getKey()]);
+
+            return $centralUser;
+        });
+
         $this->user = User::firstOrCreate(
             ['email' => 'admin@test.com'],
             [
+                'global_id' => $this->centralUser->global_id,
                 'name' => 'Test Admin',
                 'email_verified_at' => now(),
                 'password' => bcrypt('password'),
@@ -68,9 +107,14 @@ abstract class TenantTestCase extends TestCase
 
     protected function ensurePassportKeys(): void
     {
-        if (! file_exists(storage_path('oauth-private.key'))) {
-            Artisan::call('passport:keys', ['--force' => true]);
+        $privateKey = base_path('storage/oauth/oauth-private.key');
+        $publicKey = base_path('storage/oauth/oauth-public.key');
+
+        if (file_exists($privateKey) && file_exists($publicKey)) {
+            return;
         }
+
+        Artisan::call('passport:keys', ['--force' => false]);
     }
 
     protected function tearDown(): void
@@ -85,5 +129,26 @@ abstract class TenantTestCase extends TestCase
     protected function tenantApiUrl(string $path): string
     {
         return "/{$this->tenant->slug}/api/{$path}";
+    }
+
+    /**
+     * Create a tenant user with the given roles.
+     *
+     * @param  list<string>  $roles
+     */
+    protected function createTenantUser(array $roles = ['user']): User
+    {
+        $user = User::factory()->create(['is_active' => true]);
+
+        foreach ($roles as $roleName) {
+            $role = Role::firstOrCreate([
+                'name' => $roleName,
+                'guard_name' => 'tenant',
+            ]);
+
+            $user->assignRole($role);
+        }
+
+        return $user;
     }
 }
