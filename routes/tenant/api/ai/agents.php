@@ -45,11 +45,11 @@ Route::prefix('conversations')->name('conversations.')->group(function () {
 });
 
 // Session status endpoints (no auth required for polling)
-Route::get('ai/runner/sessions/{sessionId}/status', [AgentTestCallController::class, 'status'])
+Route::get('runner/sessions/{sessionId}/status', [AgentTestCallController::class, 'status'])
     ->name('ai.runner.session.status')
     ->withoutMiddleware(['auth:tenant-api', 'auth:api']);
 
-Route::post('ai/runner/sessions/{sessionId}/user-ended', [AgentTestCallController::class, 'userEnded'])
+Route::post('runner/sessions/{sessionId}/user-ended', [AgentTestCallController::class, 'userEnded'])
     ->name('ai.runner.session.user-ended')
     ->withoutMiddleware(['auth:tenant-api', 'auth:api']);
 
@@ -57,9 +57,9 @@ Route::post('ai/runner/sessions/{sessionId}/user-ended', [AgentTestCallControlle
 Route::middleware([VerifyRunnerSignature::class, 'throttle:runner-webhook'])
     ->withoutMiddleware(['auth:tenant-api', 'auth:api'])
     ->group(function () {
-        Route::post('ai/runner/webhook', [AgentSessionWebhookController::class, 'handle'])
+        Route::post('runner/webhook', [AgentSessionWebhookController::class, 'handle'])
             ->name('ai.runner.webhook');
 
-        Route::post('ai/runner/sessions/{sessionId}/audio', [AgentSessionAudioController::class, 'store'])
+        Route::post('runner/sessions/{sessionId}/audio', [AgentSessionAudioController::class, 'store'])
             ->name('ai.runner.session.audio');
     });
