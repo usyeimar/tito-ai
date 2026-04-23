@@ -134,8 +134,8 @@ class Trunk extends Model
     /**
      * Get the Redis index key for the current tenant.
      */
-    public static function getIndexKey(?string $tenantSlug = null): string
+    public static function getIndexKey(?string $tenantId = null): string
     {
-        return 'trunk:index:'.($tenantSlug ?? tenant()?->slug ?? 'default');
+        return 'trunk:index:'.($tenantId ?? tenant('id') ?? 'central');
     }
 }
