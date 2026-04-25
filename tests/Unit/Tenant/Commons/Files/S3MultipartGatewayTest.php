@@ -89,7 +89,8 @@ class S3MultipartGatewayTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $config
+     * @param  array<string, mixed>  $config
+     *
      * @throws \ReflectionException
      */
     private function resolvePresignEndpoint(array $config): ?string
