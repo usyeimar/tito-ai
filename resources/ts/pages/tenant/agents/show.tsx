@@ -212,7 +212,7 @@ export default function AgentShow({
     // Knowledge Base functions
     const fetchKnowledgeBases = async () => {
         try {
-            const res = await webGet<{ data: typeof knowledgeBases }>(tenant.slug, '/api/ai/knowledge-bases');
+            const res = await webGet<{ data: typeof knowledgeBases }>(tenant.slug, '/knowledge-bases');
             setKnowledgeBases(res.data);
         } catch { /* ignore */ }
     };
@@ -220,7 +220,7 @@ export default function AgentShow({
     const fetchKbDocuments = async (kbId: string) => {
         setKbLoading(true);
         try {
-            const res = await webGet<{ data: typeof kbDocuments }>(tenant.slug, `/api/ai/knowledge-bases/${kbId}/documents`);
+            const res = await webGet<{ data: typeof kbDocuments }>(tenant.slug, `/knowledge-bases/${kbId}/documents`);
             setKbDocuments(res.data);
         } catch { /* ignore */ }
         setKbLoading(false);
@@ -243,7 +243,7 @@ export default function AgentShow({
         setKbCreating(true);
         try {
             const res = await webPost<{ data: { id: string; name: string; slug: string; description: string | null } }>(
-                tenant.slug, '/api/ai/knowledge-bases', { name: newKbName.trim(), description: newKbDesc.trim() || null },
+                tenant.slug, '/knowledge-bases', { name: newKbName.trim(), description: newKbDesc.trim() || null },
             );
             const kb = res.data;
             setKnowledgeBases((prev) => [...prev, kb]);
@@ -264,7 +264,7 @@ export default function AgentShow({
             formData.append('title', file.name.replace(/\.[^.]+$/, ''));
             formData.append('content', await file.text());
             formData.append('content_format', file.name.endsWith('.md') ? 'markdown' : 'text');
-            await webPost(tenant.slug, `/api/ai/knowledge-bases/${agent.knowledge_base_id}/documents`, formData);
+            await webPost(tenant.slug, `/knowledge-bases/${agent.knowledge_base_id}/documents`, formData);
             await fetchKbDocuments(agent.knowledge_base_id);
         } catch { /* ignore */ }
         setUploadingDoc(false);
@@ -274,7 +274,7 @@ export default function AgentShow({
     const handleDeleteDocument = async (docId: string) => {
         if (!agent?.knowledge_base_id) return;
         try {
-            await webDelete(tenant.slug, `/api/ai/knowledge-bases/${agent.knowledge_base_id}/documents/${docId}`);
+            await webDelete(tenant.slug, `/knowledge-bases/${agent.knowledge_base_id}/documents/${docId}`);
             setKbDocuments((prev) => prev.filter((d) => d.id !== docId));
         } catch { /* ignore */ }
     };
