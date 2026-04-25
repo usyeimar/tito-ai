@@ -13,10 +13,7 @@ from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
 from pipecat.processors.frameworks.rtvi import (
     RTVIProcessor,
-    RTVIConfig,
     RTVIObserver,
-    RTVIAction,
-    RTVIServiceConfig,
 )
 from pipecat.frames.frames import EndFrame, LLMRunFrame, TTSSpeakFrame
 from pipecat.processors.user_idle_processor import UserIdleProcessor
@@ -29,6 +26,7 @@ from app.services.session_manager import session_manager
 from app.services.agents.pipelines.transport_setup import setup_transport
 from app.services.agents.pipelines.context_setup import setup_context
 from app.services.agents.pipelines.pipeline_builder import build_pipeline
+from app.services.agents.pipelines.rag_processor import RAGProcessor
 from app.api.v1.metrics import (
     dropped_frames_total,
     session_duration_seconds,
@@ -137,6 +135,18 @@ class AgentPipelineEngine:
             ambient_player, thinking_player = self._setup_players()
 
             # 4. Construir Pipeline
+            rag = None
+            kb = self.config.brain.knowledge_base
+            if kb and kb.vector_store_id:
+                api_key = os.getenv("OPENAI_API_KEY", "")
+                if api_key:
+                    rag = RAGProcessor(
+                        vector_store_id=kb.vector_store_id,
+                        openai_api_key=api_key,
+                        top_k=kb.top_k,
+                    )
+                    logger.info(f"[RAG] Enabled for vector store {kb.vector_store_id}")
+
             pipeline, audio_buffer = build_pipeline(
                 self.transport,
                 stt,
@@ -148,6 +158,7 @@ class AgentPipelineEngine:
                 thinking_player=thinking_player,
                 ambient_player=ambient_player,
                 rtvi_processor=rtvi,
+                rag_processor=rag,
             )
 
             # 5. Registrar Eventos del Transporte y Contexto
@@ -264,54 +275,8 @@ class AgentPipelineEngine:
             await pubsub.close()
 
     def _setup_rtvi(self, stt, llm, tts) -> RTVIProcessor:
-        services = {"stt": stt, "llm": llm, "tts": tts}
+        rtvi = RTVIProcessor()
 
-        rtvi = RTVIProcessor(
-            config=RTVIConfig(
-                config=[
-                    RTVIServiceConfig(
-                        service="stt",
-                        options=[
-                            {
-                                "name": "model",
-                                "value": self.config.runtime_profiles.stt.model,
-                            }
-                        ],
-                    ),
-                    RTVIServiceConfig(
-                        service="tts",
-                        options=[
-                            {
-                                "name": "voice",
-                                "value": self.config.runtime_profiles.tts.voice_id,
-                            }
-                        ],
-                    ),
-                    RTVIServiceConfig(
-                        service="llm",
-                        options=[
-                            {"name": "model", "value": self.config.brain.llm.model}
-                        ],
-                    ),
-                ]
-            )
-        )
-
-        # Registrar los servicios explícitamente (RTVI detecta el tipo por la clase)
-        for service in services.values():
-            rtvi.register_service(service)
-
-        async def handle_request_chat_history(rtvi, action):
-            return {"status": "ok", "history": []}
-
-        rtvi.register_action(
-            RTVIAction(
-                service="app",
-                action="request-chat-history",
-                handler=handle_request_chat_history,
-                result="object",
-            )
-        )
         return rtvi
 
     def _setup_players(self):
