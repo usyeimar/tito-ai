@@ -105,10 +105,13 @@
             "provider": "asterisk_ari"
         },
         "stt": {
-            "provider": "deepgram",
-            "model": "nova-2-phonecall",
+            "provider": "google",
+            "model": "phone_call",
             "language": "es",
-            "latency_mode": "interactive"
+            "use_multi_channel": false,
+            "alternatives": 1,
+            "profanity_filter": false,
+            "enable_automatic_punctuation": true
         },
         "tts": {
             "provider": "cartesia",

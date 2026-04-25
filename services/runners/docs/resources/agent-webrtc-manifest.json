@@ -106,10 +106,13 @@
             "provider": "livekit"
         },
         "stt": {
-            "provider": "deepgram",
-            "model": "nova-2",
+            "provider": "google",
+            "model": "latest_short",
             "language": "es",
-            "latency_mode": "interactive"
+            "use_multi_channel": false,
+            "alternatives": 1,
+            "profanity_filter": false,
+            "punctuation_mode": "automatic"
         },
         "tts": {
             "provider": "elevenlabs",

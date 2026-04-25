@@ -300,6 +300,54 @@ def resolve_language(value: str) -> Language | None:
     )
 
 
+# Deepgram doesn't support all language variants that Pipecat supports.
+# This map converts Pipecat Language enum values to Deepgram-compatible codes.
+DEEPGRAM_LANGUAGE_MAP: dict[str, str] = {
+    # Spanish variants -> Deepgram accepts 'es' or 'es-419' for Latin American
+    "es-CO": "es",      # Colombian Spanish -> generic Spanish
+    "es-AR": "es",       # Argentine Spanish -> generic Spanish
+    "es-MX": "es",      # Mexican Spanish -> generic Spanish
+    "es-CL": "es",      # Chilean Spanish -> generic Spanish
+    "es-PE": "es",      # Peruvian Spanish -> generic Spanish
+    "es-VE": "es",      # Venezuelan Spanish -> generic Spanish
+    "es-EC": "es",      # Ecuadorian Spanish -> generic Spanish
+    "es-US": "es",      # US Spanish -> generic Spanish
+    # Portuguese variants
+    "pt-PT": "pt",      # Portuguese (Portugal) -> generic Portuguese
+    # English variants -> Deepgram accepts 'en' or specific variants
+    "en-GB": "en-GB",   # British English - Deepgram supports this
+    "en-AU": "en-AU",   # Australian English - Deepgram supports this
+    "en-IN": "en-IN",   # Indian English - Deepgram supports this
+}
+
+
+def to_deepgram_language(language: Language | None) -> str | None:
+    """
+    Convert a Pipecat Language enum to a Deepgram-compatible language code.
+
+    Deepgram doesn't support all language variants (e.g., es-CO), so this
+    function maps them to the closest supported code (e.g., 'es').
+
+    Args:
+        language: Pipecat Language enum value or None for auto-detection
+
+    Returns:
+        Deepgram-compatible language code string or None for auto-detection
+    """
+    if language is None:
+        return None
+
+    lang_value = language.value
+
+    # Check if we have a specific mapping for Deepgram
+    if lang_value in DEEPGRAM_LANGUAGE_MAP:
+        return DEEPGRAM_LANGUAGE_MAP[lang_value]
+
+    # Otherwise return the language value as-is
+    # (Pipecat Language enum values are already lowercase with hyphens)
+    return lang_value
+
+
 def list_supported_languages() -> dict[str, list[str]]:
     """
     Devuelve un diccionario de Language -> lista de seudónimos.

@@ -35,7 +35,7 @@ from pipecat.transcriptions.language import Language
 
 from app.services.agents.factory.providers import ServiceProviders
 from app.services.agents.factory.helpers import CustomDeepgramSTTService
-from app.services.agents.factory.languages import resolve_language
+from app.services.agents.factory.languages import resolve_language, to_deepgram_language
 from app.schemas.agent import AgentConfig
 
 logger = logging.getLogger(__name__)
@@ -77,7 +77,8 @@ class ServiceFactory:
             # Resolver idioma con seudónimos (ej: "español" -> "es", "auto" -> detect)
             resolved_lang = resolve_language(stt_config.language) if stt_config.language else None
             detect_language = resolved_lang is None  # auto/multi/detect -> None
-            language = resolved_lang.value if resolved_lang else None
+            # Convert to Deepgram-compatible language code
+            language = to_deepgram_language(resolved_lang)
 
             options = {
                 "model": stt_config.model or "nova-2",

@@ -15,11 +15,13 @@
     },
 
     "transcriber": {
-        "provider": "deepgram",
-        "model": "nova-2",
+        "provider": "google",
+        "model": "latest_short",
         "language": "es",
-        "smart_format": true,
-        "numerals": true
+        "use_multi_channel": false,
+        "alternatives": 1,
+        "profanity_filter": false,
+        "enable_automatic_punctuation": true
     },
 
     "voice": {

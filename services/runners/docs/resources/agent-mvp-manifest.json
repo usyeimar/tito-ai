@@ -28,9 +28,13 @@
     },
     "runtime_profiles": {
         "stt": {
-            "provider": "deepgram",
-            "model": "nova-2",
-            "language": "es"
+            "provider": "google",
+            "model": "latest_short",
+            "language": "es",
+            "use_multi_channel": false,
+            "alternatives": 1,
+            "profanity_filter": false,
+            "punctuation_mode": "automatic"
         },
         "tts": {
             "provider": "cartesia",
