@@ -35,6 +35,7 @@ final class RunnerClient
     /**
      * Create a new voice session via HTTP (synchronous).
      *
+     * @param  array<array{name: string, value: string}>  $variables
      * @return array{
      *     session_id: string,
      *     room_name: string,
@@ -44,11 +45,11 @@ final class RunnerClient
      *     context: array<string, mixed>,
      * }
      */
-    public function createSession(Agent $agent): array
+    public function createSession(Agent $agent, array $variables = []): array
     {
         $this->ensureAvailable();
 
-        $config = $this->configBuilder->build($agent);
+        $config = $this->configBuilder->build($agent, $variables);
 
         return $this->withRetry(function () use ($config): array {
             $response = $this->httpRequest()

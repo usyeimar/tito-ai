@@ -17,13 +17,14 @@ use Illuminate\Support\Facades\Cache;
 final class AgentConfigBuilder
 {
     /**
+     * @param  array<array{name: string, value: string}>  $variables
      * @return array<string, mixed>
      */
-    public function build(Agent $agent): array
+    public function build(Agent $agent, array $variables = []): array
     {
         $cacheKey = "agent_config:{$agent->id}:{$agent->updated_at?->timestamp}";
 
-        return Cache::remember($cacheKey, 300, fn () => $this->buildFresh($agent));
+        return Cache::remember($cacheKey, 300, fn () => $this->buildFresh($agent, $variables));
     }
 
     /**
@@ -36,9 +37,10 @@ final class AgentConfigBuilder
     }
 
     /**
+     * @param  array<array{name: string, value: string}>  $variables
      * @return array<string, mixed>
      */
-    private function buildFresh(Agent $agent): array
+    private function buildFresh(Agent $agent, array $variables = []): array
     {
         $agent->loadMissing(['settings', 'tools']);
 
@@ -62,7 +64,7 @@ final class AgentConfigBuilder
                 'tags' => array_values((array) ($agent->tags ?? [])),
                 'language' => (string) $agent->language,
             ],
-            'brain' => $this->brainPayload($brain, $agent),
+            'brain' => $this->brainPayload($brain, $agent, $variables),
             'runtime_profiles' => $this->runtimePayload($runtime, $agent),
             'architecture' => $architecture !== [] ? $architecture : null,
             'capabilities' => $this->capabilitiesPayload($capabilities, $agent),
@@ -74,11 +76,22 @@ final class AgentConfigBuilder
 
     /**
      * @param  array<string, mixed>  $brain
+     * @param  array<array{name: string, value: string}>  $variables
      * @return array<string, mixed>
      */
-    private function brainPayload(array $brain, Agent $agent): array
+    private function brainPayload(array $brain, Agent $agent, array $variables = []): array
     {
         $llm = (array) Arr::get($brain, 'llm', []);
+
+        $instructions = (string) Arr::get($llm, 'instructions', Arr::get($brain, 'system_prompt', 'You are a helpful assistant.'));
+
+        foreach ($variables as $variable) {
+            $instructions = str_replace(
+                '{'.$variable['name'].'}',
+                $variable['value'],
+                $instructions,
+            );
+        }
 
         $payload = [
             'llm' => [
@@ -89,7 +102,7 @@ final class AgentConfigBuilder
                     'max_tokens' => (int) Arr::get($llm, 'config.max_tokens', Arr::get($brain, 'max_tokens', 4096)),
                     'top_p' => (float) Arr::get($llm, 'config.top_p', Arr::get($brain, 'top_p', 0.9)),
                 ],
-                'instructions' => (string) Arr::get($llm, 'instructions', Arr::get($brain, 'system_prompt', 'You are a helpful assistant.')),
+                'instructions' => $instructions,
             ],
             'localization' => [
                 'default_locale' => (string) $agent->language,
